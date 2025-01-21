@@ -16,7 +16,7 @@ import frc.robot.Constants.AutoConstants;
 
 
 
-public class Elevator<leftMotor, RelativeEncoder> extends SubsystemBase {
+public class ElevatorNew<leftMotor, RelativeEncoder> extends SubsystemBase {
   private static final DutyCycleOut Follower = null;
   /** Creates a new Elevator. */
 
@@ -28,7 +28,7 @@ public class Elevator<leftMotor, RelativeEncoder> extends SubsystemBase {
 
   private PIDController elevatorPID = new PIDController(1, 2, 3); 
 
-  public Elevator() {
+  public ElevatorNew() {
     leftMotor.setControl(Follower);
   }
   
