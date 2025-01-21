@@ -14,10 +14,12 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 public class TeleopSwerve extends Command {
   /** Creates a new TeleopSwerve. */
@@ -32,6 +34,8 @@ public class TeleopSwerve extends Command {
   private final DoubleSupplier strafeSupplier;
   private final DoubleSupplier rotationSupplier;
 
+  private final Supplier<LinearVelocity> maxTranslationalSpeedSupplier;
+
   private SlewRateLimiter forwardRateLimiter =
       new SlewRateLimiter(SwerveConstants.maxTransationalAcceleration.in(MetersPerSecondPerSecond));
   private SlewRateLimiter strafeRateLimiter =
@@ -43,12 +47,14 @@ public class TeleopSwerve extends Command {
       DoubleSupplier forwardSupplier,
       DoubleSupplier strafeSupplier,
       DoubleSupplier rotationSupplier,
+      Supplier<LinearVelocity> maxTranslationalSpeed,
       CommandSwerveDrivetrain swerve) {
 
     this.forwardSupplier = forwardSupplier;
     this.strafeSupplier = strafeSupplier;
     this.rotationSupplier = rotationSupplier;
     this.swerve = swerve;
+    this.maxTranslationalSpeedSupplier = maxTranslationalSpeed;
 
     addRequirements(swerve);
   }
@@ -60,10 +66,9 @@ public class TeleopSwerve extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double forwardSpeed =
-        -forwardSupplier.getAsDouble() * SwerveConstants.maxTranslationalSpeed.in(MetersPerSecond);
-    double strafeSpeed =
-        -strafeSupplier.getAsDouble() * SwerveConstants.maxTranslationalSpeed.in(MetersPerSecond);
+    double maxTranslationalSpeed = maxTranslationalSpeedSupplier.get().in(MetersPerSecond);
+    double forwardSpeed = -forwardSupplier.getAsDouble() * maxTranslationalSpeed;
+    double strafeSpeed = -strafeSupplier.getAsDouble() * maxTranslationalSpeed;
     double rotationSpeed =
         -rotationSupplier.getAsDouble() * SwerveConstants.maxRotationalSpeed.in(RotationsPerSecond);
 

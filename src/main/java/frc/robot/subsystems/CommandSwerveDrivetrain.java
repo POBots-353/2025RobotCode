@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
@@ -13,6 +14,8 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -26,8 +29,20 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.AutoConstants;
+import frc.robot.Constants.VisionConstants;
+import frc.robot.Robot;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
@@ -56,7 +71,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private final SwerveRequest.ApplyRobotSpeeds pathApplyRobotSpeeds =
       new SwerveRequest.ApplyRobotSpeeds().withDriveRequestType(DriveRequestType.Velocity);
 
-  private final Field2d field = new Field2d();
+  private Field2d field = new Field2d();
+
+  private final PhotonCamera camera;
+  private final PhotonPoseEstimator photonEstimator;
+  private Matrix<N3, N1> curStdDevs;
+
+  // Simulation
+  private PhotonCameraSim cameraSim;
+  private VisionSystemSim visionSim;
 
   /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
   private final SysIdRoutine m_sysIdRoutineTranslation =
@@ -122,9 +145,31 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   public CommandSwerveDrivetrain(
       SwerveDrivetrainConstants drivetrainConstants, SwerveModuleConstants<?, ?, ?>... modules) {
     super(drivetrainConstants, modules);
+
+    camera = new PhotonCamera(VisionConstants.kCameraName);
+
+    photonEstimator =
+        new PhotonPoseEstimator(
+            VisionConstants.kTagLayout,
+            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            VisionConstants.kRobotToCam);
+    photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+
     if (Utils.isSimulation()) {
       startSimThread();
+      visionSim = new VisionSystemSim("main");
+      visionSim.addAprilTags(VisionConstants.kTagLayout);
+      var cameraProp = new SimCameraProperties();
+      cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(90));
+      cameraProp.setCalibError(0.35, 0.10);
+      cameraProp.setFPS(15);
+      cameraProp.setAvgLatencyMs(50);
+      cameraProp.setLatencyStdDevMs(15);
+      cameraSim = new PhotonCameraSim(camera, cameraProp);
+      visionSim.addCamera(cameraSim, VisionConstants.kRobotToCam);
+      cameraSim.enableDrawWireframe(true);
     }
+
     configureAutoBuilder();
   }
 
@@ -144,9 +189,31 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       double odometryUpdateFrequency,
       SwerveModuleConstants<?, ?, ?>... modules) {
     super(drivetrainConstants, odometryUpdateFrequency, modules);
+
+    camera = new PhotonCamera(VisionConstants.kCameraName);
+
+    photonEstimator =
+        new PhotonPoseEstimator(
+            VisionConstants.kTagLayout,
+            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            VisionConstants.kRobotToCam);
+    photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+
     if (Utils.isSimulation()) {
       startSimThread();
+      visionSim = new VisionSystemSim("main");
+      visionSim.addAprilTags(VisionConstants.kTagLayout);
+      var cameraProp = new SimCameraProperties();
+      cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(90));
+      cameraProp.setCalibError(0.35, 0.10);
+      cameraProp.setFPS(15);
+      cameraProp.setAvgLatencyMs(50);
+      cameraProp.setLatencyStdDevMs(15);
+      cameraSim = new PhotonCameraSim(camera, cameraProp);
+      visionSim.addCamera(cameraSim, VisionConstants.kRobotToCam);
+      cameraSim.enableDrawWireframe(true);
     }
+
     configureAutoBuilder();
   }
 
@@ -177,8 +244,28 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         odometryStandardDeviation,
         visionStandardDeviation,
         modules);
+    camera = new PhotonCamera(VisionConstants.kCameraName);
+
+    photonEstimator =
+        new PhotonPoseEstimator(
+            VisionConstants.kTagLayout,
+            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            VisionConstants.kRobotToCam);
+    photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+
     if (Utils.isSimulation()) {
       startSimThread();
+      visionSim = new VisionSystemSim("main");
+      visionSim.addAprilTags(VisionConstants.kTagLayout);
+      var cameraProp = new SimCameraProperties();
+      cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(90));
+      cameraProp.setCalibError(0.35, 0.10);
+      cameraProp.setFPS(15);
+      cameraProp.setAvgLatencyMs(50);
+      cameraProp.setLatencyStdDevMs(15);
+      cameraSim = new PhotonCameraSim(camera, cameraProp);
+      visionSim.addCamera(cameraSim, VisionConstants.kRobotToCam);
+      cameraSim.enableDrawWireframe(true);
     }
     configureAutoBuilder();
   }
@@ -228,6 +315,86 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     return run(() -> this.setControl(requestSupplier.get()));
   }
 
+  public Field2d getSimDebugField() {
+    if (!Robot.isSimulation()) return null;
+    return visionSim.getDebugField();
+  }
+
+  public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
+    Optional<EstimatedRobotPose> visionEst = Optional.empty();
+    for (var change : camera.getAllUnreadResults()) {
+      visionEst = photonEstimator.update(change);
+      updateEstimationStdDevs(visionEst, change.getTargets());
+
+      if (Robot.isSimulation()) {
+        visionEst.ifPresentOrElse(
+            est ->
+                getSimDebugField()
+                    .getObject("VisionEstimation")
+                    .setPose(est.estimatedPose.toPose2d()),
+            () -> {
+              getSimDebugField().getObject("VisionEstimation").setPoses();
+            });
+      }
+    }
+    return visionEst;
+  }
+
+  public Matrix<N3, N1> getEstimationStdDevs() {
+    return curStdDevs;
+  }
+
+  public void simulationPeriodic(Pose2d robotSimPose) {
+    visionSim.update(robotSimPose);
+  }
+
+  /** Reset pose history of the robot in the vision system simulation. */
+  public void resetSimPose(Pose2d pose) {
+    if (Robot.isSimulation()) visionSim.resetRobotPose(pose);
+  }
+
+  private void updateEstimationStdDevs(
+      Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
+    if (estimatedPose.isEmpty()) {
+      // No pose input. Default to single-tag std devs
+      curStdDevs = VisionConstants.kSingleTagStdDevs;
+
+    } else {
+      // Pose present. Start running Heuristic
+      var estStdDevs = VisionConstants.kSingleTagStdDevs;
+      int numTags = 0;
+      double avgDist = 0;
+
+      // Precalculation - see how many tags we found, and calculate an average-distance metric
+      for (var tgt : targets) {
+        var tagPose = photonEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
+        if (tagPose.isEmpty()) continue;
+        numTags++;
+        avgDist +=
+            tagPose
+                .get()
+                .toPose2d()
+                .getTranslation()
+                .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
+      }
+
+      if (numTags == 0) {
+        // No tags visible. Default to single-tag std devs
+        curStdDevs = VisionConstants.kSingleTagStdDevs;
+      } else {
+        // One or more tags visible, run the full heuristic.
+        avgDist /= numTags;
+        // Decrease std devs if multiple targets are visible
+        if (numTags > 1) estStdDevs = VisionConstants.kMultiTagStdDevs;
+        // Increase std devs based on (average) distance
+        if (numTags == 1 && avgDist > 4)
+          estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+        else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+        curStdDevs = estStdDevs;
+      }
+    }
+  }
+
   /**
    * Runs the SysId Quasistatic test in the given direction for the routine specified by {@link
    * #m_sysIdRoutineToApply}.
@@ -261,7 +428,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   @Override
   public void periodic() {
-    field.setRobotPose(getState().Pose);
+    Pose2d robotPose = getState().Pose;
+
+    field.setRobotPose(robotPose);
 
     /*
      * Periodically try to apply the operator perspective.
@@ -281,6 +450,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
               });
     }
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    // Update camera simulation
+    Pose2d robotPose = getState().Pose;
+
+    field.getObject("EstimatedRobot").setPose(robotPose);
   }
 
   private void startSimThread() {
