@@ -21,19 +21,22 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.OuttakeConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.GroundIntake;
 import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Outtake;
+import frc.robot.subsystems.Swerve;
 import frc.robot.util.LogUtil;
 import frc.robot.util.PersistentSendableChooser;
 
 public class RobotContainer {
   private final Elevator elevator = new Elevator();
   private final Indexer indexer = new Indexer();
+  private final Outtake outtake = new Outtake();
   private final GroundIntake groundIntake = new GroundIntake();
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -47,12 +50,13 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandJoystick operatorStick = new CommandJoystick(1);
 
-  public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+  public final Swerve drivetrain = TunerConstants.createDrivetrain();
 
   private final PowerDistribution powerDistribution = new PowerDistribution();
 
   private Trigger intakeLaserBroken = new Trigger(groundIntake::intakeLaserBroken);
-  private Trigger outakeLaserBroken = new Trigger(indexer::outakeLaserBroken);
+  private Trigger outtakeLaserBroken = new Trigger(outtake::outtakeLaserBroken);
+
   private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
 
   public RobotContainer() {
@@ -64,14 +68,10 @@ public class RobotContainer {
     SmartDashboard.putData("Power Distribution", powerDistribution);
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
 
-    // intakeLaserBroken
-    //     .whileTrue(indexer.run(indexer::index))
-    //     .onFalse(indexer.runOnce(indexer::stopIndexer));
-
     intakeLaserBroken
         .whileTrue(indexer.runIndexer())
         .onFalse(
-            Commands.race(Commands.waitUntil(outakeLaserBroken), Commands.waitSeconds(4))
+            Commands.race(Commands.waitUntil(outtakeLaserBroken), Commands.waitSeconds(4))
                 .andThen(indexer::stopIndexer));
   }
 
@@ -111,12 +111,12 @@ public class RobotContainer {
   }
 
   private void configureOperatorBindings() {
-    elevator.setDefaultCommand(elevator.downPosition());
+    // elevator.setDefaultCommand(elevator.downPosition());
 
     operatorStick
         .button(OperatorConstants.indexerButton)
         .and(intakeLaserBroken.negate())
-        .whileTrue(indexer.runIndexer())
+        .whileTrue(indexer.runIndexer().until(() -> outtake.outtakeLaserBroken()))
         .onFalse(indexer.stop());
 
     operatorStick
@@ -134,8 +134,8 @@ public class RobotContainer {
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
 
     operatorStick
-        .button(OperatorConstants.manualOutakeButton)
-        .whileTrue(groundIntake.run(groundIntake::manualOutake))
+        .button(OperatorConstants.manualOuttakeButton)
+        .whileTrue(groundIntake.run(groundIntake::manualOuttake))
         .onFalse(groundIntake.stop());
 
     operatorStick
@@ -143,6 +143,11 @@ public class RobotContainer {
         .and(buttonTrigger)
         .whileTrue(groundIntake.run(groundIntake::feedToIndexer))
         .onFalse(groundIntake.stop());
+
+    operatorStick
+        .button(OuttakeConstants.outtakeButton)
+        .whileTrue(outtake.runOuttake())
+        .onFalse(outtake.stopOuttakeMotor());
   }
 
   private void configureAutoChooser() {

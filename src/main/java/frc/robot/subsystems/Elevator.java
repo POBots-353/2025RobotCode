@@ -32,8 +32,7 @@ public class Elevator extends SubsystemBase {
   private final VoltageOut voltageRequest = new VoltageOut(0.0);
 
   private DigitalInput buttonSwitch = new DigitalInput(ElevatorConstants.buttonSwitchID);
-  private boolean isZeroed = false;
-  private boolean isLimitConfigApplied = false;
+  private boolean isZeroed = true; // false
   private Alert elevatorAlert;
 
   public Elevator() {
@@ -44,7 +43,7 @@ public class Elevator extends SubsystemBase {
 
     // currentPosition.setUpdateFrequency(50);
 
-    elevatorFollowerMotor.setControl(follower);
+    // elevatorFollowerMotor.setControl(follower);
 
     elevatorMainMotor.getConfigurator().apply(ElevatorConstants.elevatorConfigs);
 
@@ -52,11 +51,11 @@ public class Elevator extends SubsystemBase {
   }
 
   public boolean buttonPressed() {
-    return buttonSwitch.get();
+    return !buttonSwitch.get();
   }
 
   public Command homeElevator() {
-    return run(() -> setSpeed(-0.1))
+    return run(() -> setSpeed(-0.2))
         .until(this::buttonPressed)
         .unless(this::buttonPressed)
         .finallyDo(this::stopElevator);
@@ -67,7 +66,11 @@ public class Elevator extends SubsystemBase {
   }
 
   public void setSpeed(double speed) {
-    elevatorMainMotor.set(speed);
+    if (elevatorMainMotor.getPosition().getValueAsDouble() < 50) {
+      elevatorMainMotor.set(ElevatorConstants.bottomSpeed);
+    } else {
+      elevatorMainMotor.set(speed);
+    }
   }
 
   public void printPosition() {
@@ -75,9 +78,20 @@ public class Elevator extends SubsystemBase {
         "Elevator Position", elevatorMainMotor.getPosition().getValueAsDouble());
   }
 
+  // public void safelySetControl(double height) {
+  //   if (elevatorMainMotor.getPosition().getValueAsDouble() < 50) {
+  //     elevatorMainMotor.set(ElevatorConstants.bottomSpeed);
+  //   } else {
+  //     elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
+  //   }
+  // }
+
   public Command moveToPosition(double height) {
+    System.out.println("OAIUBDAIFBAIFJBASIUFBAISUFASIFUB"); 
     return run(() -> elevatorMainMotor.setControl(motionMagicRequest.withPosition(height)))
-        .onlyIf(() -> isZeroed);
+        .onlyIf(() -> isZeroed)
+        .until(this::buttonPressed);
+    // return run(() -> safelySetControl(height)).onlyIf(() ->isZeroed).until(this::buttonPressed);
   }
 
   public Command downPosition() {
@@ -109,16 +123,11 @@ public class Elevator extends SubsystemBase {
   public void periodic() {
     printPosition();
 
-    if (buttonPressed()) {
-      elevatorMainMotor.setPosition(0, 0);
+    if (!isZeroed && buttonPressed()) {
+      elevatorMainMotor.setPosition(0, .001);
       isZeroed = true;
     }
 
     elevatorAlert.set(!isZeroed);
-
-    if (isZeroed && !isLimitConfigApplied) {
-      elevatorMainMotor.getConfigurator().apply(ElevatorConstants.limitSwitchConfigs);
-      isLimitConfigApplied = true;
-    }
   }
 }

@@ -17,13 +17,13 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.SwerveConstants;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Swerve;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class TeleopSwerve extends Command {
   /** Creates a new TeleopSwerve. */
-  private final CommandSwerveDrivetrain swerve;
+  private final Swerve swerve;
 
   private SwerveRequest.FieldCentric fieldOriented =
       new SwerveRequest.FieldCentric()
@@ -48,7 +48,7 @@ public class TeleopSwerve extends Command {
       DoubleSupplier strafeSupplier,
       DoubleSupplier rotationSupplier,
       Supplier<LinearVelocity> maxTranslationalSpeed,
-      CommandSwerveDrivetrain swerve) {
+      Swerve swerve) {
 
     this.forwardSupplier = forwardSupplier;
     this.strafeSupplier = strafeSupplier;

@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import au.grapplerobotics.LaserCan;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -18,12 +17,9 @@ import frc.robot.Constants.IntakeConstants;
 
 public class Indexer extends SubsystemBase {
   /** Creates a new Indexer. */
-  private LaserCan outakeLaser;
-
   private SparkMax indexerMotor;
 
   public Indexer() {
-    outakeLaser = new LaserCan(14);
     indexerMotor = new SparkMax(IntakeConstants.indexerMotorID, MotorType.kBrushless);
 
     SparkMaxConfig indexerConfig = new SparkMaxConfig();
@@ -52,21 +48,6 @@ public class Indexer extends SubsystemBase {
 
   public void stopIndexer() {
     indexerMotor.set(0);
-  }
-
-  public boolean outakeLaserBroken() {
-    LaserCan.Measurement measurement = outakeLaser.getMeasurement();
-    if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-      // System.out.println("The target is " + measurement.distance_mm + "mm away!");
-      // if (measurement.distance_mm < 500) {
-      //   return true;
-      // } else {
-      //   return false;
-      // }
-      return true;
-    } else {
-      return false;
-    }
   }
 
   @Override
