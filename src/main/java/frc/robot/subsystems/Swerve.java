@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -16,14 +15,21 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -35,12 +41,11 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.FieldConstants;
-import frc.robot.Constants.GyroConstants;
-import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -85,14 +90,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   private Field2d field = new Field2d();
 
-  private Pigeon2 pigeon;
-
-  private double simYaw = 0.0;
-
-  private SwerveDriveKinematics kinematics =
-      new SwerveDriveKinematics(SwerveConstants.wheelLocations);
-
-  SwerveDrivePoseEstimator poseEstimator;
+  Transform2d aprilTagOffset;
 
   // private final PhotonCamera camera;
   // private final PhotonPoseEstimator photonEstimator;
@@ -136,20 +134,22 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
           VisionConstants.limelightTransform);
 
-  private PhotonPipelineResult latestArducamResult;
-  private PhotonPipelineResult latestLimelightResult;
+  private List<PhotonPipelineResult> latestArducamOneResult;
+  private List<PhotonPipelineResult> latestArducamTwoResult;
+  public List<PhotonPipelineResult> latestLimelightResult;
 
-  private Optional<PhotonTrackedTarget> centerSpeakerTarget = Optional.empty();
+  public Transform2d bestAprilTagTransform;
 
   // Temporary fix for inaccurate poses while auto shooting
-  private boolean ignoreArducam = false;
 
   private PhotonCameraSim arducamSimOne;
   private PhotonCameraSim arducamSimTwo;
   private PhotonCameraSim limelightSim;
+
   private VisionSystemSim visionSim;
 
-  private List<Pose3d> detectedTargets = new ArrayList<>();
+  public List<Pose3d> detectedTargets = new ArrayList<>();
+  public List<Integer> detectedAprilTags = new ArrayList<>();
   private List<Pose3d> rejectedPoses = new ArrayList<>();
   private List<PoseEstimate> poseEstimates = new ArrayList<>();
 
@@ -218,28 +218,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       SwerveDrivetrainConstants drivetrainConstants, SwerveModuleConstants<?, ?, ?>... modules) {
     super(drivetrainConstants, modules);
 
-    // camera = new PhotonCamera(VisionConstants.kCameraName);
-
-    // photonEstimator =
-    //     new PhotonPoseEstimator(
-    //         VisionConstants.kTagLayout,
-    //         PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-    //         VisionConstants.kRobotToCam);
-    // photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
-
     if (Utils.isSimulation()) {
       startSimThread();
-      // visionSim = new VisionSystemSim("main");
-      // visionSim.addAprilTags(VisionConstants.kTagLayout);
-      // var cameraProp = new SimCameraProperties();
-      // cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(90));
-      // cameraProp.setCalibError(0.35, 0.10);
-      // cameraProp.setFPS(15);
-      // cameraProp.setAvgLatencyMs(50);
-      // cameraProp.setLatencyStdDevMs(15);
-      // cameraSim = new PhotonCameraSim(camera, cameraProp);
-      // visionSim.addCamera(cameraSim, VisionConstants.kRobotToCam);
-      // cameraSim.enableDrawWireframe(true);
     }
 
     configureAutoBuilder();
@@ -262,8 +242,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       SwerveModuleConstants<?, ?, ?>... modules) {
     super(drivetrainConstants, odometryUpdateFrequency, modules);
 
-    pigeon =
-        new Pigeon2(GyroConstants.pigeonID, "Cannie"); // Need to change the the pigeon ID for later
+    // pigeon =
+    //     new Pigeon2(GyroConstants.pigeonID, "Cannie"); // Need to change the the pigeon ID for
+    // later
 
     if (Utils.isSimulation()) {
       startSimThread();
@@ -302,6 +283,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
       limelightSim.enableRawStream(false);
       limelightSim.enableProcessedStream(false);
+      limelightSim.enableDrawWireframe(true);
     }
 
     configureAutoBuilder();
@@ -335,33 +317,13 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         visionStandardDeviation,
         modules);
 
-    // camera = new PhotonCamera(VisionConstants.kCameraName);
-
-    // photonEstimator =
-    //     new PhotonPoseEstimator(
-    //         VisionConstants.kTagLayout,
-    //         PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-    //         VisionConstants.kRobotToCam);
-    // photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
-
     if (Utils.isSimulation()) {
       startSimThread();
-      // visionSim = new VisionSystemSim("main");
-      // visionSim.addAprilTags(VisionConstants.kTagLayout);
-      // var cameraProp = new SimCameraProperties();
-      // cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(90));
-      // cameraProp.setCalibError(0.35, 0.10);
-      // cameraProp.setFPS(15);
-      // cameraProp.setAvgLatencyMs(50);
-      // cameraProp.setLatencyStdDevMs(15);
-      // cameraSim = new PhotonCameraSim(camera, cameraProp);
-      // visionSim.addCamera(cameraSim, VisionConstants.kRobotToCam);
-      // cameraSim.enableDrawWireframe(true);
     }
     configureAutoBuilder();
   }
 
-  private void configureAutoBuilder() {
+  public void configureAutoBuilder() {
     try {
       RobotConfig config = RobotConfig.fromGUISettings();
       AutoBuilder.configure(
@@ -406,101 +368,56 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return run(() -> this.setControl(requestSupplier.get()));
   }
 
-  // NEED TO FIX THIS ASAP
-
-  // public Field2d getSimDebugField() {
-  //   if (!Robot.isSimulation()) return null;
-  //   return visionSim.getDebugField();
-  // }
-
-  // public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
-  //   Optional<EstimatedRobotPose> visionEst = Optional.empty();
-  //   for (var change : camera.getAllUnreadResults()) {
-  //     visionEst = photonEstimator.update(change);
-  //     updateEstimationStdDevs(visionEst, change.getTargets());
-
-  //     if (Robot.isSimulation()) {
-  //       visionEst.ifPresentOrElse(
-  //           est ->
-  //               getSimDebugField()
-  //                   .getObject("VisionEstimation")
-  //                   .setPose(est.estimatedPose.toPose2d()),
-  //           () -> {
-  //             getSimDebugField().getObject("VisionEstimation").setPoses();
-  //           });
-  //     }
-  //   }
-  //   return visionEst;
-  // }
-
-  // public Matrix<N3, N1> getEstimationStdDevs() {
-  //   return curStdDevs;
-  // }
-
-  // public void simulationPeriodic(Pose2d robotSimPose) {
-  //   visionSim.update(robotSimPose);
-  // }
-
-  /** Reset pose history of the robot in the vision system simulation. */
-  // public void resetSimPose(Pose2d pose) {
-  //   if (Robot.isSimulation()) visionSim.resetRobotPose(pose);
-  // }
-
-  // private void updateEstimationStdDevs(
-  //     Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
-  //   if (estimatedPose.isEmpty()) {
-  //     // No pose input. Default to single-tag std devs
-  //     curStdDevs = VisionConstants.kSingleTagStdDevs;
-
-  //   } else {
-  //     // Pose present. Start running Heuristic
-  //     var estStdDevs = VisionConstants.kSingleTagStdDevs;
-  //     int numTags = 0;
-  //     double avgDist = 0;
-
-  //     // Precalculation - see how many tags we found, and calculate an average-distance metric
-  //     for (var tgt : targets) {
-  //       var tagPose = photonEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
-  //       if (tagPose.isEmpty()) continue;
-  //       numTags++;
-  //       avgDist +=
-  //           tagPose
-  //               .get()
-  //               .toPose2d()
-  //               .getTranslation()
-  //               .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
-  //     }
-
-  //     if (numTags == 0) {
-  //       // No tags visible. Default to single-tag std devs
-  //       curStdDevs = VisionConstants.kSingleTagStdDevs;
-  //     } else {
-  //       // One or more tags visible, run the full heuristic.
-  //       avgDist /= numTags;
-  //       // Decrease std devs if multiple targets are visible
-  //       if (numTags > 1) estStdDevs = VisionConstants.kMultiTagStdDevs;
-  //       // Increase std devs based on (average) distance
-  //       if (numTags == 1 && avgDist > 4)
-  //         estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-  //       else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
-  //       curStdDevs = estStdDevs;
-  //     }
-  //   }
-  // }
-
   public Optional<Rotation2d> getRotationAtTime(double time) {
     Optional<Rotation2d> rotationAtTime = rotationBuffer.getSample(time);
     return rotationAtTime;
   }
 
-  public Pose3d getArducamPose() {
-    return new Pose3d(getState().Pose)
-        .plus(VisionConstants.arducamOneTransform)
-        .plus(VisionConstants.arducamTwoTransform);
+  public Pose3d getArducamOnePose() {
+    return new Pose3d(getState().Pose).plus(VisionConstants.arducamOneTransform);
+  }
+
+  public Pose3d getArducamTwoPose() {
+    return new Pose3d(getState().Pose).plus(VisionConstants.arducamTwoTransform);
   }
 
   public Pose3d getLimelightPose() {
     return new Pose3d(getState().Pose).plus(VisionConstants.limelightTransform);
+  }
+
+  public static Transform2d getBestTransform(List<Transform2d> transforms) {
+    // Define a comparator to sort transforms by their magnitude
+    Comparator<Transform2d> comparator =
+        Comparator.comparingDouble(
+            transform ->
+                transform.getTranslation().getNorm()
+                    + Math.abs(transform.getRotation().getRadians()));
+
+    // Sort the list of transforms in ascending order of magnitude
+    Collections.sort(transforms, comparator);
+
+    // Return the first transform (which has the smallest magnitude)
+    return transforms.get(0);
+  }
+
+  public Transform2d getBestAprilTag(List<PhotonPipelineResult> latestResult) {
+
+    List<Transform2d> targets = new ArrayList<>();
+    for (PhotonPipelineResult result : latestResult) {
+
+      Optional<EstimatedRobotPose> optionalVisionPose = limelightPoseEstimator.update(result);
+      EstimatedRobotPose visionPose = optionalVisionPose.get();
+
+      for (PhotonTrackedTarget target : visionPose.targetsUsed) {
+        targets.add(
+            new Transform2d(
+                target.getBestCameraToTarget().getX(),
+                target.getBestCameraToTarget().getY(),
+                target.getBestCameraToTarget().getRotation().toRotation2d()));
+      }
+    }
+    Transform2d bestTransform = getBestTransform(targets);
+    return bestTransform;
   }
 
   private boolean isValidPose(
@@ -545,153 +462,59 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return true;
   }
 
-  private void updateLimelightPoses() {
-    if (!latestLimelightResult.hasTargets()) {
-      centerSpeakerTarget = Optional.empty();
+  private void updateVisionPoses(
+      List<PhotonPipelineResult> latestResults,
+      PhotonPoseEstimator poseEstimator,
+      Transform3d cameraTransform) {
+    if (!latestResults.isEmpty()) {
       return;
     }
 
-    limelightPoseEstimator.setReferencePose(getState().Pose);
+    poseEstimator.setReferencePose(getState().Pose);
 
-    Optional<EstimatedRobotPose> optionalVisionPose =
-        limelightPoseEstimator.update(latestLimelightResult);
-    if (optionalVisionPose.isEmpty()) {
-      return;
-    }
-
-    EstimatedRobotPose visionPose = optionalVisionPose.get();
-
-    double totalDistance = 0.0;
-    int tagCount = 0;
-
-    boolean seenCenterTag = false;
-    for (PhotonTrackedTarget target : visionPose.targetsUsed) {
-      tagCount++;
-      totalDistance += target.getBestCameraToTarget().getTranslation().toTranslation2d().getNorm();
-
-      // if (target.getFiducialId() == centerSpeakerID) {
-      //   centerSpeakerTarget = Optional.of(target);
-      //   seenCenterTag = true;
-      // }
-    }
-    if (!seenCenterTag) {
-      centerSpeakerTarget = Optional.empty();
-    }
-
-    double averageDistance = totalDistance / tagCount;
-
-    if (!isValidPose(
-        visionPose.estimatedPose,
-        averageDistance,
-        visionPose.targetsUsed.size(),
-        visionPose.timestampSeconds)) {
-      rejectedPoses.add(visionPose.estimatedPose);
-      return;
-    }
-
-    // poseEstimates.add(
-    //     new PoseEstimate(visionPose.estimatedPose, visionPose.timestampSeconds, standardDevs));
-
-    poseEstimates.add(
-        new PoseEstimate(visionPose.estimatedPose, visionPose.timestampSeconds, null));
-
-    for (PhotonTrackedTarget target : visionPose.targetsUsed) {
-      int aprilTagID = target.getFiducialId();
-
-      Optional<Pose3d> tagPose = FieldConstants.aprilTagLayout.getTagPose(aprilTagID);
-      if (tagPose.isEmpty()) {
+    for (PhotonPipelineResult result : latestResults) {
+      Optional<EstimatedRobotPose> optionalVisionPose = poseEstimator.update(result);
+      if (optionalVisionPose.isEmpty()) {
         continue;
       }
 
-      detectedTargets.add(tagPose.get());
-    }
-  }
+      EstimatedRobotPose visionPose = optionalVisionPose.get();
 
-  private void updateArducamPoses() {
-    if (!latestArducamResult.hasTargets()) {
-      return;
-    }
+      double totalDistance = 0.0;
+      int tagCount = 0;
 
-    if (ignoreArducam) {
-      return;
-    }
-
-    arducamOnePoseEstimator.setReferencePose(getState().Pose);
-    arducamTwoPoseEstimator.setReferencePose(getState().Pose);
-
-    Optional<EstimatedRobotPose> optionalVisionPoseOne =
-        arducamOnePoseEstimator.update(latestArducamResult);
-
-    Optional<EstimatedRobotPose> optionalVisionPoseTwo =
-        arducamTwoPoseEstimator.update(latestArducamResult);
-
-    // Do we agree on this logic?
-    if (optionalVisionPoseOne.isEmpty() && optionalVisionPoseTwo.isEmpty()) {
-      return;
-    }
-
-    EstimatedRobotPose visionPoseOne = optionalVisionPoseOne.get();
-    EstimatedRobotPose visionPoseTwo = optionalVisionPoseTwo.get();
-
-    double totalDistance = 0.0;
-    int tagCount = 0;
-
-    for (PhotonTrackedTarget target : visionPoseOne.targetsUsed) {
-      tagCount++;
-      totalDistance += target.getBestCameraToTarget().getTranslation().toTranslation2d().getNorm();
-    }
-
-    for (PhotonTrackedTarget target : visionPoseTwo.targetsUsed) {
-      tagCount++;
-      totalDistance += target.getBestCameraToTarget().getTranslation().toTranslation2d().getNorm();
-    }
-
-    double averageDistance = totalDistance / tagCount;
-
-    if (!isValidPose(
-        visionPoseOne.estimatedPose,
-        averageDistance,
-        visionPoseOne.targetsUsed.size(),
-        visionPoseOne.timestampSeconds)) {
-      rejectedPoses.add(visionPoseOne.estimatedPose);
-      return;
-    }
-
-    if (!isValidPose(
-        visionPoseTwo.estimatedPose,
-        averageDistance,
-        visionPoseTwo.targetsUsed.size(),
-        visionPoseTwo.timestampSeconds)) {
-      rejectedPoses.add(visionPoseTwo.estimatedPose);
-      return;
-    }
-
-    poseEstimates.add(
-        new PoseEstimate(visionPoseOne.estimatedPose, visionPoseOne.timestampSeconds, null));
-
-    poseEstimates.add(
-        new PoseEstimate(visionPoseTwo.estimatedPose, visionPoseTwo.timestampSeconds, null));
-
-    for (PhotonTrackedTarget target : visionPoseOne.targetsUsed) {
-      int aprilTagID = target.getFiducialId();
-
-      Optional<Pose3d> tagPose = FieldConstants.aprilTagLayout.getTagPose(aprilTagID);
-      if (tagPose.isEmpty()) {
-        continue;
+      for (PhotonTrackedTarget target : visionPose.targetsUsed) {
+        tagCount++;
+        totalDistance +=
+            target.getBestCameraToTarget().getTranslation().toTranslation2d().getNorm();
       }
 
-      detectedTargets.add(tagPose.get());
-    }
+      double averageDistance = totalDistance / tagCount;
 
-    for (PhotonTrackedTarget target : visionPoseTwo.targetsUsed) {
-      int aprilTagID = target.getFiducialId();
-
-      Optional<Pose3d> tagPose = FieldConstants.aprilTagLayout.getTagPose(aprilTagID);
-      if (tagPose.isEmpty()) {
-        continue;
+      if (!isValidPose(
+          visionPose.estimatedPose,
+          averageDistance,
+          visionPose.targetsUsed.size(),
+          visionPose.timestampSeconds)) {
+        rejectedPoses.add(visionPose.estimatedPose);
+        return;
       }
 
-      detectedTargets.add(tagPose.get());
+      poseEstimates.add(
+          new PoseEstimate(visionPose.estimatedPose, visionPose.timestampSeconds, null));
+
+      for (PhotonTrackedTarget target : visionPose.targetsUsed) {
+        int aprilTagID = target.getFiducialId();
+
+        Optional<Pose3d> tagPose = FieldConstants.aprilTagLayout.getTagPose(aprilTagID);
+        if (tagPose.isEmpty()) {
+          continue;
+        }
+
+        detectedAprilTags.add(aprilTagID);
+        // charlie was here
+        detectedTargets.add(tagPose.get());
+      }
     }
   }
 
@@ -700,16 +523,17 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     detectedTargets.clear();
     rejectedPoses.clear();
 
-    updateLimelightPoses();
-    updateArducamPoses();
+    updateVisionPoses(
+        latestArducamOneResult, arducamOnePoseEstimator, VisionConstants.arducamOneTransform);
+    updateVisionPoses(
+        latestArducamTwoResult, arducamTwoPoseEstimator, VisionConstants.arducamTwoTransform);
+    updateVisionPoses(
+        latestLimelightResult, limelightPoseEstimator, VisionConstants.limelightTransform);
 
     Collections.sort(poseEstimates);
 
     for (PoseEstimate poseEstimate : poseEstimates) {
-      poseEstimator.addVisionMeasurement(
-          poseEstimate.estimatedPose().toPose2d(),
-          poseEstimate.timestamp(),
-          poseEstimate.standardDevs());
+      addVisionMeasurement(poseEstimate.estimatedPose().toPose2d(), poseEstimate.timestamp(), null);
     }
 
     field
@@ -720,17 +544,42 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         .setPoses(rejectedPoses.stream().map(p -> p.toPose2d()).toArray(Pose2d[]::new));
   }
 
-  public PhotonPipelineResult getLimelightResults() {
+  public List<PhotonPipelineResult> getLimelightResults() {
     return latestLimelightResult;
   }
 
-  public PhotonPipelineResult getArducamOneResults() {
-    return latestArducamResult;
+  public List<PhotonPipelineResult> getArducamOneResults() {
+    return latestArducamOneResult;
   }
 
-  public Optional<PhotonTrackedTarget> getCenterSpeakerTarget() {
-    return centerSpeakerTarget;
+  public List<PhotonPipelineResult> getArducamTwoResults() {
+    return latestArducamTwoResult;
   }
+
+  // public Command CoralAlign(String angleOffset) {
+
+  //   if (angleOffset == "Left") {
+  //     aprilTagOffset = new Transform2d(0, VisionConstants.aprilTagReefOffset, new Rotation2d(0));
+  //   }
+  //   if (angleOffset == "Right") {
+  //     aprilTagOffset = new Transform2d(0, -VisionConstants.aprilTagReefOffset, new
+  // Rotation2d(0));
+  //   }
+
+  //   Transform2d transform = getBestAprilTag(getLimelightResults());
+
+  //   transform = transform.plus(aprilTagOffset);
+
+  //   Pose2d aprilTagPose = getState().Pose.transformBy(transform);
+
+  //   PathConstraints constraints =
+  //       new PathConstraints(12.0, 10.0, Units.degreesToRadians(720),
+  // Units.degreesToRadians(720));
+
+  //   Command pathfind = AutoBuilder.pathfindToPose(aprilTagPose, constraints, 0.0);
+
+  //   return pathfind;
+  // }
 
   /**
    * Runs the SysId Quasistatic test in the given direction for the routine specified by {@link
@@ -769,11 +618,33 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     field.setRobotPose(robotPose);
 
-    latestArducamResult = arducamOne.getLatestResult();
-    latestArducamResult = arducamTwo.getLatestResult();
-    latestLimelightResult = limelight.getLatestResult();
+    latestArducamOneResult = arducamOne.getAllUnreadResults();
+    latestArducamTwoResult = arducamTwo.getAllUnreadResults();
+    latestLimelightResult = limelight.getAllUnreadResults();
 
     updateVisionPoseEstimates();
+
+    final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+
+    final NetworkTable swerveStateTable = inst.getTable("DriveState");
+    final StructPublisher<Pose2d> drivePose =
+        swerveStateTable.getStructTopic("Pose", Pose2d.struct).publish();
+    final StructPublisher<ChassisSpeeds> driveSpeeds =
+        swerveStateTable.getStructTopic("Speeds", ChassisSpeeds.struct).publish();
+    final StructArrayPublisher<SwerveModuleState> driveModuleStates =
+        swerveStateTable.getStructArrayTopic("ModuleStates", SwerveModuleState.struct).publish();
+    final StructArrayPublisher<SwerveModuleState> driveModuleTargets =
+        swerveStateTable.getStructArrayTopic("ModuleTargets", SwerveModuleState.struct).publish();
+    final StructArrayPublisher<SwerveModulePosition> driveModulePositions =
+        swerveStateTable
+            .getStructArrayTopic("ModulePositions", SwerveModulePosition.struct)
+            .publish();
+
+    drivePose.set(getState().Pose);
+    driveSpeeds.set(getState().Speeds);
+    driveModuleStates.set(getState().ModuleStates);
+    driveModuleTargets.set(getState().ModuleTargets);
+    driveModulePositions.set(getState().ModulePositions);
 
     /*
      * Periodically try to apply the operator perspective.
@@ -795,12 +666,16 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
   }
 
+  public void method() {}
+
   @Override
   public void simulationPeriodic() {
     // Update camera simulation
     Pose2d robotPose = getState().Pose;
 
     field.getObject("EstimatedRobot").setPose(robotPose);
+
+    visionSim.update(robotPose);
   }
 
   private void startSimThread() {

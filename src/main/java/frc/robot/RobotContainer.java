@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -41,8 +39,8 @@ public class RobotContainer {
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
-  private final Telemetry logger =
-      new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
+  //   private final Telemetry logger =
+  //       new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
 
   private PersistentSendableChooser<String> batteryChooser;
   private SendableChooser<Command> autoChooser;
@@ -101,13 +99,16 @@ public class RobotContainer {
                         new Rotation2d(
                             -driverController.getLeftY(), -driverController.getLeftX()))));
 
+    // driverController.leftTrigger().whileTrue(new CoralAlign("Left"));
+    // driverController.rightTrigger().whileTrue(new CoralAlign("Right"));
+
     // reset the field-centric heading on left bumper press
     driverController
         .start()
         .and(driverController.back())
         .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
 
-    drivetrain.registerTelemetry(logger::telemeterize);
+    // drivetrain.registerTelemetry(logger::telemeterize);
   }
 
   private void configureOperatorBindings() {
@@ -126,11 +127,28 @@ public class RobotContainer {
 
     operatorStick
         .button(OperatorConstants.L4HeightButton)
-        .whileTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+    operatorStick
+        .button(OperatorConstants.L3HeightButton)
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L3Height));
+    operatorStick
+        .button(OperatorConstants.L2HeightButton)
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L2Height));
+    operatorStick.button(OperatorConstants.elevatorDownButton).onTrue(elevator.moveToPosition(0));
 
     operatorStick
         .button(OperatorConstants.homeElevatorButon)
         .whileTrue(elevator.homeElevator())
+        .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
+
+    operatorStick
+        .button(OperatorConstants.elevatorManualDown)
+        .whileTrue(elevator.run(() -> elevator.setSpeed(-.1)))
+        .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
+
+    operatorStick
+        .button(OperatorConstants.elevatorManualUp)
+        .whileTrue(elevator.run(() -> elevator.setSpeed(.1)))
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
 
     operatorStick
