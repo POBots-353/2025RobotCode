@@ -24,6 +24,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -115,6 +116,12 @@ public class Constants {
             Units.inchesToMeters(-13.25),
             Units.inchesToMeters(8.50),
             new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(180.0)));
+
+    public static final Transform2d limelightTransform2d =
+        new Transform2d(
+            limelightTransform.getX(),
+            limelightTransform.getY(),
+            limelightTransform.getRotation().toRotation2d());
 
     public static final int[] reefAprilTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
 

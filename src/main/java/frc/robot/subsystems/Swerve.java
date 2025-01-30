@@ -45,7 +45,6 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -91,14 +90,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   private Field2d field = new Field2d();
 
   Transform2d aprilTagOffset;
-
-  // private final PhotonCamera camera;
-  // private final PhotonPoseEstimator photonEstimator;
-  // private Matrix<N3, N1> curStdDevs;
-
-  // // Simulation
-  // private PhotonCameraSim cameraSim;
-  // private VisionSystemSim visionSim;
 
   public static record PoseEstimate(Pose3d estimatedPose, double timestamp, Vector<N3> standardDevs)
       implements Comparable<PoseEstimate> {
@@ -385,40 +376,40 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return new Pose3d(getState().Pose).plus(VisionConstants.limelightTransform);
   }
 
-  public static Transform2d getBestTransform(List<Transform2d> transforms) {
-    // Define a comparator to sort transforms by their magnitude
-    Comparator<Transform2d> comparator =
-        Comparator.comparingDouble(
-            transform ->
-                transform.getTranslation().getNorm()
-                    + Math.abs(transform.getRotation().getRadians()));
+  // public static Transform2d getBestTransform(List<Transform2d> transforms) {
+  //   // Define a comparator to sort transforms by their magnitude
+  //   Comparator<Transform2d> comparator =
+  //       Comparator.comparingDouble(
+  //           transform ->
+  //               transform.getTranslation().getNorm()
+  //                   + Math.abs(transform.getRotation().getRadians()));
 
-    // Sort the list of transforms in ascending order of magnitude
-    Collections.sort(transforms, comparator);
+  //   // Sort the list of transforms in ascending order of magnitude
+  //   Collections.sort(transforms, comparator);
 
-    // Return the first transform (which has the smallest magnitude)
-    return transforms.get(0);
-  }
+  //   // Return the first transform (which has the smallest magnitude)
+  //   return transforms.get(0);
+  // }
 
-  public Transform2d getBestAprilTag(List<PhotonPipelineResult> latestResult) {
+  // public Transform2d getBestAprilTag(List<PhotonPipelineResult> latestResult) {
 
-    List<Transform2d> targets = new ArrayList<>();
-    for (PhotonPipelineResult result : latestResult) {
+  //   List<Transform2d> targets = new ArrayList<>();
+  //   for (PhotonPipelineResult result : latestResult) {
 
-      Optional<EstimatedRobotPose> optionalVisionPose = limelightPoseEstimator.update(result);
-      EstimatedRobotPose visionPose = optionalVisionPose.get();
+  //     Optional<EstimatedRobotPose> optionalVisionPose = limelightPoseEstimator.update(result);
+  //     EstimatedRobotPose visionPose = optionalVisionPose.get();
 
-      for (PhotonTrackedTarget target : visionPose.targetsUsed) {
-        targets.add(
-            new Transform2d(
-                target.getBestCameraToTarget().getX(),
-                target.getBestCameraToTarget().getY(),
-                target.getBestCameraToTarget().getRotation().toRotation2d()));
-      }
-    }
-    Transform2d bestTransform = getBestTransform(targets);
-    return bestTransform;
-  }
+  //     for (PhotonTrackedTarget target : visionPose.targetsUsed) {
+  //       targets.add(
+  //           new Transform2d(
+  //               target.getBestCameraToTarget().getX(),
+  //               target.getBestCameraToTarget().getY(),
+  //               target.getBestCameraToTarget().getRotation().toRotation2d()));
+  //     }
+  //   }
+  //   Transform2d bestTransform = getBestTransform(targets);
+  //   return bestTransform;
+  // }
 
   private boolean isValidPose(
       Pose3d visionPose, double averageDistance, int detectedTargets, double timestampSeconds) {
@@ -512,7 +503,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         }
 
         detectedAprilTags.add(aprilTagID);
-        // charlie was here
         detectedTargets.add(tagPose.get());
       }
     }
