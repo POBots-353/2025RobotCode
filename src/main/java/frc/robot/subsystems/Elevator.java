@@ -58,7 +58,7 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command homeElevator() {
-    return run(() -> setSpeed(-0.2))
+    return downSpeed(0.2)
         .until(this::buttonPressed)
         .unless(this::buttonPressed)
         .finallyDo(this::stopElevator);
@@ -69,9 +69,21 @@ public class Elevator extends SubsystemBase {
     elevatorFollowerMotor.set(0);
   }
 
-  public void setSpeed(double speed) {
-    elevatorMainMotor.set(speed);
-    elevatorFollowerMotor.set(speed);
+  public Command upSpeed(double speed) {
+    return run(
+        () -> {
+          elevatorMainMotor.set(speed);
+          elevatorFollowerMotor.set(speed);
+        });
+  }
+
+  public Command downSpeed(double speed) {
+    return run(() -> {
+          elevatorMainMotor.set(-speed);
+          elevatorFollowerMotor.set(-speed);
+        })
+        .until(this::buttonPressed)
+        .unless(this::buttonPressed);
   }
 
   public void printMainPosition() {
@@ -131,7 +143,7 @@ public class Elevator extends SubsystemBase {
     printFollowerPosition();
 
     // if (!isZeroed && buttonPressed()) {
-    //   elevatorMainMotor.setPosition(0, .001);
+    //   elevatorMainMotor.setPosition(0, 0);
     //   isZeroed = true;
     // }
 

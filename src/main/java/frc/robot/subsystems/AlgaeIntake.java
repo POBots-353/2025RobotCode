@@ -78,4 +78,34 @@ public class AlgaeIntake extends SubsystemBase {
     // This method will be called once per scheduler run
     SmartDashboard.putNumber("Intake/Temperature", algaeIntakeMotor.getMotorTemperature());
   }
+
+  // public Command getPrematchCheckCommand(
+  //     CommandXboxController controller, CommandJoystick joystick) {
+  //   return Commands.sequence(
+  //       // Check for hardware motors
+  //       Commands.runOnce(
+  //           () -> {
+  //             REVLibError error = algaeIntakeMotor.getLastError();
+  //             if (error != REVLibError.kOk) {
+  //               addError("Climber motor error: " + error.name());
+  //             } else {
+  //               addInfo("Climber motor contains no errors");
+  //             }
+  //           }),
+  //       // Checks climber motor
+  //       Commands.runOnce(
+  //           () -> {
+  //             joystick.setButton(OperatorConstants.climberButton, true);
+  //           }),
+  //       Commands.waitSeconds(prematchDelay),
+  //       Commands.runOnce(
+  //           () -> {
+  //             if (getVelocity() < 10) {
+  //               addError("Climber motor isn't working");
+  //             } else {
+  //               addInfo("Climber motor is moving");
+  //             }
+  //             joystick.clearVirtualButtons();
+  //           }));
+  // }
 }

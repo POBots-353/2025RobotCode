@@ -32,6 +32,7 @@ public class CoralAlign extends SequentialCommandGroup {
   Swerve drivetrain = TunerConstants.createDrivetrain();
 
   public CoralAlign(String Offset) {
+    this.Offset = Offset;
 
     addCommands(pathfind());
   }

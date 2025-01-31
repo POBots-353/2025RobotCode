@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -30,6 +31,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -91,31 +93,32 @@ public class Constants {
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
 
     public static final String limelightName = "limelight";
-    public static final String arducamOneName = "Arducam_OV9281";
-    public static final String arducamTwoName = "Arducam_OVO2";
+    public static final String arducamLeftName = "Arducam_OV9281";
+    public static final String arducamRightName = "Arducam_OVO2";
 
     public static final double aprilTagReefOffset = Units.inchesToMeters(6.488);
 
-    public static final Transform3d arducamOneTransform =
+    public static final Transform3d arducamLeftTransform =
         new Transform3d(
-            Units.inchesToMeters(-4.5),
-            Units.inchesToMeters(-13.25),
-            Units.inchesToMeters(8.50),
-            new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(180.0)));
+            Units.inchesToMeters(-12.619),
+            Units.inchesToMeters(-12.619),
+            Units.inchesToMeters(5.143),
+            new Rotation3d(
+                0.0, Units.degreesToRadians(0), Units.degreesToRadians(225))); // Pitch: 65
 
-    public static final Transform3d arducamTwoTransform =
+    public static final Transform3d arducamRightTransform =
         new Transform3d(
-            Units.inchesToMeters(-4.5),
-            Units.inchesToMeters(-13.25),
-            Units.inchesToMeters(8.50),
-            new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(180.0)));
+            Units.inchesToMeters(-12.619),
+            Units.inchesToMeters(12.619),
+            Units.inchesToMeters(5.143),
+            new Rotation3d(0.0, Units.degreesToRadians(0), Units.degreesToRadians(135)));
 
     public static final Transform3d limelightTransform =
         new Transform3d(
-            Units.inchesToMeters(-4.5),
-            Units.inchesToMeters(-13.25),
-            Units.inchesToMeters(8.50),
-            new Rotation3d(0.0, Units.degreesToRadians(-30.0), Units.degreesToRadians(180.0)));
+            Units.inchesToMeters(12.525),
+            Units.inchesToMeters(0),
+            Units.inchesToMeters(4.423),
+            new Rotation3d(0.0, Units.degreesToRadians(0), Units.degreesToRadians(0)));
 
     public static final Transform2d limelightTransform2d =
         new Transform2d(
@@ -201,7 +204,6 @@ public class Constants {
     public static final int outtakeCurrentLimit = 25;
     public static final int outtakeShutOffLimit = 25;
     public static final double outtakeSpeed = 0.5;
-    public static final int outtakeButton = 5;
 
     public static final int outtakeLaserCanID = 15;
   }
@@ -260,12 +262,18 @@ public class Constants {
             .withInverted(
                 InvertedValue.CounterClockwise_Positive) // needs to spin left when wires up
             .withNeutralMode(NeutralModeValue.Brake);
-    public static final SoftwareLimitSwitchConfigs limitSwitchConfigs =
+    public static final SoftwareLimitSwitchConfigs softwareLimitSwitchConfigs =
         new SoftwareLimitSwitchConfigs()
             .withForwardSoftLimitThreshold(maxHeight)
             .withForwardSoftLimitEnable(true)
             .withReverseSoftLimitThreshold(minHeight)
             .withReverseSoftLimitEnable(true);
+
+    public static final HardwareLimitSwitchConfigs hardwareLimitSwitchConfigs =
+        new HardwareLimitSwitchConfigs()
+            .withReverseLimitAutosetPositionEnable(true)
+            .withReverseLimitAutosetPositionValue(0)
+            .withReverseLimitRemoteSensorID(ElevatorConstants.buttonSwitchID);
 
     public static final TalonFXConfiguration elevatorConfigs =
         new TalonFXConfiguration()
@@ -273,20 +281,47 @@ public class Constants {
             .withMotionMagic(motionMagicConfigs)
             .withFeedback(feedbackConfigs)
             .withMotorOutput(motorOutputConfigs)
-            .withSoftwareLimitSwitch(limitSwitchConfigs);
+            .withSoftwareLimitSwitch(softwareLimitSwitchConfigs)
+            .withHardwareLimitSwitch(hardwareLimitSwitchConfigs);
+  }
+
+  public static class ArmConstants {
+    public static final int armMaxVelocity = 0;
+    public static final int armMaxAcceleration = 0;
+
+    public static final int armCurrentLimit = 30;
+
+    public static final TrapezoidProfile.Constraints constraints =
+        new TrapezoidProfile.Constraints(armMaxVelocity, armMaxAcceleration);
   }
 
   public static class OperatorConstants {
-    public static final int indexerButton = 103;
-    public static final int groundIntakeButton = 104;
+    public static final int indexerButton = 13;
+    public static final int outtakeIndexerButton = 4;
+
+    public static final int groundIntakeButton = 13;
+    public static final int armManualOuttakeButton = 12;
+
+    public static final int armPickupHeightButton = 5;
+    public static final int armL1HeightButton = 6;
+    public static final int armManualUp = 10;
+    public static final int armManualDown = 9;
+
     public static final int L4HeightButton = 8;
     public static final int L3HeightButton = 7;
     public static final int L2HeightButton = 6;
     public static final int elevatorDownButton = 5;
     public static final int elevatorManualUp = 10;
     public static final int elevatorManualDown = 9;
-    public static final int homeElevatorButon = 100;
-    public static final int manualOuttakeButton = 101;
-    public static final int manualFeedButton = 102;
+    public static final int homeElevatorButon = 2;
+
+    public static final int outtakeButton = 12;
+
+    public static final int algaeIntakeDown = 14;
+    public static final int algaeIntakeUp = 15;
+
+    public static final int armModeButton = 16;
+
+    public static final int startingConfigButton = 11;
   }
 }
