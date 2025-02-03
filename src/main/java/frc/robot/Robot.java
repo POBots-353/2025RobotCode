@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import au.grapplerobotics.CanBridge;
 import com.ctre.phoenix6.CANBus.CANBusStatus;
 import com.ctre.phoenix6.SignalLogger;
 import com.revrobotics.spark.SparkBase;
@@ -27,6 +28,8 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     double startTime = Timer.getFPGATimestamp();
+
+    CanBridge.runTCP();
 
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog());

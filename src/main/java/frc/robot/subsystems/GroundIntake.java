@@ -23,7 +23,7 @@ public class GroundIntake extends SubsystemBase {
 
   public GroundIntake() {
     groundIntakeMotor = new SparkMax(IntakeConstants.groundIntakeMotorID, MotorType.kBrushless);
-    intakeLaser = new LaserCan(0);
+    intakeLaser = new LaserCan(IntakeConstants.intakeLaserCanID);
 
     SparkMaxConfig groundIntakeConfig = new SparkMaxConfig();
 
@@ -76,8 +76,8 @@ public class GroundIntake extends SubsystemBase {
     groundIntakeMotor.set(IntakeConstants.groundIntakeMotorSpeed);
   }
 
-  public void manualOutake() {
-    groundIntakeMotor.set(IntakeConstants.outakeSpeed);
+  public void manualOuttake() {
+    groundIntakeMotor.set(IntakeConstants.outtakeSpeed);
   }
 
   @Override

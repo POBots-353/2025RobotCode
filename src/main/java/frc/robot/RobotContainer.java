@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,25 +20,27 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.SwerveConstants;
+import frc.robot.commands.CoralAlign;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.GroundIntake;
 import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Outtake;
+import frc.robot.subsystems.Swerve;
 import frc.robot.util.LogUtil;
 import com.pathplanner.lib.auto.NamedCommands;
 import frc.robot.util.PersistentSendableChooser;
 
 public class RobotContainer {
   private final Elevator elevator = new Elevator();
+  private final Arm arm = new Arm();
   private final Indexer indexer = new Indexer();
+  private final Outtake outtake = new Outtake();
   private final GroundIntake groundIntake = new GroundIntake();
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
-
-  private final Telemetry logger =
-      new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
 
   private PersistentSendableChooser<String> batteryChooser;
   private SendableChooser<Command> autoChooser;
@@ -48,13 +48,20 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandJoystick operatorStick = new CommandJoystick(1);
 
-  public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+  public final Swerve drivetrain = TunerConstants.createDrivetrain();
 
   private final PowerDistribution powerDistribution = new PowerDistribution();
 
+<<<<<<< HEAD
   private Trigger intakeLaserBroken = new Trigger(groundIntake::intakeLaserBroken());
   private Trigger outakeLaserBroken = new Trigger(indexer::outakeLaserBroken);
+=======
+  private Trigger intakeLaserBroken = new Trigger(groundIntake::intakeLaserBroken);
+  private Trigger outtakeLaserBroken = new Trigger(outtake::outtakeLaserBroken);
+
+>>>>>>> 0a1b3a605242d37e56815bafa1fe854ccd591f77
   private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
+  private Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
 
   public RobotContainer() {
     configureDriverBindings();
@@ -76,14 +83,10 @@ public class RobotContainer {
     SmartDashboard.putData("Power Distribution", powerDistribution);
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
 
-    // intakeLaserBroken
-    //     .whileTrue(indexer.run(indexer::index))
-    //     .onFalse(indexer.runOnce(indexer::stopIndexer));
-
     intakeLaserBroken
         .whileTrue(indexer.runIndexer())
         .onFalse(
-            Commands.race(Commands.waitUntil(outakeLaserBroken), Commands.waitSeconds(4))
+            Commands.race(Commands.waitUntil(outtakeLaserBroken), Commands.waitSeconds(4))
                 .andThen(indexer::stopIndexer));
   }
   
@@ -113,48 +116,125 @@ public class RobotContainer {
                         new Rotation2d(
                             -driverController.getLeftY(), -driverController.getLeftX()))));
 
+    Command leftCoralAlign = new CoralAlign("Left");
+    Command rightCoralAlign = new CoralAlign("Right");
+
+    driverController
+        .leftBumper()
+        .whileTrue(leftCoralAlign)
+        .onFalse(Commands.runOnce(() -> leftCoralAlign.cancel()));
+    driverController
+        .rightBumper()
+        .whileTrue(rightCoralAlign)
+        .onFalse(Commands.runOnce(() -> rightCoralAlign.cancel()));
+
     // reset the field-centric heading on left bumper press
     driverController
         .start()
         .and(driverController.back())
         .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
 
-    drivetrain.registerTelemetry(logger::telemeterize);
+    // drivetrain.registerTelemetry(logger::telemeterize);
   }
 
-  private void configureOperatorBindings() {
-    elevator.setDefaultCommand(elevator.downPosition());
-
-    operatorStick
-        .button(OperatorConstants.indexerButton)
-        .and(intakeLaserBroken.negate())
-        .whileTrue(indexer.runIndexer())
-        .onFalse(indexer.stop());
-
-    operatorStick
-        .button(OperatorConstants.groundIntakeButton)
-        .whileTrue(groundIntake.runIntake())
-        .onFalse(groundIntake.stop());
-
+  private void configureElevatorBindings() {
     operatorStick
         .button(OperatorConstants.L4HeightButton)
-        .whileTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+        .and(armMode.negate())
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+    operatorStick
+        .button(OperatorConstants.L3HeightButton)
+        .and(armMode.negate())
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L3Height));
+    operatorStick
+        .button(OperatorConstants.L2HeightButton)
+        .and(armMode.negate())
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L2Height));
+
+    operatorStick
+        .button(OperatorConstants.elevatorDownButton)
+        .and(armMode.negate())
+        .onTrue(elevator.moveToPosition(0));
 
     operatorStick
         .button(OperatorConstants.homeElevatorButon)
+        .and(armMode.negate())
         .whileTrue(elevator.homeElevator())
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
 
     operatorStick
-        .button(OperatorConstants.manualOutakeButton)
-        .whileTrue(groundIntake.run(groundIntake::manualOutake))
+        .button(OperatorConstants.elevatorManualDown)
+        .and(armMode.negate())
+        .whileTrue(elevator.downSpeed(.1))
+        .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
+
+    operatorStick
+        .button(OperatorConstants.elevatorManualUp)
+        .and(armMode.negate())
+        .whileTrue(elevator.upSpeed(.1))
+        .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
+  }
+
+  private void configureArmBindings() {
+    operatorStick
+        .button(OperatorConstants.groundIntakeButton)
+        .and(armMode)
+        .whileTrue(groundIntake.runIntake())
         .onFalse(groundIntake.stop());
 
     operatorStick
-        .button(OperatorConstants.manualFeedButton)
-        .and(buttonTrigger)
-        .whileTrue(groundIntake.run(groundIntake::feedToIndexer))
+        .button(OperatorConstants.armManualOuttakeButton)
+        .and(armMode)
+        .whileTrue(groundIntake.run(groundIntake::manualOuttake))
         .onFalse(groundIntake.stop());
+
+    // Button to raise arm manual up
+
+    // button to raise arm manual down
+
+    // arm to pick up button
+
+    // arm to L1 height button
+  }
+
+  private void configureOuttakeBindings() {
+    operatorStick
+        .button(OperatorConstants.outtakeButton)
+        .and(armMode.negate())
+        .whileTrue(outtake.runOuttake())
+        .onFalse(outtake.stopOuttakeMotor());
+  }
+
+  private void configureIndexerBindings() {
+    operatorStick
+        .button(OperatorConstants.indexerButton)
+        .and(armMode.negate())
+        .whileTrue(
+            indexer
+                .runIndexer()
+                .alongWith(outtake.runOuttake())
+                .unless(outtakeLaserBroken)
+                .until(outtakeLaserBroken))
+        .onFalse(indexer.stop().alongWith(outtake.stopOuttakeMotor()));
+
+    // button to outtake indexer
+
+  }
+
+  private void configureAlgaeIntakeBindings() {
+    // button for algae intake up
+    // button for algae intake down
+  }
+
+  private void configureOperatorBindings() {
+    configureAlgaeIntakeBindings();
+    configureArmBindings();
+    configureElevatorBindings();
+    configureIndexerBindings();
+    configureOuttakeBindings();
+
+    // starting config button
+
   }
 
   private void configureAutoChooser() {
