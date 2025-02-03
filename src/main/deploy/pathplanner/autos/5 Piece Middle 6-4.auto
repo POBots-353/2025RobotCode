@@ -62,6 +62,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "2025 Beta Autos",
+  "folder": null,
   "choreoAuto": false
 }

@@ -4,23 +4,35 @@
 
 package frc.robot.subsystems;
 
+<<<<<<< HEAD
 import au.grapplerobotics.LaserCan;
+=======
+import com.revrobotics.REVLibError;
+>>>>>>> 53ba8ad3c654736782878faff127b18904812eb6
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.util.ExpandedSubsystem;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Indexer extends SubsystemBase {
+public class Indexer extends ExpandedSubsystem {
   /** Creates a new Indexer. */
   private LaserCan outakeLaser;
 
   private SparkMax indexerMotor;
+
+  private final double prematchDelay = 2.5;
+
+  public List<Alert> indexerPrematchAlerts = new ArrayList<Alert>();
 
   public Indexer() {
     outakeLaser = new LaserCan(14);
@@ -74,8 +86,44 @@ public class Indexer extends SubsystemBase {
     SmartDashboard.putNumber("Indexer Speed", indexerMotor.get());
   }
 
+<<<<<<< HEAD
 public Command buttonTrigger() {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'buttonTrigger'");
 }
+=======
+  @Override
+  public Command getPrematchCheckCommand() {
+    return Commands.sequence(
+        // Check for hardware errors
+        Commands.runOnce(
+            () -> {
+              REVLibError error = indexerMotor.getLastError();
+              if (error != REVLibError.kOk) {
+                addError("Intake motor error: " + error.name());
+              } else {
+                addInfo("Intake motor contains no errors");
+              }
+            }),
+        // Checks Indexer Motor
+        Commands.runOnce(
+            () -> {
+              index();
+            }),
+        Commands.waitSeconds(prematchDelay),
+        Commands.runOnce(
+            () -> {
+              if (Math.abs(indexerMotor.get()) <= 1e-4) {
+                if (indexerMotor.get() < IntakeConstants.indexerMotorSpeed - 0.1
+                    || indexerMotor.get() > IntakeConstants.indexerMotorSpeed + 0.1) {
+                  addError("Indexer Motor is not at desired velocity");
+                  // We just put a fake range for now; we'll update this later on
+                }
+                addError("Indexer Motor is not moving");
+              } else {
+                addInfo("Indexer Motor is moving");
+              }
+            }));
+  }
+>>>>>>> 53ba8ad3c654736782878faff127b18904812eb6
 }
