@@ -121,4 +121,9 @@ public class Elevator extends SubsystemBase {
       isLimitConfigApplied = true;
     }
   }
+
+public Command outakeLaserBroken() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'outakeLaserBroken'");
+}
 }

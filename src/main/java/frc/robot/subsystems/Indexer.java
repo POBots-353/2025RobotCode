@@ -73,4 +73,9 @@ public class Indexer extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putNumber("Indexer Speed", indexerMotor.get());
   }
+
+public Command buttonTrigger() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'buttonTrigger'");
+}
 }

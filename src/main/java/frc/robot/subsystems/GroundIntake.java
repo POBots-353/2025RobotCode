@@ -37,7 +37,7 @@ public class GroundIntake extends SubsystemBase {
         groundIntakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public boolean intakeLaserBroken() {
+  public Command intakeLaserBroken() {
     LaserCan.Measurement measurement = intakeLaser.getMeasurement();
     if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
       // System.out.println("The target is " + measurement.distance_mm + "mm away!");
