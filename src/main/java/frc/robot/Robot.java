@@ -32,6 +32,7 @@ public class Robot extends TimedRobot {
     CanBridge.runTCP();
 
     DataLogManager.start();
+
     DriverStation.startDataLog(DataLogManager.getLog());
 
     SignalLogger.start();
@@ -72,6 +73,7 @@ public class Robot extends TimedRobot {
 
     double startupTimeSeconds = Timer.getFPGATimestamp() - startTime;
     DataLogManager.log("Startup Time (ms): " + startupTimeSeconds * 1000.0);
+    // PathfindingCommand.warmupCommand().schedule();
   }
 
   @Override

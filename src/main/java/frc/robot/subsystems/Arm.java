@@ -14,9 +14,9 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.ExpandedSubsystem;
 
-public class Arm extends SubsystemBase {
+public class Arm extends ExpandedSubsystem {
   private SparkMax armMotor;
   private SparkClosedLoopController armPIDController;
   private SparkAbsoluteEncoder armAbsoluteEncoder;

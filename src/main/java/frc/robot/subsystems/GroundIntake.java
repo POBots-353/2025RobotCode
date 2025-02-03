@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import au.grapplerobotics.LaserCan;
+import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -12,12 +13,15 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.util.ExpandedSubsystem;
 
-public class GroundIntake extends SubsystemBase {
+public class GroundIntake extends ExpandedSubsystem {
   /** Creates a new GroundIntake. */
   private SparkMax groundIntakeMotor;
+
+  private final double prematchDelay = 2.5;
 
   private LaserCan intakeLaser;
 
@@ -83,5 +87,40 @@ public class GroundIntake extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+  }
+
+  @Override
+  public Command getPrematchCheckCommand() {
+    return Commands.sequence(
+        // Check for hardware errors
+        Commands.runOnce(
+            () -> {
+              REVLibError error = groundIntakeMotor.getLastError();
+              if (error != REVLibError.kOk) {
+                addError("Intake motor error: " + error.name());
+              } else {
+                addInfo("Intake motor contains no errors");
+              }
+            }),
+
+        // Checks Ground Intake Motor
+        Commands.runOnce(
+            () -> {
+              groundIntake();
+            }),
+        Commands.waitSeconds(prematchDelay),
+        Commands.runOnce(
+            () -> {
+              if (Math.abs(groundIntakeMotor.get()) <= 1e-4) {
+                if (groundIntakeMotor.get() < IntakeConstants.groundIntakeMotorSpeed - 0.1
+                    || groundIntakeMotor.get() > IntakeConstants.groundIntakeMotorSpeed + 0.1) {
+                  addError("Indexer Motor is not at desired velocity");
+                  // We just put a fake range for now; we'll update this later on
+                }
+                addError("Indexer Motor is not moving");
+              } else {
+                addInfo("Indexer Motor is moving");
+              }
+            }));
   }
 }

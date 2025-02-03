@@ -12,6 +12,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.FileVersionException;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -39,17 +41,25 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.DeferredCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.util.AllianceUtil;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
+import org.json.simple.parser.ParseException;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -91,7 +101,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   private Field2d field = new Field2d();
 
-  Transform2d aprilTagOffset;
+  private int bestTargetID;
+  private double leftPoseX;
+  private double leftPoseY;
+  private double rightPoseX;
+  private double rightPoseY;
+  private double desiredRotation;
 
   public static record PoseEstimate(Pose3d estimatedPose, double timestamp, Vector<N3> standardDevs)
       implements Comparable<PoseEstimate> {
@@ -129,7 +144,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   private List<PhotonPipelineResult> latestarducamLeftResult;
   private List<PhotonPipelineResult> latestarducamRightResult;
-  public List<PhotonPipelineResult> latestLimelightResult;
+  public List<PhotonPipelineResult> latestLimelightResult = new ArrayList<>();
 
   public Transform2d bestAprilTagTransform;
 
@@ -214,7 +229,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     if (Utils.isSimulation()) {
       startSimThread();
     }
-
     configureAutoBuilder();
   }
 
@@ -234,10 +248,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       double odometryUpdateFrequency,
       SwerveModuleConstants<?, ?, ?>... modules) {
     super(drivetrainConstants, odometryUpdateFrequency, modules);
-
-    // pigeon =
-    //     new Pigeon2(GyroConstants.pigeonID, "Cannie"); // Need to change the the pigeon ID for
-    // later
 
     if (Utils.isSimulation()) {
       startSimThread();
@@ -266,8 +276,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       SimCameraProperties limelightProperties = new SimCameraProperties();
       limelightProperties.setCalibration(960, 720, Rotation2d.fromDegrees(97.60));
       limelightProperties.setCalibError(0.21, 0.10);
-      limelightProperties.setFPS(30);
-      limelightProperties.setAvgLatencyMs(36);
+      limelightProperties.setFPS(30); // 30
+      limelightProperties.setAvgLatencyMs(36); // 36
       limelightProperties.setLatencyStdDevMs(15);
       limelightProperties.setExposureTimeMs(45);
 
@@ -278,7 +288,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       limelightSim.enableProcessedStream(true);
       limelightSim.enableDrawWireframe(true);
     }
-
     configureAutoBuilder();
   }
 
@@ -351,6 +360,182 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     SmartDashboard.putData("Swerve/Field", field);
   }
 
+  public static Transform2d getBestTransform(List<Transform2d> transforms) {
+    // Define a comparator to sort transforms by their magnitude
+    Comparator<Transform2d> comparator =
+        Comparator.comparingDouble(
+            transform ->
+                transform.getTranslation().getNorm()
+                    + Math.abs(transform.getRotation().getRadians()));
+
+    // Sort the list of transforms in ascending order of magnitude
+    Collections.sort(transforms, comparator);
+
+    // Return the first transform (which has the smallest magnitude)
+    return transforms.get(0);
+  }
+
+  public void getAprilTagPose() {
+    List<PhotonPipelineResult> latestResult = latestLimelightResult;
+    List<PhotonTrackedTarget> validTargets = new ArrayList<>();
+
+    if (latestResult == null || latestResult.isEmpty()) {
+      return;
+    }
+
+    for (PhotonPipelineResult result : latestResult) {
+      if (!result.hasTargets()) continue;
+
+      for (PhotonTrackedTarget target : result.getTargets()) {
+        if (AllianceUtil.getReefIds().contains(target.getFiducialId())) {
+          validTargets.add(target);
+        }
+      }
+    }
+
+    if (validTargets.isEmpty()) {
+      return;
+    }
+
+    validTargets.sort(
+        Comparator.comparingDouble(
+            target -> target.getBestCameraToTarget().getTranslation().getNorm()));
+
+    PhotonTrackedTarget bestTarget = validTargets.get(0);
+
+    bestTargetID = bestTarget.getFiducialId();
+    desiredRotation = FieldConstants.aprilTagAngles.getOrDefault(bestTargetID, 0.0);
+    Transform2d bestTransform =
+        new Transform2d(
+            bestTarget.getBestCameraToTarget().getX(),
+            bestTarget.getBestCameraToTarget().getY(),
+            bestTarget.getBestCameraToTarget().getRotation().toRotation2d());
+
+    Transform2d leftAprilTagOffset =
+        new Transform2d(
+            -SwerveConstants.centerToBumber,
+            FieldConstants.left_aprilTagOffsets.getOrDefault(bestTargetID, 0.0),
+            new Rotation2d(0));
+    Transform2d rightAprilTagOffset =
+        new Transform2d(
+            -SwerveConstants.centerToBumber,
+            FieldConstants.right_aprilTagOffsets.getOrDefault(bestTargetID, 0.0),
+            new Rotation2d(0));
+
+    Pose2d leftAprilTagPose =
+        getState()
+            .Pose
+            .transformBy(VisionConstants.limelightTransform2d)
+            .transformBy(
+                new Transform2d(
+                    bestTransform.getTranslation().plus(leftAprilTagOffset.getTranslation()),
+                    new Rotation2d(0)));
+
+    leftPoseX = leftAprilTagPose.getX();
+    leftPoseY = leftAprilTagPose.getY();
+
+    Pose2d rightAprilTagPose =
+        getState()
+            .Pose
+            .transformBy(VisionConstants.limelightTransform2d)
+            .transformBy(
+                new Transform2d(
+                    bestTransform.getTranslation().plus(rightAprilTagOffset.getTranslation()),
+                    new Rotation2d(0)));
+    rightPoseX = rightAprilTagPose.getX();
+    rightPoseY = rightAprilTagPose.getY();
+
+    SmartDashboard.putNumber("LEFT POSE X", leftAprilTagPose.getX());
+    SmartDashboard.putNumber("LEFT POSE Y", leftAprilTagPose.getY());
+    SmartDashboard.putNumber("RIGHT POSE X", rightAprilTagPose.getX());
+    SmartDashboard.putNumber("RIGHT POSE Y", rightAprilTagPose.getY());
+    SmartDashboard.putNumber("Goal Rotation", desiredRotation);
+    SmartDashboard.putNumber("Best Tag ID", bestTargetID);
+    SmartDashboard.putNumber("Current Rotation", getState().Pose.getRotation().getDegrees());
+  }
+
+  public Command ReefAlign(Boolean leftAlign) {
+    return new DeferredCommand(
+        () -> {
+          double xGoal = leftAlign ? leftPoseX : rightPoseX;
+          double yGoal = leftAlign ? leftPoseY : rightPoseY;
+          double goalRotation = Units.degreesToRadians(desiredRotation);
+          Pose2d goalPose = new Pose2d(xGoal, yGoal, new Rotation2d(goalRotation));
+
+          return AutoBuilder.pathfindToPose(goalPose, SwerveConstants.pathConstraints, 0.0);
+        },
+        Set.of(this));
+  }
+
+  public PathPlannerPath getNearestPickupPath() {
+    Pose2d closestStation;
+    PathPlannerPath path = null;
+
+    List<Pose2d> redStations =
+        List.of(FieldConstants.redStationLeft, FieldConstants.redStationRight);
+    List<Pose2d> blueStations =
+        List.of(FieldConstants.blueStationLeft, FieldConstants.blueStationRight);
+
+    try {
+      if (AllianceUtil.isRedAlliance()) {
+        closestStation = getState().Pose.nearest(redStations);
+        if (redStations.indexOf(closestStation) == 0) {
+          path = PathPlannerPath.fromPathFile("Human Player Pickup Left");
+        } else {
+          path = PathPlannerPath.fromPathFile("Human Player Pickup Right");
+        }
+      } else {
+        closestStation = getState().Pose.nearest(blueStations);
+        if (blueStations.indexOf(closestStation) == 0) {
+          path = PathPlannerPath.fromPathFile("Human Player Pickup Left");
+        } else {
+          path = PathPlannerPath.fromPathFile("Human Player Pickup Right");
+        }
+      }
+    } catch (IOException | FileVersionException | ParseException e) {
+      System.err.println("Error loading PathPlanner path: " + e.getMessage());
+      e.printStackTrace();
+      path = null;
+    }
+
+    return path;
+  }
+
+  public Command humanPlayerAlign() {
+    return new DeferredCommand(
+        () -> {
+          PathPlannerPath goalPath = getNearestPickupPath();
+          if (goalPath != null) {
+            return AutoBuilder.pathfindThenFollowPath(goalPath, SwerveConstants.pathConstraints);
+          } else {
+            System.err.println("Invalid goalPath, path cannot be followed.");
+            return new InstantCommand();
+          }
+        },
+        Set.of(this));
+  }
+
+  public Command pathFindToSetup() {
+    return new DeferredCommand(
+        () -> {
+          Pose2d closestPose;
+
+          List<Pose2d> redSetupPoses = FieldConstants.redSetupPoses;
+          List<Pose2d> blueSetupPoses = FieldConstants.blueSetupPoses;
+
+          if (AllianceUtil.isRedAlliance()) {
+            closestPose = getState().Pose.nearest(redSetupPoses);
+
+          } else {
+            closestPose = getState().Pose.nearest(blueSetupPoses);
+          }
+
+          Pose2d goalSetUpPose = closestPose;
+          return AutoBuilder.pathfindToPose(goalSetUpPose, SwerveConstants.pathConstraints);
+        },
+        Set.of(this));
+  }
+
   /**
    * Returns a command that applies the specified control request to this swerve drivetrain.
    *
@@ -378,41 +563,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return new Pose3d(getState().Pose).plus(VisionConstants.limelightTransform);
   }
 
-  // public static Transform2d getBestTransform(List<Transform2d> transforms) {
-  //   // Define a comparator to sort transforms by their magnitude
-  //   Comparator<Transform2d> comparator =
-  //       Comparator.comparingDouble(
-  //           transform ->
-  //               transform.getTranslation().getNorm()
-  //                   + Math.abs(transform.getRotation().getRadians()));
-
-  //   // Sort the list of transforms in ascending order of magnitude
-  //   Collections.sort(transforms, comparator);
-
-  //   // Return the first transform (which has the smallest magnitude)
-  //   return transforms.get(0);
-  // }
-
-  // public Transform2d getBestAprilTag(List<PhotonPipelineResult> latestResult) {
-
-  //   List<Transform2d> targets = new ArrayList<>();
-  //   for (PhotonPipelineResult result : latestResult) {
-
-  //     Optional<EstimatedRobotPose> optionalVisionPose = limelightPoseEstimator.update(result);
-  //     EstimatedRobotPose visionPose = optionalVisionPose.get();
-
-  //     for (PhotonTrackedTarget target : visionPose.targetsUsed) {
-  //       targets.add(
-  //           new Transform2d(
-  //               target.getBestCameraToTarget().getX(),
-  //               target.getBestCameraToTarget().getY(),
-  //               target.getBestCameraToTarget().getRotation().toRotation2d()));
-  //     }
-  //   }
-  //   Transform2d bestTransform = getBestTransform(targets);
-  //   return bestTransform;
-  // }
-
   private Vector<N3> getVisionStdDevs(
       int tagCount, double averageDistance, double baseStandardDev) {
     double stdDevScale = 1 + (averageDistance * averageDistance) / 30;
@@ -431,7 +581,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       return false;
     }
 
-    if (averageDistance > 3 && detectedTargets < 2) {//4
+    if (averageDistance > 3 && detectedTargets < 2) { // 4
       return false;
     }
 
@@ -572,31 +722,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return latestarducamRightResult;
   }
 
-  // public Command CoralAlign(String angleOffset) {
-
-  //   if (angleOffset == "Left") {
-  //     aprilTagOffset = new Transform2d(0, VisionConstants.aprilTagReefOffset, new Rotation2d(0));
-  //   }
-  //   if (angleOffset == "Right") {
-  //     aprilTagOffset = new Transform2d(0, -VisionConstants.aprilTagReefOffset, new
-  // Rotation2d(0));
-  //   }
-
-  //   Transform2d transform = getBestAprilTag(getLimelightResults());
-
-  //   transform = transform.plus(aprilTagOffset);
-
-  //   Pose2d aprilTagPose = getState().Pose.transformBy(transform);
-
-  //   PathConstraints constraints =
-  //       new PathConstraints(12.0, 10.0, Units.degreesToRadians(720),
-  // Units.degreesToRadians(720));
-
-  //   Command pathfind = AutoBuilder.pathfindToPose(aprilTagPose, constraints, 0.0);
-
-  //   return pathfind;
-  // }
-
   /**
    * Runs the SysId Quasistatic test in the given direction for the routine specified by {@link
    * #m_sysIdRoutineToApply}.
@@ -631,15 +756,13 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   @Override
   public void periodic() {
     Pose2d robotPose = getState().Pose;
-
     field.setRobotPose(robotPose);
-
+    getAprilTagPose();
     latestarducamLeftResult = arducamLeft.getAllUnreadResults();
     latestarducamRightResult = arducamRight.getAllUnreadResults();
     latestLimelightResult = limelight.getAllUnreadResults();
 
     updateVisionPoseEstimates();
-
     final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
     final NetworkTable swerveStateTable = inst.getTable("DriveState");
@@ -681,8 +804,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
               });
     }
   }
-
-  public void method() {}
 
   @Override
   public void simulationPeriodic() {

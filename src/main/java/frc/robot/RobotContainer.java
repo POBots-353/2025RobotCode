@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -20,8 +21,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.SwerveConstants;
-import frc.robot.commands.CoralAlign;
 import frc.robot.commands.TeleopSwerve;
+import frc.robot.commands.TurnToReef;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
@@ -57,7 +58,17 @@ public class RobotContainer {
   private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
   private Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
 
+  // Just put a bunch of instantcommands as placeholders for now
+  Command outtakePrematch = new InstantCommand();
+  Command algaeIntakePrematch = new InstantCommand();
+  Command armPrematch = new InstantCommand();
+  Command elevatorPrematch = new InstantCommand();
+  Command groundIntakePrematch = groundIntake.buildPrematch();
+  Command indexerPrematch = indexer.buildPrematch();
+  Command swervePrematch = new InstantCommand();
+
   public RobotContainer() {
+
     configureDriverBindings();
     configureOperatorBindings();
     configureAutoChooser();
@@ -74,7 +85,7 @@ public class RobotContainer {
   }
 
   private void configureDriverBindings() {
-    Trigger slowMode = driverController.leftTrigger();
+    Trigger slowMode = driverController.leftBumper();
 
     drivetrain.setDefaultCommand(
         new TeleopSwerve(
@@ -89,9 +100,9 @@ public class RobotContainer {
             },
             drivetrain));
 
-    driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
+    driverController.b().whileTrue(drivetrain.applyRequest(() -> brake));
     driverController
-        .b()
+        .a()
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
@@ -99,22 +110,33 @@ public class RobotContainer {
                         new Rotation2d(
                             -driverController.getLeftY(), -driverController.getLeftX()))));
 
-    Command leftCoralAlign = new CoralAlign("Left");
-    Command rightCoralAlign = new CoralAlign("Right");
+    // driverController.L1().whileTrue(drivetrain.ReefAlign(true));
+    // driverController.R1().whileTrue(drivetrain.ReefAlign(false));
+
+    // driverController.R2().whileTrue(new TurnToReef(drivetrain));
+    driverController.leftTrigger().whileTrue(drivetrain.humanPlayerAlign());
 
     driverController
-        .leftBumper()
-        .whileTrue(leftCoralAlign)
-        .onFalse(Commands.runOnce(() -> leftCoralAlign.cancel()));
-    driverController
         .rightBumper()
-        .whileTrue(rightCoralAlign)
-        .onFalse(Commands.runOnce(() -> rightCoralAlign.cancel()));
+        .whileTrue(
+            Commands.sequence(
+                drivetrain.pathFindToSetup(),
+                new TurnToReef(drivetrain),
+                Commands.waitSeconds(.08),
+                drivetrain.ReefAlign(true)));
+    driverController
+        .rightTrigger()
+        .whileTrue(
+            Commands.sequence(
+                drivetrain.pathFindToSetup(),
+                new TurnToReef(drivetrain),
+                Commands.waitSeconds(.08),
+                drivetrain.ReefAlign(false)));
 
     // reset the field-centric heading on left bumper press
     driverController
-        .start()
-        .and(driverController.back())
+        .back()
+        .and(driverController.start())
         .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
 
     // drivetrain.registerTelemetry(logger::telemeterize);
