@@ -1,0 +1,55 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RGC1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RPC1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RGC2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RPC2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RGC3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RPC3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RGC4"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Old",
+  "choreoAuto": false
+}

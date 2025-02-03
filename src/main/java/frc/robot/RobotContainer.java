@@ -31,6 +31,7 @@ import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Outtake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.util.LogUtil;
+import com.pathplanner.lib.auto.NamedCommands;
 import frc.robot.util.PersistentSendableChooser;
 
 public class RobotContainer {
@@ -52,9 +53,14 @@ public class RobotContainer {
 
   private final PowerDistribution powerDistribution = new PowerDistribution();
 
+<<<<<<< HEAD
+  private Trigger intakeLaserBroken = new Trigger(groundIntake::intakeLaserBroken());
+  private Trigger outakeLaserBroken = new Trigger(indexer::outakeLaserBroken);
+=======
   private Trigger intakeLaserBroken = new Trigger(groundIntake::intakeLaserBroken);
   private Trigger outtakeLaserBroken = new Trigger(outtake::outtakeLaserBroken);
 
+>>>>>>> 0a1b3a605242d37e56815bafa1fe854ccd591f77
   private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
   private Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
 
@@ -74,6 +80,17 @@ public class RobotContainer {
     configureAutoChooser();
     configureBatteryChooser();
 
+    NamedCommands.registerCommand("Stop ground Intake", groundIntake.runIntake().asProxy());
+    NamedCommands.registerCommand("Stop ground Intake", groundIntake.intakeLaserBroken().asProxy());
+    NamedCommands.registerCommand("Stop ground Intake", groundIntake.stopGroundIntake().asProxy());
+
+    NamedCommands.registerCommand("Start elevator", elevator.().asProxy());
+    NamedCommands.registerCommand("Start elevator", elevator.outakeLaserBroken().asProxy());
+
+    NamedCommands.registerCommand("indexer", indexer.buttonTrigger().asProxy());
+    NamedCommands.registerCommand("indexer", indexer.stopIndexer().asProxy());
+
+
     SmartDashboard.putData("Power Distribution", powerDistribution);
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
 
@@ -83,7 +100,7 @@ public class RobotContainer {
             Commands.race(Commands.waitUntil(outtakeLaserBroken), Commands.waitSeconds(4))
                 .andThen(indexer::stopIndexer));
   }
-
+  
   private void configureDriverBindings() {
     Trigger slowMode = driverController.leftBumper();
 

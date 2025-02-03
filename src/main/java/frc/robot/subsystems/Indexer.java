@@ -4,7 +4,11 @@
 
 package frc.robot.subsystems;
 
+<<<<<<< HEAD
+import au.grapplerobotics.LaserCan;
+=======
 import com.revrobotics.REVLibError;
+>>>>>>> 53ba8ad3c654736782878faff127b18904812eb6
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -22,6 +26,8 @@ import java.util.List;
 
 public class Indexer extends ExpandedSubsystem {
   /** Creates a new Indexer. */
+  private LaserCan outakeLaser;
+
   private SparkMax indexerMotor;
 
   private final double prematchDelay = 2.5;
@@ -29,6 +35,7 @@ public class Indexer extends ExpandedSubsystem {
   public List<Alert> indexerPrematchAlerts = new ArrayList<Alert>();
 
   public Indexer() {
+    outakeLaser = new LaserCan(14);
     indexerMotor = new SparkMax(IntakeConstants.indexerMotorID, MotorType.kBrushless);
 
     SparkMaxConfig indexerConfig = new SparkMaxConfig();
@@ -59,11 +66,32 @@ public class Indexer extends ExpandedSubsystem {
     indexerMotor.set(0);
   }
 
+  public boolean outakeLaserBroken() {
+    LaserCan.Measurement measurement = outakeLaser.getMeasurement();
+    if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+      // System.out.println("The target is " + measurement.distance_mm + "mm away!");
+      // if (measurement.distance_mm < 500) {
+      //   return true;
+      // } else {
+      //   return false;
+      // }
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Indexer Speed", indexerMotor.get());
   }
 
+<<<<<<< HEAD
+public Command buttonTrigger() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'buttonTrigger'");
+}
+=======
   @Override
   public Command getPrematchCheckCommand() {
     return Commands.sequence(
@@ -97,4 +125,5 @@ public class Indexer extends ExpandedSubsystem {
               }
             }));
   }
+>>>>>>> 53ba8ad3c654736782878faff127b18904812eb6
 }
