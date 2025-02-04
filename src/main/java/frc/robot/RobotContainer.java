@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -72,6 +73,24 @@ public class RobotContainer {
     configureOperatorBindings();
     configureAutoChooser();
     configureBatteryChooser();
+
+    NamedCommands.registerCommand(
+        "ground intake", groundIntake.runIntake().withTimeout(3.0).asProxy());
+    NamedCommands.registerCommand("ground intake", groundIntake.stop());
+    NamedCommands.registerCommand(
+        "outtake", outtake.runOuttake().withTimeout(3.0).asProxy());
+    NamedCommands.registerCommand(
+        "stop outtake", Commands.run(() -> outtake.stop()));
+    NamedCommands.registerCommand(
+        "set arm to L4", elevator.moveToPosition(ElevatorConstants.L4Height).asProxy());
+    NamedCommands.registerCommand(
+        "set arm to humanIntake", elevator.moveToPosition(1.5).withTimeout(3.0).asProxy());
+    NamedCommands.registerCommand(
+        "set arm home position", elevator.homeElevator().withTimeout(3.0).asProxy());
+    NamedCommands.registerCommand(
+        "set Indexer", indexer.runIndexer().withTimeout(3.0).asProxy());
+    NamedCommands.registerCommand(
+        "stop indexer", indexer.stop());
 
     SmartDashboard.putData("Power Distribution", powerDistribution);
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
