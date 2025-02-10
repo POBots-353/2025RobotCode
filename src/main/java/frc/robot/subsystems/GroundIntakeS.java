@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 public class GroundIntakeS {
 
     @Override
-  public Command Prematch(
+  public Command prematchCommand(
     return Commands.sequence{
         Commands.runOnce(() -> {
               REVLibError motorError = groundIntake.getError();
@@ -20,7 +20,6 @@ public class GroundIntakeS {
                 addInfo("Good");
               }
             }).
-       
         Commands.wait(1);
 
         Commands.runOnce(() -> {   
@@ -30,14 +29,17 @@ public class GroundIntakeS {
             addInfo("good");}
           }).
 
-          Commands.runOnce(() -> {   
+          Commands.runOnce(() -> {
             if (!suction()) {
             addError("Error");
           } else {
             addInfo("good");}
           })
-    }).
-}           
+    }
+  )}
+
+  
+            
        
         
           
