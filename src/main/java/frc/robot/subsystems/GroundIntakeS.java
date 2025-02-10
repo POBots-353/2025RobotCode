@@ -5,14 +5,14 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
-
 /** Add your docs here. */
 public class GroundIntakeS {
-
+  
     @Override
-  public Command prematchCommand(
+  public Command getPrematchCheckCommand(
     return Commands.sequence{
-        Commands.runOnce(() -> {
+        Commands.runOnce(
+          () -> {
               REVLibError motorError = groundIntake.getError();
               if (motorError != REVLibError.kOk) {
                 addError("Error");
@@ -34,9 +34,14 @@ public class GroundIntakeS {
             addError("Error");
           } else {
             addInfo("good");}
-          })
+      })
     }
-  )}
+  )
+
+    @Override
+    public String toString() {
+      return "GroundIntakeS []";
+    }}
 
   
             

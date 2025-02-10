@@ -17,6 +17,8 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.path.PathConstraints;
+
+import au.grapplerobotics.interfaces.LaserCanInterface.Measurement;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
@@ -143,6 +145,9 @@ public class Constants {
     public static Transform3d rightArducamTransform;
 
     public static Transform3d leftArducamTransform;
+
+    public class limelightTransform2d {
+    }
 >>>>>>> 53ba8ad3c654736782878faff127b18904812eb6
   }
 
@@ -301,6 +306,12 @@ public class Constants {
               new Pose2d(11.755, 4.175, Rotation2d.fromDegrees(0)),
               new Pose2d(12.557, 5.243, Rotation2d.fromDegrees(-60)),
               new Pose2d(13.861, 5.079, Rotation2d.fromDegrees(-120)));
+
+    public class blueReefDefiniteLeftPoses {
+    }
+    }
+
+    public class redStationLeft {
     }
   }
 
@@ -334,6 +345,10 @@ public class Constants {
 =======
     public static final int intakeCurrentLimit = 30;
     public static final double algaeIntakeShutoffCurrentLimit = 45.0;
+    public static Measurement getMeasurement() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getMeasurement'");
+    }
   }
 
   public static class OuttakeConstants {

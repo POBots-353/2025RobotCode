@@ -11,6 +11,8 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+
+import au.grapplerobotics.LaserCan;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -39,9 +41,9 @@ public class GroundIntake extends ExpandedSubsystem {
         groundIntakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-<<<<<<< HEAD
-  public Command intakeLaserBroken() {
-    LaserCan.Measurement measurement = intakeLaser.getMeasurement();
+
+  public boolean intakeLaserBroken() {
+    LaserCan.Measurement measurement = IntakeConstants.getMeasurement();
     if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
       // System.out.println("The target is " + measurement.distance_mm + "mm away!");
       // if (measurement.distance_mm < 500) {
@@ -55,8 +57,6 @@ public class GroundIntake extends ExpandedSubsystem {
     }
   }
 
-=======
->>>>>>> bae50d8cd504db551bb672f071f787e27348d379
   public void stopGroundIntake() {
     groundIntakeMotor.set(0);
   }
@@ -78,7 +78,7 @@ public class GroundIntake extends ExpandedSubsystem {
   }
 
   public void manualOuttake() {
-    groundIntakeMotor.set(IntakeConstants.outtakeSpeed);
+    groundIntakeMotor.set(IntakeConstants.outakeSpeed);
   }
 
   @Override

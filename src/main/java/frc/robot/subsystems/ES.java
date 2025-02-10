@@ -4,13 +4,8 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.hardware.core.CoreTalonFX;
-import com.revrobotics.spark.config.EncoderConfig;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.drive.RobotDriveBase.MotorType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.AutoConstants;
 
@@ -25,8 +20,6 @@ public class ES<leftMotor, RelativeEncoder> extends SubsystemBase {
   TalonFX leftMotor = new TalonFX(2, "Cannie");
   double getSpeed;
   double getRotation;
-
-  private PIDController elevatorPID = new PIDController(1, 2, 3); 
 
   public ES() {
     leftMotor.setControl(Follower);
