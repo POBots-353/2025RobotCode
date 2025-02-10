@@ -9,15 +9,11 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.configs.FeedbackConfigs;
-import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.GravityTypeValue;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.path.PathConstraints;
@@ -25,16 +21,11 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -61,6 +52,8 @@ public class Constants {
         maxTranslationalSpeed.div(translationZeroToFull);
     public static final AngularAcceleration maxAngularAcceleration =
         maxRotationalSpeed.div(rotationZeroToFull);
+<<<<<<< HEAD
+=======
 
     public static final double TRACK_WIDTH = Units.inchesToMeters(30.0);
     public static final double WHEEL_BASE = Units.inchesToMeters(30.0);
@@ -86,6 +79,7 @@ public class Constants {
             SwerveConstants.maxTransationalAcceleration.in(MetersPerSecondPerSecond),
             SwerveConstants.maxRotationalSpeed.in(RadiansPerSecond),
             SwerveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond));
+>>>>>>> 53ba8ad3c654736782878faff127b18904812eb6
   }
 
   public static class AutoConstants {
@@ -100,13 +94,15 @@ public class Constants {
     public static final String kCameraName = "YOUR CAMERA NAME";
 
     public static final AprilTagFieldLayout kTagLayout =
-        AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
 
     public static final Transform3d kRobotToCam =
         new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0));
 
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
+<<<<<<< HEAD
+=======
 
     public static final String limelightName = "limelight";
     public static final String arducamLeftName = "Arducam_Left";
@@ -147,12 +143,15 @@ public class Constants {
     public static Transform3d rightArducamTransform;
 
     public static Transform3d leftArducamTransform;
+>>>>>>> 53ba8ad3c654736782878faff127b18904812eb6
   }
 
   // .890 7.415
   public static class FieldConstants {
     public static AprilTagFieldLayout aprilTagLayout =
         AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+<<<<<<< HEAD
+=======
 
     public static final Pose2d redStationLeft =
         new Pose2d(16.638, 0.645, Rotation2d.fromDegrees(0));
@@ -307,22 +306,32 @@ public class Constants {
 
   public static class GyroConstants {
     public static final int pigeonID = 35;
+>>>>>>> 53ba8ad3c654736782878faff127b18904812eb6
   }
 
   public static class IntakeConstants {
-    public static final int groundIntakeMotorID = 23;
+    public static final int groundIntakeMotorID = 25;
     public static final int armIntakeMotorID = 21;
     public static final int indexerMotorID = 16;
 
+<<<<<<< HEAD
+    public static final int intakeLaserCanID = 14;
+    public static final int outakeLaserCanID = 15;
+
+    public static final double indexerMotorSpeed = .5;
+=======
     public static final double indexerMotorSpeed = .85;
+>>>>>>> bae50d8cd504db551bb672f071f787e27348d379
     public static final double groundIntakeMotorSpeed = .9;
-    public static final double outtakeSpeed = -0.9;
+    public static final double outakeSpeed = -0.9;
 
     public static final int indexerCurrentLimit = 30;
     public static final double indexerShutOffLimit = 45;
 
     public static final int groundIntakeCurrentLimit = 30;
     public static final double groundIntakeShutOffLimit = 45;
+<<<<<<< HEAD
+=======
     public static final int intakeCurrentLimit = 30;
     public static final double algaeIntakeShutoffCurrentLimit = 45.0;
   }
@@ -339,12 +348,24 @@ public class Constants {
   public static class AlgaeIntakeConstants {
     public static final int algaeIntakeMotorID = 20;
     public static final double algaeIntakeSpeed = .2;
+>>>>>>> bae50d8cd504db551bb672f071f787e27348d379
   }
 
   public static class ElevatorConstants {
     public static final double elevatorGearRatio = 1.0 / 6.0;
-    public static final double sprocketDiameter = Units.inchesToMeters(1.75);
+    public static final double L4Height = 2; // meters
+    public static final double elevatorWheelRadius = Units.inchesToMeters(1.75); // meters
 
+<<<<<<< HEAD
+    public static final int elevatorMainMotorID = 15;
+    public static final int elevatorFollowerMotorID = 26;
+    public static final int buttonSwitchID = 23;
+
+    public static final double maxHeight = 1.447800;
+    public static final double minHeight = 0.0;
+
+    public static final double L4Position_inRotations = 1.523;
+=======
     public static final int elevatorMainMotorID = 48;
     public static final int elevatorFollowerMotorID = 49;
     public static final int buttonSwitchID = 0;
@@ -356,14 +377,10 @@ public class Constants {
     public static final double L3Height = Units.inchesToMeters(20);
     public static final double L2Height = Units.inchesToMeters(10);
     public static final double downHeight = Units.inchesToMeters(0);
+>>>>>>> bae50d8cd504db551bb672f071f787e27348d379
 
-    public static final double sensorToMechanismRatio =
-        elevatorGearRatio * Math.PI * sprocketDiameter;
-
-    public static final double bottomSpeed = .1;
-
-    public static final LinearVelocity maxVelocity = MetersPerSecond.of(2.26 * .9); // 2.26*.9
-    public static final LinearAcceleration maxAcceleration = maxVelocity.div(Seconds.of(.5)); // .25
+    public static final LinearVelocity maxVelocity = MetersPerSecond.of(2.26);
+    public static final LinearAcceleration maxAcceleration = MetersPerSecondPerSecond.of(5);
 
     public static final MotionMagicConfigs motionMagicConfigs =
         new MotionMagicConfigs()
@@ -372,6 +389,15 @@ public class Constants {
 
     public static final Slot0Configs slot0Configs =
         new Slot0Configs()
+<<<<<<< HEAD
+            .withKS(0.35)
+            .withKV(0.12)
+            .withKA(0.01)
+            .withKG(0.2)
+            .withKP(4.8)
+            .withKI(0)
+            .withKD(0.1)
+=======
             .withKS(0.01)
             .withKV(5.16) // 5.14
             .withKA(0.03) // .04
@@ -379,10 +405,14 @@ public class Constants {
             .withKP(13)
             .withKI(0.0)
             .withKD(.25) // 1
+>>>>>>> bae50d8cd504db551bb672f071f787e27348d379
             .withGravityType(GravityTypeValue.Elevator_Static)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseVelocitySign);
 
     public static final FeedbackConfigs feedbackConfigs =
+<<<<<<< HEAD
+        new FeedbackConfigs().withSensorToMechanismRatio(elevatorGearRatio * elevatorWheelRadius);
+=======
         new FeedbackConfigs().withSensorToMechanismRatio(1 / sensorToMechanismRatio);
 
     public static final MotorOutputConfigs motorOutputConfigs =
@@ -402,17 +432,33 @@ public class Constants {
             .withReverseLimitAutosetPositionEnable(true)
             .withReverseLimitAutosetPositionValue(0)
             .withReverseLimitRemoteSensorID(ElevatorConstants.buttonSwitchID);
+>>>>>>> 53ba8ad3c654736782878faff127b18904812eb6
 
     public static final TalonFXConfiguration elevatorConfigs =
         new TalonFXConfiguration()
             .withSlot0(slot0Configs)
             .withMotionMagic(motionMagicConfigs)
             .withFeedback(feedbackConfigs)
+<<<<<<< HEAD
+            .withSoftwareLimitSwitch(
+                new SoftwareLimitSwitchConfigs()
+                    .withForwardSoftLimitThreshold(maxHeight)
+                    .withForwardSoftLimitEnable(true));
+=======
             .withMotorOutput(motorOutputConfigs)
             .withSoftwareLimitSwitch(softwareLimitSwitchConfigs);
     // .withHardwareLimitSwitch(hardwareLimitSwitchConfigs);
   }
+>>>>>>> 53ba8ad3c654736782878faff127b18904812eb6
 
+<<<<<<< HEAD
+    public static final SoftwareLimitSwitchConfigs limitSwitchConfigs =
+        new SoftwareLimitSwitchConfigs()
+            .withForwardSoftLimitThreshold(maxHeight)
+            .withForwardSoftLimitEnable(true)
+            .withReverseSoftLimitThreshold(minHeight)
+            .withReverseSoftLimitEnable(true);
+=======
   public static class ArmConstants {
     public static final int armMotorID = 47;
     public static final int armMaxVelocity = 0;
@@ -422,35 +468,15 @@ public class Constants {
 
     public static final TrapezoidProfile.Constraints constraints =
         new TrapezoidProfile.Constraints(armMaxVelocity, armMaxAcceleration);
+>>>>>>> bae50d8cd504db551bb672f071f787e27348d379
   }
 
   public static class OperatorConstants {
-    public static final int indexerButton = 13;
-    public static final int outtakeIndexerButton = 4;
-
-    public static final int groundIntakeButton = 13;
-    public static final int armManualOuttakeButton = 12;
-
-    public static final int armPickupHeightButton = 5;
-    public static final int armL1HeightButton = 6;
-    public static final int armManualUp = 10;
-    public static final int armManualDown = 9;
-
+    public static final int indexerButton = 10;
+    public static final int groundIntakeButton = 9;
     public static final int L4HeightButton = 8;
-    public static final int L3HeightButton = 7;
-    public static final int L2HeightButton = 6;
-    public static final int elevatorDownButton = 5;
-    public static final int elevatorManualUp = 10;
-    public static final int elevatorManualDown = 9;
-    public static final int homeElevatorButon = 2;
-
-    public static final int outtakeButton = 12;
-
-    public static final int algaeIntakeDown = 14;
-    public static final int algaeIntakeUp = 15;
-
-    public static final int armModeButton = 16;
-
-    public static final int startingConfigButton = 11;
+    public static final int homeElevatorButon = 7;
+    public static final int manualOutakeButton = 6;
+    public static final int manualFeedButton = 5;
   }
 }

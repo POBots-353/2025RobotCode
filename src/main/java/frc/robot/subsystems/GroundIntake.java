@@ -39,6 +39,24 @@ public class GroundIntake extends ExpandedSubsystem {
         groundIntakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
+<<<<<<< HEAD
+  public Command intakeLaserBroken() {
+    LaserCan.Measurement measurement = intakeLaser.getMeasurement();
+    if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+      // System.out.println("The target is " + measurement.distance_mm + "mm away!");
+      // if (measurement.distance_mm < 500) {
+      //   return true;
+      // } else {
+      //   return false;
+      // }
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+=======
+>>>>>>> bae50d8cd504db551bb672f071f787e27348d379
   public void stopGroundIntake() {
     groundIntakeMotor.set(0);
   }

@@ -168,4 +168,9 @@ public class Elevator extends ExpandedSubsystem {
 
     elevatorAlert.set(!isZeroed);
   }
+
+public Command outakeLaserBroken() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'outakeLaserBroken'");
+}
 }
