@@ -3,73 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.604,
-        "y": 2.078
+        "x": 3.9799180327868857,
+        "y": 5.277715163934426
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.195369428595645,
-        "y": 1.6922367593642766
+        "x": 3.2271984160900615,
+        "y": 5.71204828304333
       },
       "isLocked": false,
       "linkedName": "5L"
     },
     {
       "anchor": {
-        "x": 6.188,
-        "y": 5.092
+        "x": 1.3186475409836076,
+        "y": 7.111834016393441
       },
       "prevControl": {
-        "x": 5.967572529283232,
-        "y": 5.23478487470336
-      },
-      "nextControl": {
-        "x": 6.408427470716767,
-        "y": 4.949215125296639
-      },
-      "isLocked": false,
-      "linkedName": "Coral Station"
-    },
-    {
-      "anchor": {
-        "x": 6.880942622950819,
-        "y": 3.9590676229508195
-      },
-      "prevControl": {
-        "x": 7.867430948473137,
-        "y": 4.376221292156517
-      },
-      "nextControl": {
-        "x": 5.894454297428501,
-        "y": 3.541913953745122
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 10.728995901639344,
-        "y": 4.82218237704918
-      },
-      "prevControl": {
-        "x": 11.473758710402569,
-        "y": 4.82218237704918
-      },
-      "nextControl": {
-        "x": 9.984233092876119,
-        "y": 4.82218237704918
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 13.055,
-        "y": 4.066956967213113
-      },
-      "prevControl": {
-        "x": 11.525805071028223,
-        "y": 4.432581967213112
+        "x": 2.710462910120806,
+        "y": 6.3819073227599015
       },
       "nextControl": null,
       "isLocked": false,
@@ -90,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -179.2654789657452
+    "rotation": -53.7461622625553
   },
   "reversed": false,
   "folder": "Old",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.4982116126136797
+    "rotation": -62.67610869865344
   },
   "useDefaultConstraints": true
 }

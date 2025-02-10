@@ -15,6 +15,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,6 +25,7 @@ import frc.robot.util.ExpandedSubsystem;
 import java.util.ArrayList;
 import java.util.List;
 
+@Logged
 public class Indexer extends ExpandedSubsystem {
   /** Creates a new Indexer. */
   private LaserCan outakeLaser;
@@ -41,7 +43,7 @@ public class Indexer extends ExpandedSubsystem {
     SparkMaxConfig indexerConfig = new SparkMaxConfig();
 
     indexerConfig
-        .inverted(true)
+        .inverted(false)
         .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(IntakeConstants.indexerCurrentLimit)
         .secondaryCurrentLimit(IntakeConstants.indexerShutOffLimit);
@@ -54,8 +56,16 @@ public class Indexer extends ExpandedSubsystem {
     return run(this::index);
   }
 
+  public Command outtakeIndexer() {
+    return run(this::outtake);
+  }
+
   public Command stop() {
     return runOnce(this::stopIndexer);
+  }
+
+  public void outtake() {
+    indexerMotor.set(-IntakeConstants.indexerMotorSpeed);
   }
 
   public void index() {

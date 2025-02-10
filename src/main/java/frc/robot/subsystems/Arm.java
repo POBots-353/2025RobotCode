@@ -12,54 +12,70 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.util.ExpandedSubsystem;
 
+@Logged
 public class Arm extends ExpandedSubsystem {
   private SparkMax armMotor;
   private SparkClosedLoopController armPIDController;
   private SparkAbsoluteEncoder armAbsoluteEncoder;
 
-  /** Creates a new CoralArmIntake. */
   public Arm() {
-    armMotor = new SparkMax(47, MotorType.kBrushless);
-    // armAbsoluteEncoder = armMotor.getAbsoluteEncoder();
+    armMotor = new SparkMax(ArmConstants.armMotorID, MotorType.kBrushless);
+    armAbsoluteEncoder = armMotor.getAbsoluteEncoder();
     armPIDController = armMotor.getClosedLoopController();
     SparkMaxConfig armConfig = new SparkMaxConfig();
+
+    armConfig.absoluteEncoder.inverted(false).positionConversionFactor(360).zeroOffset(0);
+    armConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 
     armConfig
         .inverted(false)
         .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(10)
-        .secondaryCurrentLimit(15);
-    // armConfig.absoluteEncoder.positionConversionFactor(0).velocityConversionFactor(0);
+        .smartCurrentLimit(20)
+        .secondaryCurrentLimit(25);
+
+    armConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(0).i(0).d(0);
+
     armConfig
         .closedLoop
-        // .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
-        .outputRange(-1, 1, ClosedLoopSlot.kSlot0)
-        .p(0)
-        .i(0)
-        .d(0);
-    armConfig.closedLoop.maxMotion.maxVelocity(0).maxAcceleration(0);
+        .maxMotion
+        .maxVelocity(ArmConstants.armMaxVelocity)
+        .maxAcceleration(ArmConstants.armMaxAcceleration);
+
     armConfig
         .softLimit
-        .forwardSoftLimit(50)
+        .forwardSoftLimit(100)
         .forwardSoftLimitEnabled(true)
-        .reverseSoftLimit(-50)
+        .reverseSoftLimit(-100)
         .reverseSoftLimitEnabled(true);
 
     armMotor.configure(armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public void armBottom() {
-    armPIDController.setReference(0, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0);
+  public Command armBottom() {
+    return runOnce(
+        () ->
+            armPIDController.setReference(
+                -100, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
   }
 
-  public void armUp() {
-    // armPIDController.setReference(10, ControlType.kMAXMotionPositionControl,
-    // ClosedLoopSlot.kSlot0);
-    armMotor.set(1);
+  public Command armTop() {
+    return runOnce(
+        () ->
+            armPIDController.setReference(
+                100, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
+  }
+
+  public void armSpeed(double speed) {
+    armMotor.set(speed);
   }
 
   public void stopArm() {
@@ -68,6 +84,6 @@ public class Arm extends ExpandedSubsystem {
 
   @Override
   public void periodic() {
-    // SmartDashboard.putNumber("Arm Rotations", armAbsoluteEncoder.getPosition());
+    SmartDashboard.putNumber("Arm Rotations", armAbsoluteEncoder.getPosition());
   }
 }

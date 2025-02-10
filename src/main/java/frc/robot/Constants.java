@@ -40,6 +40,7 @@ import java.util.Map;
 
 public class Constants {
   public static class SwerveConstants {
+
     public static final LinearVelocity maxTranslationalSpeed = FeetPerSecond.of(15);
     public static final LinearVelocity slowModeMaxTranslationalSpeed = FeetPerSecond.of(5);
     public static final AngularVelocity maxRotationalSpeed = RotationsPerSecond.of(1.5);
@@ -104,8 +105,8 @@ public class Constants {
 =======
 
     public static final String limelightName = "limelight";
-    public static final String arducamLeftName = "Arducam_OV9281";
-    public static final String arducamRightName = "Arducam_OVO2";
+    public static final String arducamLeftName = "Arducam_Left";
+    public static final String arducamRightName = "Arducam_Right";
 
     public static final Transform3d arducamLeftTransform =
         new Transform3d(
@@ -125,9 +126,9 @@ public class Constants {
     public static final Transform3d limelightTransform =
         new Transform3d(
             Units.inchesToMeters(12.525),
-            Units.inchesToMeters(0),
+            Units.inchesToMeters(.5),
             Units.inchesToMeters(4.423),
-            new Rotation3d(0.0, Units.degreesToRadians(-25), Units.degreesToRadians(0)));
+            new Rotation3d(0.0, Units.degreesToRadians(-15), Units.degreesToRadians(0)));
 
     public static final Transform2d limelightTransform2d =
         new Transform2d(
@@ -166,7 +167,7 @@ public class Constants {
             new Pose2d(14.176, 5.96, Rotation2d.fromDegrees(-120)), // 60
             new Pose2d(11.934, 5.96, Rotation2d.fromDegrees(-60)), // 120
             new Pose2d(10.813, 4.019, Rotation2d.fromDegrees(0)), // 180
-            new Pose2d(11.934, 2.0774, Rotation2d.fromDegrees(160)), // -120
+            new Pose2d(11.934, 2.0774, Rotation2d.fromDegrees(60)), // -120
             new Pose2d(14.176, 2.0774, Rotation2d.fromDegrees(120))); // -60
 
     public static final List<Pose2d> blueSetupPoses =
@@ -263,6 +264,44 @@ public class Constants {
       public static final Pose2d faceSixLeft = new Pose2d();
       public static final Pose2d faceSixRight = new Pose2d();
     }
+
+    public static class ReefDefinitePoses {
+      public static final List<Pose2d> blueReefDefiniteLeftPoses =
+          List.of(
+              new Pose2d(5.812, 3.854, Rotation2d.fromDegrees(180)),
+              new Pose2d(5.021, 2.807, Rotation2d.fromDegrees(120)),
+              new Pose2d(3.689, 2.957, Rotation2d.fromDegrees(60)),
+              new Pose2d(3.155, 4.189, Rotation2d.fromDegrees(0)),
+              new Pose2d(3.953, 5.250, Rotation2d.fromDegrees(-60)),
+              new Pose2d(5.313, 5.093, Rotation2d.fromDegrees(-120)));
+
+      public static final List<Pose2d> blueReefDefiniteRightPoses =
+          List.of(
+              new Pose2d(5.812, 4.175, Rotation2d.fromDegrees(180)),
+              new Pose2d(5.278, 2.957, Rotation2d.fromDegrees(120)),
+              new Pose2d(3.967, 2.800, Rotation2d.fromDegrees(60)),
+              new Pose2d(3.170, 3.861, Rotation2d.fromDegrees(0)),
+              new Pose2d(3.689, 5.086, Rotation2d.fromDegrees(-60)),
+              new Pose2d(5.029, 5.236, Rotation2d.fromDegrees(-120)));
+
+      public static final List<Pose2d> redReefDefiniteRightPoses =
+          List.of(
+              new Pose2d(14.385, 4.182, Rotation2d.fromDegrees(180)),
+              new Pose2d(13.861, 2.964, Rotation2d.fromDegrees(120)),
+              new Pose2d(12.557, 2.807, Rotation2d.fromDegrees(60)),
+              new Pose2d(11.755, 3.847, Rotation2d.fromDegrees(0)),
+              new Pose2d(12.258, 5.072, Rotation2d.fromDegrees(-60)),
+              new Pose2d(13.568, 5.250, Rotation2d.fromDegrees(-120)));
+
+      public static final List<Pose2d> redReefDefiniteLeftPoses =
+          List.of(
+              new Pose2d(14.385, 3.861, Rotation2d.fromDegrees(180)),
+              new Pose2d(13.576, 2.821, Rotation2d.fromDegrees(120)),
+              new Pose2d(12.258, 2.964, Rotation2d.fromDegrees(60)),
+              new Pose2d(11.755, 4.175, Rotation2d.fromDegrees(0)),
+              new Pose2d(12.557, 5.243, Rotation2d.fromDegrees(-60)),
+              new Pose2d(13.861, 5.079, Rotation2d.fromDegrees(-120)));
+    }
   }
 
   public static class GyroConstants {
@@ -273,12 +312,16 @@ public class Constants {
   public static class IntakeConstants {
     public static final int groundIntakeMotorID = 25;
     public static final int armIntakeMotorID = 21;
-    public static final int indexerMotorID = 22;
+    public static final int indexerMotorID = 16;
 
+<<<<<<< HEAD
     public static final int intakeLaserCanID = 14;
     public static final int outakeLaserCanID = 15;
 
     public static final double indexerMotorSpeed = .5;
+=======
+    public static final double indexerMotorSpeed = .85;
+>>>>>>> bae50d8cd504db551bb672f071f787e27348d379
     public static final double groundIntakeMotorSpeed = .9;
     public static final double outakeSpeed = -0.9;
 
@@ -287,6 +330,25 @@ public class Constants {
 
     public static final int groundIntakeCurrentLimit = 30;
     public static final double groundIntakeShutOffLimit = 45;
+<<<<<<< HEAD
+=======
+    public static final int intakeCurrentLimit = 30;
+    public static final double algaeIntakeShutoffCurrentLimit = 45.0;
+  }
+
+  public static class OuttakeConstants {
+    public static final int outtakeMotorID = 18;
+    public static final int outtakeCurrentLimit = 25;
+    public static final int outtakeShutOffLimit = 25;
+    public static final double outtakeSpeed = 0.85;
+
+    public static final int outtakeLaserCanID = 19;
+  }
+
+  public static class AlgaeIntakeConstants {
+    public static final int algaeIntakeMotorID = 20;
+    public static final double algaeIntakeSpeed = .2;
+>>>>>>> bae50d8cd504db551bb672f071f787e27348d379
   }
 
   public static class ElevatorConstants {
@@ -294,6 +356,7 @@ public class Constants {
     public static final double L4Height = 2; // meters
     public static final double elevatorWheelRadius = Units.inchesToMeters(1.75); // meters
 
+<<<<<<< HEAD
     public static final int elevatorMainMotorID = 15;
     public static final int elevatorFollowerMotorID = 26;
     public static final int buttonSwitchID = 23;
@@ -302,6 +365,19 @@ public class Constants {
     public static final double minHeight = 0.0;
 
     public static final double L4Position_inRotations = 1.523;
+=======
+    public static final int elevatorMainMotorID = 48;
+    public static final int elevatorFollowerMotorID = 49;
+    public static final int buttonSwitchID = 0;
+
+    public static final double maxHeight = Units.inchesToMeters(28.3);
+    public static final double minHeight = 0.0;
+
+    public static final double L4Height = Units.inchesToMeters(28.25);
+    public static final double L3Height = Units.inchesToMeters(20);
+    public static final double L2Height = Units.inchesToMeters(10);
+    public static final double downHeight = Units.inchesToMeters(0);
+>>>>>>> bae50d8cd504db551bb672f071f787e27348d379
 
     public static final LinearVelocity maxVelocity = MetersPerSecond.of(2.26);
     public static final LinearAcceleration maxAcceleration = MetersPerSecondPerSecond.of(5);
@@ -313,6 +389,7 @@ public class Constants {
 
     public static final Slot0Configs slot0Configs =
         new Slot0Configs()
+<<<<<<< HEAD
             .withKS(0.35)
             .withKV(0.12)
             .withKA(0.01)
@@ -320,6 +397,15 @@ public class Constants {
             .withKP(4.8)
             .withKI(0)
             .withKD(0.1)
+=======
+            .withKS(0.01)
+            .withKV(5.16) // 5.14
+            .withKA(0.03) // .04
+            .withKG(0.25) // .31
+            .withKP(13)
+            .withKI(0.0)
+            .withKD(.25) // 1
+>>>>>>> bae50d8cd504db551bb672f071f787e27348d379
             .withGravityType(GravityTypeValue.Elevator_Static)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseVelocitySign);
 
@@ -365,12 +451,24 @@ public class Constants {
   }
 >>>>>>> 53ba8ad3c654736782878faff127b18904812eb6
 
+<<<<<<< HEAD
     public static final SoftwareLimitSwitchConfigs limitSwitchConfigs =
         new SoftwareLimitSwitchConfigs()
             .withForwardSoftLimitThreshold(maxHeight)
             .withForwardSoftLimitEnable(true)
             .withReverseSoftLimitThreshold(minHeight)
             .withReverseSoftLimitEnable(true);
+=======
+  public static class ArmConstants {
+    public static final int armMotorID = 47;
+    public static final int armMaxVelocity = 0;
+    public static final int armMaxAcceleration = 0;
+
+    public static final int armCurrentLimit = 30;
+
+    public static final TrapezoidProfile.Constraints constraints =
+        new TrapezoidProfile.Constraints(armMaxVelocity, armMaxAcceleration);
+>>>>>>> bae50d8cd504db551bb672f071f787e27348d379
   }
 
   public static class OperatorConstants {

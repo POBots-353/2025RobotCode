@@ -11,11 +11,12 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.OuttakeConstants;
 import frc.robot.util.ExpandedSubsystem;
 
+@Logged
 public class Outtake extends ExpandedSubsystem {
 
   private SparkMax outtakemotor;
@@ -28,8 +29,8 @@ public class Outtake extends ExpandedSubsystem {
     SparkMaxConfig outtakeConfig = new SparkMaxConfig();
 
     outtakeConfig
-        .inverted(true)
-        .idleMode(IdleMode.kCoast)
+        .inverted(false)
+        .idleMode(IdleMode.kBrake)
         .smartCurrentLimit(OuttakeConstants.outtakeCurrentLimit)
         .secondaryCurrentLimit(OuttakeConstants.outtakeShutOffLimit);
 
@@ -37,8 +38,26 @@ public class Outtake extends ExpandedSubsystem {
         outtakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
+  public void moveOuttake() {
+    if (!outtakeLaserBroken()) {
+      outtakemotor.set(OuttakeConstants.outtakeSpeed);
+    }
+    outtakemotor.set(0.0);
+  }
+
   public Command runOuttake() {
-    return Commands.run(() -> outtakemotor.set(OuttakeConstants.outtakeSpeed));
+    return run(this::moveOuttake);
+  }
+
+  public Command outtakeUntilBeamBreak() {
+    return run(this::moveOuttake)
+        .unless(this::outtakeLaserBroken)
+        .until(this::outtakeLaserBroken)
+        .finallyDo(this::stopOuttakeMotor);
+  }
+
+  public Command autoOuttake() {
+    return run(this::moveOuttake).until(() -> !outtakeLaserBroken());
   }
 
   public void stop() {
@@ -49,15 +68,11 @@ public class Outtake extends ExpandedSubsystem {
     return runOnce(this::stop);
   }
 
-  public boolean outtakeLaserBroken() {
+  public Boolean outtakeLaserBroken() {
     LaserCan.Measurement measurement = outtakeLaser.getMeasurement();
-    if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-      // System.out.println("The target is " + measurement.distance_mm + "mm away!");
-      // if (measurement.distance_mm < 500) {
-      //   return true;
-      // } else {
-      //   return false;
-      // }
+    if (measurement != null
+        && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT
+        && measurement.distance_mm < 100) {
       return true;
     } else {
       return false;
@@ -65,7 +80,5 @@ public class Outtake extends ExpandedSubsystem {
   }
 
   @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-  }
+  public void periodic() {}
 }

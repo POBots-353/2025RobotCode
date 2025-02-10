@@ -4,36 +4,65 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.RelativeEncoder;
+import com.revrobotics.AbsoluteEncoder;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.AlgaeIntakeConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.util.ExpandedSubsystem;
 
+@Logged
 public class AlgaeIntake extends ExpandedSubsystem {
   /** Creates a new AlgaeIntake. */
-  private SparkMax algaeIntakeMotor =
-      new SparkMax(AlgaeIntakeConstants.algaeIntakeMotorID, MotorType.kBrushless);
+  private SparkMax algaeIntakeMotor;
 
-  private RelativeEncoder AlgaeIntake = algaeIntakeMotor.getEncoder();
+  private AbsoluteEncoder algaeEncoder;
 
   public AlgaeIntake() {
-    DataLogManager.log("Configuring Intake");
+    algaeIntakeMotor = new SparkMax(AlgaeIntakeConstants.algaeIntakeMotorID, MotorType.kBrushless);
+    algaeEncoder = algaeIntakeMotor.getAbsoluteEncoder();
     SparkMaxConfig algaeConfig = new SparkMaxConfig();
+
     algaeConfig
         .inverted(true)
         .smartCurrentLimit(IntakeConstants.intakeCurrentLimit)
         .secondaryCurrentLimit(IntakeConstants.algaeIntakeShutoffCurrentLimit)
         .idleMode(IdleMode.kBrake);
+
+    algaeConfig.absoluteEncoder.inverted(false).positionConversionFactor(360).zeroOffset(0);
+
+    algaeConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+
+    algaeConfig
+        .softLimit
+        .forwardSoftLimit(100)
+        .forwardSoftLimitEnabled(true)
+        .reverseSoftLimit(-100)
+        .reverseSoftLimitEnabled(true);
+
+    algaeIntakeMotor.configure(
+        algaeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public void startAlgaeIntake() {
+  public void algaeIntakeUp() {
+    if (algaeEncoder.getPosition() >= 100) {
+      algaeIntakeMotor.set(0);
+    }
     algaeIntakeMotor.set(AlgaeIntakeConstants.algaeIntakeSpeed);
+  }
+
+  public void algaeIntakeDown() {
+    if (algaeEncoder.getPosition() <= -100) {
+      algaeIntakeMotor.set(0);
+    }
+    algaeIntakeMotor.set(-AlgaeIntakeConstants.algaeIntakeSpeed);
   }
 
   public void stopAlgaeIntake() {
@@ -75,8 +104,7 @@ public class AlgaeIntake extends ExpandedSubsystem {
   // }
 
   public void periodic() {
-    // This method will be called once per scheduler run
-    SmartDashboard.putNumber("Intake/Temperature", algaeIntakeMotor.getMotorTemperature());
+    SmartDashboard.putNumber("Algae Intake Encoder Offset", algaeEncoder.getPosition());
   }
 
   // public Command getPrematchCheckCommand(

@@ -24,16 +24,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -47,10 +41,11 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.FieldConstants.ReefDefinitePoses;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.util.AllianceUtil;
+import frc.robot.util.TunerConstants.TunerSwerveDrivetrain;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -102,11 +97,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   private Field2d field = new Field2d();
 
   private int bestTargetID;
-  private double leftPoseX;
-  private double leftPoseY;
-  private double rightPoseX;
-  private double rightPoseY;
-  private double desiredRotation;
+  private Pose2d leftPose;
+  private Pose2d rightPose;
 
   public static record PoseEstimate(Pose3d estimatedPose, double timestamp, Vector<N3> standardDevs)
       implements Comparable<PoseEstimate> {
@@ -155,6 +147,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   private PhotonCameraSim limelightSim;
 
   private VisionSystemSim visionSim;
+
+  private NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
   public List<Pose3d> detectedTargets = new ArrayList<>();
   public List<Integer> detectedAprilTags = new ArrayList<>();
@@ -274,10 +268,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       arducamSimTwo.enableProcessedStream(true);
 
       SimCameraProperties limelightProperties = new SimCameraProperties();
-      limelightProperties.setCalibration(960, 720, Rotation2d.fromDegrees(97.60));
-      limelightProperties.setCalibError(0.21, 0.10);
-      limelightProperties.setFPS(30); // 30
-      limelightProperties.setAvgLatencyMs(36); // 36
+      limelightProperties.setCalibration(640, 480, Rotation2d.fromDegrees(60)); // 960 720 97
+      limelightProperties.setCalibError(0.58, 0.10);
+      limelightProperties.setFPS(26); // 30
+      limelightProperties.setAvgLatencyMs(70); // 36
       limelightProperties.setLatencyStdDevMs(15);
       limelightProperties.setExposureTimeMs(45);
 
@@ -375,7 +369,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return transforms.get(0);
   }
 
-  public void getAprilTagPose() {
+  public void bestAlignmentPose() {
     List<PhotonPipelineResult> latestResult = latestLimelightResult;
     List<PhotonTrackedTarget> validTargets = new ArrayList<>();
 
@@ -404,7 +398,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     PhotonTrackedTarget bestTarget = validTargets.get(0);
 
     bestTargetID = bestTarget.getFiducialId();
-    desiredRotation = FieldConstants.aprilTagAngles.getOrDefault(bestTargetID, 0.0);
+    Double desiredRotation = FieldConstants.aprilTagAngles.getOrDefault(bestTargetID, 0.0);
     Transform2d bestTransform =
         new Transform2d(
             bestTarget.getBestCameraToTarget().getX(),
@@ -422,33 +416,29 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             FieldConstants.right_aprilTagOffsets.getOrDefault(bestTargetID, 0.0),
             new Rotation2d(0));
 
-    Pose2d leftAprilTagPose =
-        getState()
-            .Pose
-            .transformBy(VisionConstants.limelightTransform2d)
-            .transformBy(
-                new Transform2d(
-                    bestTransform.getTranslation().plus(leftAprilTagOffset.getTranslation()),
-                    new Rotation2d(0)));
+    leftPose =
+        new Pose2d(
+            getState()
+                .Pose
+                .transformBy(VisionConstants.limelightTransform2d)
+                .transformBy(
+                    new Transform2d(
+                        bestTransform.getTranslation().plus(leftAprilTagOffset.getTranslation()),
+                        Rotation2d.fromDegrees(0)))
+                .getTranslation(),
+            Rotation2d.fromDegrees(desiredRotation));
+    rightPose =
+        new Pose2d(
+            getState()
+                .Pose
+                .transformBy(VisionConstants.limelightTransform2d)
+                .transformBy(
+                    new Transform2d(
+                        bestTransform.getTranslation().plus(rightAprilTagOffset.getTranslation()),
+                        Rotation2d.fromDegrees(0)))
+                .getTranslation(),
+            Rotation2d.fromDegrees(desiredRotation));
 
-    leftPoseX = leftAprilTagPose.getX();
-    leftPoseY = leftAprilTagPose.getY();
-
-    Pose2d rightAprilTagPose =
-        getState()
-            .Pose
-            .transformBy(VisionConstants.limelightTransform2d)
-            .transformBy(
-                new Transform2d(
-                    bestTransform.getTranslation().plus(rightAprilTagOffset.getTranslation()),
-                    new Rotation2d(0)));
-    rightPoseX = rightAprilTagPose.getX();
-    rightPoseY = rightAprilTagPose.getY();
-
-    SmartDashboard.putNumber("LEFT POSE X", leftAprilTagPose.getX());
-    SmartDashboard.putNumber("LEFT POSE Y", leftAprilTagPose.getY());
-    SmartDashboard.putNumber("RIGHT POSE X", rightAprilTagPose.getX());
-    SmartDashboard.putNumber("RIGHT POSE Y", rightAprilTagPose.getY());
     SmartDashboard.putNumber("Goal Rotation", desiredRotation);
     SmartDashboard.putNumber("Best Tag ID", bestTargetID);
     SmartDashboard.putNumber("Current Rotation", getState().Pose.getRotation().getDegrees());
@@ -457,12 +447,34 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   public Command ReefAlign(Boolean leftAlign) {
     return new DeferredCommand(
         () -> {
-          double xGoal = leftAlign ? leftPoseX : rightPoseX;
-          double yGoal = leftAlign ? leftPoseY : rightPoseY;
-          double goalRotation = Units.degreesToRadians(desiredRotation);
-          Pose2d goalPose = new Pose2d(xGoal, yGoal, new Rotation2d(goalRotation));
-
+          Pose2d goalPose = leftAlign ? leftPose : rightPose;
           return AutoBuilder.pathfindToPose(goalPose, SwerveConstants.pathConstraints, 0.0);
+        },
+        Set.of(this));
+  }
+
+  public Command ReefAlignNoVision(Boolean leftAlign) {
+    return new DeferredCommand(
+        () -> {
+          Pose2d robotPose = getState().Pose;
+          Pose2d nearestPose = new Pose2d();
+          if (AllianceUtil.isRedAlliance()) {
+            if (leftAlign) {
+              nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteLeftPoses);
+              return AutoBuilder.pathfindToPose(nearestPose, SwerveConstants.pathConstraints, 0.0);
+            } else {
+              nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteRightPoses);
+              return AutoBuilder.pathfindToPose(nearestPose, SwerveConstants.pathConstraints, 0.0);
+            }
+          } else {
+            if (leftAlign) {
+              nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteLeftPoses);
+              return AutoBuilder.pathfindToPose(nearestPose, SwerveConstants.pathConstraints, 0.0);
+            } else {
+              nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses);
+              return AutoBuilder.pathfindToPose(nearestPose, SwerveConstants.pathConstraints, 0.0);
+            }
+          }
         },
         Set.of(this));
   }
@@ -757,33 +769,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   public void periodic() {
     Pose2d robotPose = getState().Pose;
     field.setRobotPose(robotPose);
-    getAprilTagPose();
+    bestAlignmentPose();
     latestarducamLeftResult = arducamLeft.getAllUnreadResults();
     latestarducamRightResult = arducamRight.getAllUnreadResults();
     latestLimelightResult = limelight.getAllUnreadResults();
 
+    SmartDashboard.putData("Field", field);
+
     updateVisionPoseEstimates();
-    final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-
-    final NetworkTable swerveStateTable = inst.getTable("DriveState");
-    final StructPublisher<Pose2d> drivePose =
-        swerveStateTable.getStructTopic("Pose", Pose2d.struct).publish();
-    final StructPublisher<ChassisSpeeds> driveSpeeds =
-        swerveStateTable.getStructTopic("Speeds", ChassisSpeeds.struct).publish();
-    final StructArrayPublisher<SwerveModuleState> driveModuleStates =
-        swerveStateTable.getStructArrayTopic("ModuleStates", SwerveModuleState.struct).publish();
-    final StructArrayPublisher<SwerveModuleState> driveModuleTargets =
-        swerveStateTable.getStructArrayTopic("ModuleTargets", SwerveModuleState.struct).publish();
-    final StructArrayPublisher<SwerveModulePosition> driveModulePositions =
-        swerveStateTable
-            .getStructArrayTopic("ModulePositions", SwerveModulePosition.struct)
-            .publish();
-
-    drivePose.set(getState().Pose);
-    driveSpeeds.set(getState().Speeds);
-    driveModuleStates.set(getState().ModuleStates);
-    driveModuleTargets.set(getState().ModuleTargets);
-    driveModulePositions.set(getState().ModulePositions);
 
     /*
      * Periodically try to apply the operator perspective.

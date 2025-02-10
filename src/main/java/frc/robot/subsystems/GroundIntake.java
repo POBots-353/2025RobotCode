@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import au.grapplerobotics.LaserCan;
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -12,22 +11,21 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.util.ExpandedSubsystem;
 
+@Logged
 public class GroundIntake extends ExpandedSubsystem {
   /** Creates a new GroundIntake. */
   private SparkMax groundIntakeMotor;
 
   private final double prematchDelay = 2.5;
 
-  private LaserCan intakeLaser;
-
   public GroundIntake() {
     groundIntakeMotor = new SparkMax(IntakeConstants.groundIntakeMotorID, MotorType.kBrushless);
-    intakeLaser = new LaserCan(IntakeConstants.intakeLaserCanID);
 
     SparkMaxConfig groundIntakeConfig = new SparkMaxConfig();
 
@@ -41,6 +39,7 @@ public class GroundIntake extends ExpandedSubsystem {
         groundIntakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
+<<<<<<< HEAD
   public Command intakeLaserBroken() {
     LaserCan.Measurement measurement = intakeLaser.getMeasurement();
     if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
@@ -56,16 +55,14 @@ public class GroundIntake extends ExpandedSubsystem {
     }
   }
 
+=======
+>>>>>>> bae50d8cd504db551bb672f071f787e27348d379
   public void stopGroundIntake() {
     groundIntakeMotor.set(0);
   }
 
   public void groundIntake() {
-    if (!intakeLaserBroken()) {
-      groundIntakeMotor.set(IntakeConstants.groundIntakeMotorSpeed);
-    } else {
-      stopGroundIntake();
-    }
+    groundIntakeMotor.set(IntakeConstants.groundIntakeMotorSpeed);
   }
 
   public Command runIntake() {
