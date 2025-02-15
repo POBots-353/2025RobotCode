@@ -76,24 +76,24 @@ public class Constants {
 
     public static final Transform3d arducamLeftTransform =
         new Transform3d(
-            Units.inchesToMeters(-12.619),
-            Units.inchesToMeters(-12.619),
-            Units.inchesToMeters(5.143),
+            Units.inchesToMeters(-13.110),
+            Units.inchesToMeters(13.165),
+            Units.inchesToMeters(8.079),
             new Rotation3d(
-                0.0, Units.degreesToRadians(-25), Units.degreesToRadians(225))); // Pitch: 65
+                0, Units.degreesToRadians(-25), Units.degreesToRadians(180 - 45))); // Pitch: 65
 
     public static final Transform3d arducamRightTransform =
         new Transform3d(
-            Units.inchesToMeters(-12.619),
-            Units.inchesToMeters(12.619),
-            Units.inchesToMeters(5.143),
-            new Rotation3d(0.0, Units.degreesToRadians(-25), Units.degreesToRadians(135)));
+            Units.inchesToMeters(-13.102380),
+            Units.inchesToMeters(-13.402856),
+            Units.inchesToMeters(8.079),
+            new Rotation3d(0.0, Units.degreesToRadians(-25), Units.degreesToRadians(180 + 45)));
 
     public static final Transform3d limelightTransform =
         new Transform3d(
-            Units.inchesToMeters(12.525),
-            Units.inchesToMeters(.5),
-            Units.inchesToMeters(4.423),
+            Units.inchesToMeters(13.479863),
+            Units.inchesToMeters(-0.115166),
+            Units.inchesToMeters(7.908),
             new Rotation3d(0.0, Units.degreesToRadians(-15), Units.degreesToRadians(0)));
 
     public static final Transform2d limelightTransform2d =

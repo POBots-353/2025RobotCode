@@ -216,11 +216,17 @@ public class Elevator extends ExpandedSubsystem {
   @Override
   public void periodic() {
     SmartDashboard.putNumber(
-        "Elevator/Main Position",
+        "Elevator/Main Stage 1 Position",
         Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()));
     SmartDashboard.putNumber(
-        "Elevator/Follower Position",
+        "Elevator/Main Carriage Position",
+        Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) * 2);
+    SmartDashboard.putNumber(
+        "Elevator/Follower Stage 1 Position",
         Units.metersToInches(elevatorFollowerMotor.getPosition().getValueAsDouble()));
+    SmartDashboard.putNumber(
+        "Elevator/Follower Carriage Position",
+        Units.metersToInches(elevatorFollowerMotor.getPosition().getValueAsDouble()) * 2);
     SmartDashboard.putBoolean("Elevator/Button Pressed", buttonPressed());
 
     boolean currentButtonState = buttonPressed();
