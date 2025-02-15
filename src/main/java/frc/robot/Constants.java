@@ -9,7 +9,6 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.configs.FeedbackConfigs;
-import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -54,7 +53,7 @@ public class Constants {
     public static final AngularAcceleration maxAngularAcceleration =
         maxRotationalSpeed.div(rotationZeroToFull);
 
-    public static final double centerToBumber = Units.inchesToMeters(15);
+    public static final double centerToBumber = Units.inchesToMeters(18);
 
     public static final PathConstraints pathConstraints =
         new PathConstraints(
@@ -275,7 +274,6 @@ public class Constants {
     public static final int groundIntakeCurrentLimit = 30;
     public static final double groundIntakeShutOffLimit = 45;
     public static final int intakeCurrentLimit = 30;
-    public static final double algaeIntakeShutoffCurrentLimit = 45.0;
   }
 
   public static class OuttakeConstants {
@@ -289,9 +287,13 @@ public class Constants {
     public static final int outtakeLaserCanID = 19;
   }
 
-  public static class AlgaeIntakeConstants {
-    public static final int algaeIntakeMotorID = 17;
-    public static final double algaeIntakeSpeed = .2;
+  public static class AlgaeRemoverConstants {
+    public static final int algaeRemoverMotorID = 17;
+    public static final double algaeRemoverSpeed = .2;
+    public static final double downPosition = 0.0; // Degrees
+    public static final double horizontalPosition = 90.0; // Degrees
+    public static final double maxVelocity = 30.0; // Degrees per second
+    public static final double maxAcceleration = 50.0; // Degrees per second squared
   }
 
   public static class ElevatorConstants {
@@ -309,6 +311,10 @@ public class Constants {
     public static final double L3Height = Units.inchesToMeters(15.5);
     public static final double L2Height = Units.inchesToMeters(7.3);
     public static final double downHeight = Units.inchesToMeters(0);
+
+    public static final double AlgaeHighHeight = Units.inchesToMeters(15);
+    public static final double AlgaeLowHeight = Units.inchesToMeters(6.8);
+
 
     public static final double sensorToMechanismRatio =
         elevatorGearRatio / (sprocketDiameter * Math.PI);
@@ -348,14 +354,6 @@ public class Constants {
         new SoftwareLimitSwitchConfigs()
             .withForwardSoftLimitThreshold(maxHeight)
             .withForwardSoftLimitEnable(true);
-    // .withReverseSoftLimitThreshold(minHeight)
-    // .withReverseSoftLimitEnable(true);
-
-    public static final HardwareLimitSwitchConfigs hardwareLimitSwitchConfigs =
-        new HardwareLimitSwitchConfigs()
-            .withReverseLimitAutosetPositionEnable(true)
-            .withReverseLimitAutosetPositionValue(0)
-            .withReverseLimitRemoteSensorID(ElevatorConstants.buttonSwitchID);
 
     public static final TalonFXConfiguration elevatorConfigs =
         new TalonFXConfiguration()
@@ -364,18 +362,28 @@ public class Constants {
             .withFeedback(feedbackConfigs)
             .withMotorOutput(motorOutputConfigs)
             .withSoftwareLimitSwitch(softwareLimitSwitchConfigs);
-    // .withHardwareLimitSwitch(hardwareLimitSwitchConfigs);
   }
 
   public static class ArmConstants {
     public static final int armMotorID = 15;
-    public static final int armMaxVelocity = 0;
-    public static final int armMaxAcceleration = 0;
+    public static final int armMaxVelocity = 50;//degrees/s
+    public static final int armMaxAcceleration = 100;//degrees/s^2
 
     public static final int armCurrentLimit = 30;
 
+    public static final double armTopPosition = 90;
+    public static final double armL1Position = 45;
+    public static final double armBottomPosition = 0;
+
+
+    public static final double downHeight = Units.inchesToMeters(0);
+
+
+
     public static final TrapezoidProfile.Constraints constraints =
         new TrapezoidProfile.Constraints(armMaxVelocity, armMaxAcceleration);
+    
+    
   }
 
   public static class OperatorConstants {
@@ -401,8 +409,8 @@ public class Constants {
 
     public static final int outtakeButton = 12;
 
-    public static final int algaeIntakeDown = 14;
-    public static final int algaeIntakeUp = 15;
+    public static final int algaeRemoverHighPosition = 14;
+    public static final int algaeRemoverLowPosition = 15;
 
     public static final int armModeButton = 16;
 

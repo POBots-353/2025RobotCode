@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.WPILibVersion;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Constants.AlgaeIntakeConstants;
+import frc.robot.Constants.AlgaeRemoverConstants;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.OuttakeConstants;
@@ -85,7 +85,7 @@ public class Robot extends TimedRobot {
     }
 
     Map<Integer, String> motorAliases = new HashMap<>();
-    motorAliases.put(AlgaeIntakeConstants.algaeIntakeMotorID, "Algae Intake");
+    motorAliases.put(AlgaeRemoverConstants.algaeRemoverMotorID, "Algae Remover");
     motorAliases.put(ArmConstants.armMotorID, "Arm");
     motorAliases.put(IntakeConstants.groundIntakeMotorID, "Ground Intake");
     motorAliases.put(IntakeConstants.indexerMotorID, "Indexer");
