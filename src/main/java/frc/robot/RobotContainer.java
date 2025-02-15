@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.AlgaeRemoverConstants;
@@ -70,7 +71,7 @@ public class RobotContainer {
   private PersistentSendableChooser<String> batteryChooser;
   private SendableChooser<Command> autoChooser;
 
-  private final CommandPS5Controller driverController = new CommandPS5Controller(0);
+  private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandJoystick operatorStick = new CommandJoystick(1);
 
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -137,7 +138,7 @@ public class RobotContainer {
   }
 
   private void configureDriverBindings() {
-    Trigger slowMode = driverController.L2();
+    Trigger slowMode = driverController.leftTrigger();
 
     drivetrain.setDefaultCommand(
         new TeleopSwerve(
@@ -166,10 +167,10 @@ public class RobotContainer {
     // driverController.R1().whileTrue(drivetrain.ReefAlign(false));
 
     // driverController.R2().whileTrue(new TurnToReef(drivetrain));
-    driverController.R2().whileTrue(drivetrain.humanPlayerAlign());
+    driverController.rightTrigger().whileTrue(drivetrain.humanPlayerAlign());
 
     driverController
-        .L1()
+        .leftBumper()
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
@@ -177,7 +178,7 @@ public class RobotContainer {
                 Commands.waitSeconds(.08),
                 drivetrain.reefAlign(true)));
     driverController
-        .R1()
+        .rightBumper()
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
@@ -191,15 +192,15 @@ public class RobotContainer {
 
     // reset the field-centric heading on left bumper press
     driverController
-        .create()
-        .and(driverController.options())
+        .start()
+        .and(driverController.back())
         .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
 
     drivetrain.registerTelemetry(logger::telemeterize);
-    driverController.triangle().onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
-    driverController.square().onTrue(elevator.moveToPosition(ElevatorConstants.L3Height));
-    driverController.circle().onTrue(elevator.moveToPosition(ElevatorConstants.L2Height));
-    driverController.cross().onTrue(elevator.downPosition());
+    // driverController.triangle().onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+    // driverController.square().onTrue(elevator.moveToPosition(ElevatorConstants.L3Height));
+    // driverController.circle().onTrue(elevator.moveToPosition(ElevatorConstants.L2Height));
+    // driverController.cross().onTrue(elevator.downPosition());
   }
 
   private void configureElevatorBindings() {
