@@ -54,7 +54,7 @@ public class Constants {
     public static final AngularAcceleration maxAngularAcceleration =
         maxRotationalSpeed.div(rotationZeroToFull);
 
-    public static final double centerToBumber = Units.inchesToMeters(18.5);
+    public static final double centerToBumber = Units.inchesToMeters(15);
 
     public static final PathConstraints pathConstraints =
         new PathConstraints(
@@ -108,7 +108,7 @@ public class Constants {
   // .890 7.415
   public static class FieldConstants {
     public static AprilTagFieldLayout aprilTagLayout =
-        AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+        AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
 
     public static final Pose2d redStationLeft =
         new Pose2d(16.638, 0.645, Rotation2d.fromDegrees(0));
@@ -397,6 +397,7 @@ public class Constants {
     public static final int elevatorManualUp = 10;
     public static final int elevatorManualDown = 9;
     public static final int homeElevatorButon = 2;
+    public static final int elevatorOverrideButton = 3;
 
     public static final int outtakeButton = 12;
 

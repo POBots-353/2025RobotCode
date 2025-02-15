@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ElevatorConstants;
@@ -69,7 +69,7 @@ public class RobotContainer {
   private PersistentSendableChooser<String> batteryChooser;
   private SendableChooser<Command> autoChooser;
 
-  private final CommandXboxController driverController = new CommandXboxController(0);
+  private final CommandPS5Controller driverController = new CommandPS5Controller(0);
   private final CommandJoystick operatorStick = new CommandJoystick(1);
 
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -132,7 +132,7 @@ public class RobotContainer {
   }
 
   private void configureDriverBindings() {
-    Trigger slowMode = driverController.leftTrigger();
+    Trigger slowMode = driverController.L2();
 
     drivetrain.setDefaultCommand(
         new TeleopSwerve(
@@ -147,9 +147,9 @@ public class RobotContainer {
             },
             drivetrain));
 
-    driverController.b().whileTrue(drivetrain.applyRequest(() -> brake));
+    driverController.square().whileTrue(drivetrain.applyRequest(() -> brake));
     driverController
-        .a()
+        .circle()
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
@@ -161,10 +161,10 @@ public class RobotContainer {
     // driverController.R1().whileTrue(drivetrain.ReefAlign(false));
 
     // driverController.R2().whileTrue(new TurnToReef(drivetrain));
-    driverController.rightTrigger().whileTrue(drivetrain.humanPlayerAlign());
+    driverController.R2().whileTrue(drivetrain.humanPlayerAlign());
 
     driverController
-        .leftBumper()
+        .L1()
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
@@ -172,7 +172,7 @@ public class RobotContainer {
                 Commands.waitSeconds(.08),
                 drivetrain.reefAlign(true)));
     driverController
-        .rightBumper()
+        .R1()
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
@@ -186,30 +186,64 @@ public class RobotContainer {
 
     // reset the field-centric heading on left bumper press
     driverController
-        .back()
-        .and(driverController.start())
+        .create()
+        .and(driverController.options())
         .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
 
     drivetrain.registerTelemetry(logger::telemeterize);
+    driverController.triangle().onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+
+    driverController.cross().onTrue(elevator.downPosition());
   }
 
   private void configureElevatorBindings() {
     elevator.setDefaultCommand(elevator.holdPosition());
 
+    // operatorStick
+    //     .button(OperatorConstants.L4HeightButton)
+    //     .and(armMode.negate())
+    //     .onTrue(
+    //         elevator
+    //             .moveToPosition(ElevatorConstants.L4Height)
+    //             .andThen(elevator.upSpeed(.1).withTimeout(.25)));
+
     operatorStick
         .button(OperatorConstants.L4HeightButton)
-        .and(armMode.negate())
+        .and(armMode.negate().and(outtakeLaserBroken))
+        .or(
+            operatorStick
+                .button(OperatorConstants.elevatorOverrideButton)
+                .and(operatorStick.button(OperatorConstants.L4HeightButton))
+                .and(armMode.negate()))
         .onTrue(
             elevator
                 .moveToPosition(ElevatorConstants.L4Height)
                 .andThen(elevator.upSpeed(.1).withTimeout(.25)));
+
     operatorStick
         .button(OperatorConstants.L3HeightButton)
-        .and(armMode.negate())
+        .and(armMode.negate().and(outtakeLaserBroken))
+        .or(
+            operatorStick
+                .button(OperatorConstants.elevatorOverrideButton)
+                .and(operatorStick.button(OperatorConstants.L3HeightButton))
+                .and(armMode.negate()))
         .onTrue(elevator.moveToPosition(ElevatorConstants.L3Height));
+
+    // operatorStick
+    //     .button(OperatorConstants.L2HeightButton)
+    //     .and(armMode.negate())
+    //     .and(outtakeLaserBroken)
+    //     .onTrue(elevator.moveToPosition(ElevatorConstants.L2Height));
+
     operatorStick
         .button(OperatorConstants.L2HeightButton)
-        .and(armMode.negate())
+        .and(armMode.negate().and(outtakeLaserBroken))
+        .or(
+            operatorStick
+                .button(OperatorConstants.elevatorOverrideButton)
+                .and(operatorStick.button(OperatorConstants.L2HeightButton))
+                .and(armMode.negate()))
         .onTrue(elevator.moveToPosition(ElevatorConstants.L2Height));
 
     operatorStick
@@ -225,13 +259,24 @@ public class RobotContainer {
     operatorStick
         .button(OperatorConstants.elevatorManualDown)
         .and(armMode.negate())
-        .whileTrue(elevator.downSpeed(.05))
+        .whileTrue(elevator.downSpeed(0.1))
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
 
     operatorStick
         .button(OperatorConstants.elevatorManualUp)
         .and(armMode.negate())
-        .whileTrue(elevator.upSpeed(.1))
+        .whileTrue(elevator.upSpeed(0.1))
+        .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
+
+    operatorStick
+        .button(OperatorConstants.elevatorManualUp)
+        .and(armMode.negate().and(outtakeLaserBroken))
+        .or(
+            operatorStick
+                .button(OperatorConstants.elevatorOverrideButton)
+                .and(operatorStick.button(OperatorConstants.elevatorManualUp))
+                .and(armMode.negate()))
+        .whileTrue(elevator.upSpeed(0.1))
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
   }
 

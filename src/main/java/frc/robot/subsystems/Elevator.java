@@ -129,7 +129,7 @@ public class Elevator extends ExpandedSubsystem {
   }
 
   public boolean elevatorIsDown() {
-    return Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) < 6;
+    return Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) < 3.53;
   }
 
   public Command upSpeed(double speed) {
@@ -209,7 +209,7 @@ public class Elevator extends ExpandedSubsystem {
     double height = elevatorMainMotor.getPosition().getValueAsDouble();
 
     return new Pose3d[] {
-      new Pose3d(0, 0, height / 2, Rotation3d.kZero), new Pose3d(0, 0, height, Rotation3d.kZero),
+      new Pose3d(0, 0, height, Rotation3d.kZero), new Pose3d(0, 0, height * 2, Rotation3d.kZero),
     };
   }
 
