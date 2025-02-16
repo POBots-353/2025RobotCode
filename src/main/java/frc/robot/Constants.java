@@ -359,7 +359,7 @@ public class Constants {
 
     public static final double bottomSpeed = 0.1;
 
-    public static final LinearVelocity maxVelocity = MetersPerSecond.of(2.26 * 0.9); // 2.26*.9
+    public static final LinearVelocity maxVelocity = MetersPerSecond.of(2.26 * 0.95); // 2.26*.9
     public static final LinearAcceleration maxAcceleration =
         maxVelocity.div(Seconds.of(0.5)); // .25
 
@@ -371,10 +371,10 @@ public class Constants {
     public static final Slot0Configs slot0Configs =
         new Slot0Configs()
             .withKS(0.01) // .01
-            .withKV(4.14) // 4.14
+            .withKV(5.14) // 4.14
             .withKA(0.03) // .03
             .withKG(0.31) // .31
-            .withKP(25)
+            .withKP(35)
             .withKI(0.0)
             .withKD(0.25) // 1
             .withGravityType(GravityTypeValue.Elevator_Static)

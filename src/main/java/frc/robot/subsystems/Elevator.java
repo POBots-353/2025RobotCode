@@ -150,10 +150,10 @@ public class Elevator extends ExpandedSubsystem {
   }
 
   public Command moveToPosition(double height) {
-    double h = height + Units.inchesToMeters(0.2);
+    // double h = height + Units.inchesToMeters(0.2);
     return run(() -> {
-          elevatorMainMotor.setControl(motionMagicRequest.withPosition(h));
-          elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(h));
+          elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
+          elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(height));
         })
         .until(() -> (atSetPoint(height)))
         // .onlyIf(() -> isZeroed)
