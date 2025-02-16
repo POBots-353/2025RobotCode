@@ -480,7 +480,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
               nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses);
             }
           }
-          return AutoBuilder.pathfindToPose(nearestPose, SwerveConstants.pathConstraints, 0.0);
+          return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.pathConstraints, 0.0);
         },
         Set.of(this));
   }

@@ -56,7 +56,6 @@ public class Constants {
         maxRotationalSpeed.div(rotationZeroToFull);
 
     public static final double centerToBumber = Units.inchesToMeters(18);
-
   }
 
   public static class AutoConstants {

@@ -90,9 +90,6 @@ public class Arm extends ExpandedSubsystem {
   //               100, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
   // }
 
-
-
-
   public void stopArm() {
     armMotor.set(0);
   }
