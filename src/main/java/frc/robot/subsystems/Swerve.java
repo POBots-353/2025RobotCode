@@ -466,24 +466,21 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return new DeferredCommand(
         () -> {
           Pose2d robotPose = getState().Pose;
-          Pose2d nearestPose = new Pose2d();
+          Pose2d nearestPose = Pose2d.kZero;
           if (AllianceUtil.isRedAlliance()) {
             if (leftAlign) {
               nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteLeftPoses);
-              return AutoBuilder.pathfindToPose(nearestPose, SwerveConstants.pathConstraints, 0.0);
             } else {
               nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteRightPoses);
-              return AutoBuilder.pathfindToPose(nearestPose, SwerveConstants.pathConstraints, 0.0);
             }
           } else {
             if (leftAlign) {
               nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteLeftPoses);
-              return AutoBuilder.pathfindToPose(nearestPose, SwerveConstants.pathConstraints, 0.0);
             } else {
               nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses);
-              return AutoBuilder.pathfindToPose(nearestPose, SwerveConstants.pathConstraints, 0.0);
             }
           }
+          return AutoBuilder.pathfindToPose(nearestPose, SwerveConstants.pathConstraints, 0.0);
         },
         Set.of(this));
   }
