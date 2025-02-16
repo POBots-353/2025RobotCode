@@ -162,10 +162,6 @@ public class RobotContainer {
     //                     new Rotation2d(
     //                         -driverController.getLeftY(), -driverController.getLeftX()))));
 
-    // driverController.L1().whileTrue(drivetrain.ReefAlign(true));
-    // driverController.R1().whileTrue(drivetrain.ReefAlign(false));
-
-    // driverController.R2().whileTrue(new TurnToReef(drivetrain));
     driverController.rightTrigger().whileTrue(drivetrain.humanPlayerAlign());
 
     driverController
@@ -184,10 +180,7 @@ public class RobotContainer {
                 new TurnToReef(drivetrain),
                 Commands.waitSeconds(.08),
                 drivetrain.reefAlign(false)));
-
-    // driverController.leftBumper().whileTrue(drivetrain.ReefAlignNoVision(true));
-
-    // driverController.rightBumper().whileTrue(drivetrain.ReefAlignNoVision(fal`se));
+    driverController.x().whileTrue(drivetrain.pathFindForAlgaeRemover());
 
     // reset the field-centric heading on left bumper press
     driverController
@@ -338,8 +331,8 @@ public class RobotContainer {
         .onFalse(outtake.stopOuttakeMotor());
 
     operatorStick
-        .button(OperatorConstants.outtakeIndexerButton)
-        .whileTrue(indexer.outtakeIndexer())
+        .button(OperatorConstants.reverseIndexerButton)
+        .whileTrue(indexer.reverseIndexer())
         .onFalse(indexer.stop());
   }
 
@@ -352,6 +345,7 @@ public class RobotContainer {
             algaeRemover
                 .moveToPosition(AlgaeRemoverConstants.horizontalPosition)
                 .alongWith(indexer.runIndexer())
+                .alongWith(outtake.fastOuttake())
                 .alongWith(elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight)));
 
     operatorStick
@@ -360,6 +354,7 @@ public class RobotContainer {
             algaeRemover
                 .moveToPosition(AlgaeRemoverConstants.horizontalPosition)
                 .alongWith(indexer.runIndexer())
+                .alongWith(outtake.fastOuttake())
                 .alongWith(elevator.moveToPosition(ElevatorConstants.AlgaeLowHeight)));
   }
 

@@ -50,15 +50,15 @@ public class Indexer extends ExpandedSubsystem {
     return run(this::index);
   }
 
-  public Command outtakeIndexer() {
-    return run(this::outtake);
+  public Command reverseIndexer() {
+    return run(this::reverse);
   }
 
   public Command stop() {
     return runOnce(this::stopIndexer);
   }
 
-  public void outtake() {
+  public void reverse() {
     indexerMotor.set(-IntakeConstants.indexerMotorSpeed);
   }
 
