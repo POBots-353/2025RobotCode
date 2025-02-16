@@ -371,10 +371,10 @@ public class Constants {
     public static final Slot0Configs slot0Configs =
         new Slot0Configs()
             .withKS(0.01) // .01
-            .withKV(5.14) // 4.14
+            .withKV(4.14) // 4.14
             .withKA(0.03) // .03
             .withKG(0.31) // .31
-            .withKP(35)
+            .withKP(25)
             .withKI(0.0)
             .withKD(0.25) // 1
             .withGravityType(GravityTypeValue.Elevator_Static)
