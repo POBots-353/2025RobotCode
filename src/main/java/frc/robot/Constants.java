@@ -54,20 +54,19 @@ public class Constants {
         maxRotationalSpeed.div(rotationZeroToFull);
 
     public static final double centerToBumber = Units.inchesToMeters(18);
-
   }
 
   public static class AutoConstants {
-    public static final PIDConstants translationPID = new PIDConstants(5.0, 0.0, 0.0); // 5
+    public static final PIDConstants translationPID = new PIDConstants(7.353, 0.0, 0.0); // 5
     public static final PIDConstants rotationPID = new PIDConstants(1.0, 0.0, 0.0); // 1
 
     public static final LinearVelocity autoMaxTranslationalSpeed = FeetPerSecond.of(18);
     public static final AngularVelocity autoMaxRotationalSpeed = RotationsPerSecond.of(1.5);
 
     public static final LinearAcceleration autoMaxTransationalAcceleration =
-      autoMaxTranslationalSpeed.div(SwerveConstants.translationZeroToFull);
+        autoMaxTranslationalSpeed.div(SwerveConstants.translationZeroToFull);
     public static final AngularAcceleration autoMaxAngularAcceleration =
-      autoMaxRotationalSpeed.div(SwerveConstants.rotationZeroToFull);
+        autoMaxRotationalSpeed.div(SwerveConstants.rotationZeroToFull);
 
     public static final PathConstraints pathConstraints =
         new PathConstraints(
@@ -149,18 +148,18 @@ public class Constants {
             new Pose2d(5.803, 4.049, Rotation2d.fromDegrees(180)), // 0
             new Pose2d(5.137, 5.167, Rotation2d.fromDegrees(-120)), // 60
             new Pose2d(3.835, 5.160, Rotation2d.fromDegrees(-60)), // 120
-            new Pose2d(3.182, 4.028, Rotation2d.fromDegrees(0)), //180
+            new Pose2d(3.182, 4.028, Rotation2d.fromDegrees(0)), // 180
             new Pose2d(3.832, 2.890, Rotation2d.fromDegrees(60)), // -120
             new Pose2d(5.150, 2.896, Rotation2d.fromDegrees(120))); // -60
 
-     public static final List<Pose2d> redAlgaeRemoverPoses =
+    public static final List<Pose2d> redAlgaeRemoverPoses =
         List.of(
             new Pose2d(14.377, 4.019, Rotation2d.fromDegrees(180)), // 0
             new Pose2d(13.719, 5.162, Rotation2d.fromDegrees(-120)), // 60
             new Pose2d(12.415, 5.150, Rotation2d.fromDegrees(-60)), // 120
             new Pose2d(11.759, 4.018, Rotation2d.fromDegrees(0)), // 180
             new Pose2d(12.415, 2.893, Rotation2d.fromDegrees(60)), // -120
-            new Pose2d(13.725, 2.907, Rotation2d.fromDegrees(120))); // -60   
+            new Pose2d(13.725, 2.907, Rotation2d.fromDegrees(120))); // -60
 
     public static final Pose2d reefBlueAlliance =
         new Pose2d(4.483, 4.019, Rotation2d.fromDegrees(0.0));
