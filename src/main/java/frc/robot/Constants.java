@@ -55,17 +55,26 @@ public class Constants {
 
     public static final double centerToBumber = Units.inchesToMeters(18);
 
-    public static final PathConstraints pathConstraints =
-        new PathConstraints(
-            SwerveConstants.maxTranslationalSpeed.in(MetersPerSecond),
-            SwerveConstants.maxTransationalAcceleration.in(MetersPerSecondPerSecond),
-            SwerveConstants.maxRotationalSpeed.in(RadiansPerSecond),
-            SwerveConstants.maxAngularAcceleration.in(RadiansPerSecondPerSecond));
   }
 
   public static class AutoConstants {
     public static final PIDConstants translationPID = new PIDConstants(5.0, 0.0, 0.0); // 5
     public static final PIDConstants rotationPID = new PIDConstants(1.0, 0.0, 0.0); // 1
+
+    public static final LinearVelocity autoMaxTranslationalSpeed = FeetPerSecond.of(18);
+    public static final AngularVelocity autoMaxRotationalSpeed = RotationsPerSecond.of(1.5);
+
+    public static final LinearAcceleration autoMaxTransationalAcceleration =
+      autoMaxTranslationalSpeed.div(SwerveConstants.translationZeroToFull);
+    public static final AngularAcceleration autoMaxAngularAcceleration =
+      autoMaxRotationalSpeed.div(SwerveConstants.rotationZeroToFull);
+
+    public static final PathConstraints pathConstraints =
+        new PathConstraints(
+            autoMaxTranslationalSpeed.in(MetersPerSecond),
+            autoMaxTransationalAcceleration.in(MetersPerSecondPerSecond),
+            autoMaxRotationalSpeed.in(RadiansPerSecond),
+            autoMaxAngularAcceleration.in(RadiansPerSecondPerSecond));
   }
 
   public static class VisionConstants {
@@ -134,6 +143,24 @@ public class Constants {
             new Pose2d(2.241, 4.019, Rotation2d.fromDegrees(0)), // 180
             new Pose2d(3.362, 2.078, Rotation2d.fromDegrees(60)), // -120
             new Pose2d(5.604, 2.078, Rotation2d.fromDegrees(120))); // -60
+
+    public static final List<Pose2d> blueAlgaeRemoverPoses =
+        List.of(
+            new Pose2d(5.803, 4.049, Rotation2d.fromDegrees(180)), // 0
+            new Pose2d(5.137, 5.167, Rotation2d.fromDegrees(-120)), // 60
+            new Pose2d(3.835, 5.160, Rotation2d.fromDegrees(-60)), // 120
+            new Pose2d(3.182, 4.028, Rotation2d.fromDegrees(0)), //180
+            new Pose2d(3.832, 2.890, Rotation2d.fromDegrees(60)), // -120
+            new Pose2d(5.150, 2.896, Rotation2d.fromDegrees(120))); // -60
+
+     public static final List<Pose2d> redAlgaeRemoverPoses =
+        List.of(
+            new Pose2d(14.377, 4.019, Rotation2d.fromDegrees(180)), // 0
+            new Pose2d(13.719, 5.162, Rotation2d.fromDegrees(-120)), // 60
+            new Pose2d(12.415, 5.150, Rotation2d.fromDegrees(-60)), // 120
+            new Pose2d(11.759, 4.018, Rotation2d.fromDegrees(0)), // 180
+            new Pose2d(12.415, 2.893, Rotation2d.fromDegrees(60)), // -120
+            new Pose2d(13.725, 2.907, Rotation2d.fromDegrees(120))); // -60   
 
     public static final Pose2d reefBlueAlliance =
         new Pose2d(4.483, 4.019, Rotation2d.fromDegrees(0.0));
@@ -315,7 +342,6 @@ public class Constants {
     public static final double AlgaeHighHeight = Units.inchesToMeters(15);
     public static final double AlgaeLowHeight = Units.inchesToMeters(6.8);
 
-
     public static final double sensorToMechanismRatio =
         elevatorGearRatio / (sprocketDiameter * Math.PI);
 
@@ -366,8 +392,8 @@ public class Constants {
 
   public static class ArmConstants {
     public static final int armMotorID = 15;
-    public static final int armMaxVelocity = 50;//degrees/s
-    public static final int armMaxAcceleration = 100;//degrees/s^2
+    public static final int armMaxVelocity = 50; // degrees/s
+    public static final int armMaxAcceleration = 100; // degrees/s^2
 
     public static final int armCurrentLimit = 30;
 
@@ -375,20 +401,15 @@ public class Constants {
     public static final double armL1Position = 45;
     public static final double armBottomPosition = 0;
 
-
     public static final double downHeight = Units.inchesToMeters(0);
-
-
 
     public static final TrapezoidProfile.Constraints constraints =
         new TrapezoidProfile.Constraints(armMaxVelocity, armMaxAcceleration);
-    
-    
   }
 
   public static class OperatorConstants {
     public static final int indexerButton = 13;
-    public static final int outtakeIndexerButton = 4;
+    public static final int reverseIndexerButton = 4;
 
     public static final int groundIntakeButton = 13;
     public static final int armManualOuttakeButton = 12;

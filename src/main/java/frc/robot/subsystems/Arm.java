@@ -62,36 +62,21 @@ public class Arm extends ExpandedSubsystem {
   }
 
   public Command moveToPosition(double targetAngle) {
-    return runOnce(() -> 
-        armPIDController.setReference(
-            targetAngle, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
-}
+    return runOnce(
+        () ->
+            armPIDController.setReference(
+                targetAngle, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
+  }
 
-public Command manualUp(double speed) {
-  return run(
-      () -> armMotor.set(speed));
-}
+  public Command manualUp(double speed) {
+    return run(() -> armMotor.set(speed));
+  }
 
-public Command manualDown(double speed) {
-  return run(()-> armMotor.set(speed));
-}
-  // public Command armBottom() {
-  //   return runOnce(
-  //       () ->
-  //           armPIDController.setReference(
-  //               -100, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
-  // }
+  public Command manualDown(double speed) {
+    return run(() -> armMotor.set(speed));
+  }
 
-  // public Command armTop() {
-  //   return runOnce(
-  //       () ->
-  //           armPIDController.setReference(
-  //               100, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
-  // }
 
-  // public void armSpeed(double speed) {
-  //   armMotor.set(speed);
-  // }
 
   public void stopArm() {
     armMotor.set(0);

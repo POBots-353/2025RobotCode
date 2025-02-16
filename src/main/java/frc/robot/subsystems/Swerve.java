@@ -457,7 +457,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           SmartDashboard.putNumber("Swerve/Attempted Pose X", goalPose.getX());
           SmartDashboard.putNumber("Swerve/Attempted Pose Y", goalPose.getY());
           // return new InstantCommand();
-          return AutoBuilder.pathfindToPose(goalPose, SwerveConstants.pathConstraints, 0.0);
+          return AutoBuilder.pathfindToPose(goalPose, AutoConstants.pathConstraints, 0.0);
         },
         Set.of(this));
   }
@@ -470,18 +470,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           if (AllianceUtil.isRedAlliance()) {
             if (leftAlign) {
               nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteLeftPoses);
-              return AutoBuilder.pathfindToPose(nearestPose, SwerveConstants.pathConstraints, 0.0);
+              return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.pathConstraints, 0.0);
             } else {
               nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteRightPoses);
-              return AutoBuilder.pathfindToPose(nearestPose, SwerveConstants.pathConstraints, 0.0);
+              return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.pathConstraints, 0.0);
             }
           } else {
             if (leftAlign) {
               nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteLeftPoses);
-              return AutoBuilder.pathfindToPose(nearestPose, SwerveConstants.pathConstraints, 0.0);
+              return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.pathConstraints, 0.0);
             } else {
               nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses);
-              return AutoBuilder.pathfindToPose(nearestPose, SwerveConstants.pathConstraints, 0.0);
+              return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.pathConstraints, 0.0);
             }
           }
         },
@@ -527,7 +527,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         () -> {
           PathPlannerPath goalPath = getNearestPickupPath();
           if (goalPath != null) {
-            return AutoBuilder.pathfindThenFollowPath(goalPath, SwerveConstants.pathConstraints);
+            return AutoBuilder.pathfindThenFollowPath(goalPath, AutoConstants.pathConstraints);
           } else {
             System.err.println("Invalid goalPath, path cannot be followed.");
             return new InstantCommand();
@@ -551,8 +551,27 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             closestPose = getState().Pose.nearest(blueSetupPoses);
           }
 
-          Pose2d goalSetUpPose = closestPose;
-          return AutoBuilder.pathfindToPose(goalSetUpPose, SwerveConstants.pathConstraints);
+          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.pathConstraints);
+        },
+        Set.of(this));
+  }
+
+  public Command pathFindForAlgaeRemover() {
+    return new DeferredCommand(
+        () -> {
+          Pose2d closestPose;
+
+          List<Pose2d> redAlgaeRemoverPoses = FieldConstants.redAlgaeRemoverPoses;
+          List<Pose2d> blueAlgaeRemoverPoses = FieldConstants.blueAlgaeRemoverPoses;
+
+          if (AllianceUtil.isRedAlliance()) {
+            closestPose = getState().Pose.nearest(redAlgaeRemoverPoses);
+
+          } else {
+            closestPose = getState().Pose.nearest(blueAlgaeRemoverPoses);
+          }
+
+          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.pathConstraints);
         },
         Set.of(this));
   }
