@@ -355,6 +355,7 @@ public class RobotContainer {
                 .moveToPosition(AlgaeRemoverConstants.horizontalPosition)
                 .alongWith(outtake.fastOuttake())
                 .alongWith(elevator.moveToPosition(ElevatorConstants.AlgaeLowHeight)));
+
   }
 
   private void configureOperatorBindings() {
@@ -367,8 +368,13 @@ public class RobotContainer {
     operatorStick
         .button(OperatorConstants.startingConfigButton)
         .whileTrue(
-            elevator.downPosition().alongWith(arm.moveToPosition(ArmConstants.armTopPosition)))
-        .onFalse(elevator.runOnce(elevator::stopElevator).alongWith(arm.runOnce(arm::stopArm)));
+
+            elevator
+                .downPosition()
+                .alongWith(arm.moveToPosition(ArmConstants.armTopPosition)))
+        .onFalse(
+                elevator.runOnce(elevator::stopElevator)
+                .alongWith(arm.runOnce(arm::stopArm)));
   }
 
   private void configureAutoChooser() {

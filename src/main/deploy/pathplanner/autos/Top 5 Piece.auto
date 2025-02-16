@@ -47,6 +47,7 @@
               },
               {
                 "type": "sequential",
+
                 "data": {
                   "commands": [
                     {
@@ -142,6 +143,7 @@
               },
               {
                 "type": "sequential",
+
                 "data": {
                   "commands": [
                     {
@@ -237,6 +239,7 @@
               },
               {
                 "type": "sequential",
+
                 "data": {
                   "commands": [
                     {
@@ -332,6 +335,7 @@
               },
               {
                 "type": "sequential",
+
                 "data": {
                   "commands": [
                     {
@@ -478,6 +482,7 @@
               }
             ]
           }
+
         }
       ]
     }

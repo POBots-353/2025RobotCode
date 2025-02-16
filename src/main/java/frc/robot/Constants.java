@@ -54,6 +54,7 @@ public class Constants {
         maxRotationalSpeed.div(rotationZeroToFull);
 
     public static final double centerToBumber = Units.inchesToMeters(18);
+
   }
 
   public static class AutoConstants {
@@ -391,8 +392,10 @@ public class Constants {
 
   public static class ArmConstants {
     public static final int armMotorID = 15;
-    public static final int armMaxVelocity = 50; // degrees/s
-    public static final int armMaxAcceleration = 100; // degrees/s^2
+
+    public static final int armMaxVelocity = 50;//degrees/s
+    public static final int armMaxAcceleration = 100;//degrees/s^2
+
 
     public static final int armCurrentLimit = 30;
 
@@ -400,10 +403,15 @@ public class Constants {
     public static final double armL1Position = 45;
     public static final double armBottomPosition = 0;
 
+
+
     public static final double downHeight = Units.inchesToMeters(0);
+
 
     public static final TrapezoidProfile.Constraints constraints =
         new TrapezoidProfile.Constraints(armMaxVelocity, armMaxAcceleration);
+    
+    
   }
 
   public static class OperatorConstants {

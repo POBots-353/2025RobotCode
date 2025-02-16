@@ -78,6 +78,7 @@ public class Arm extends ExpandedSubsystem {
 
 
 
+
   public void stopArm() {
     armMotor.set(0);
   }
