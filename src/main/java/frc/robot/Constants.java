@@ -263,39 +263,42 @@ public class Constants {
     public static class ReefDefinitePoses {
       public static final List<Pose2d> blueReefDefiniteLeftPoses =
           List.of(
-              new Pose2d(5.812, 3.854, Rotation2d.fromDegrees(180)),
-              new Pose2d(5.021, 2.807, Rotation2d.fromDegrees(120)),
-              new Pose2d(3.689, 2.957, Rotation2d.fromDegrees(60)),
-              new Pose2d(3.155, 4.189, Rotation2d.fromDegrees(0)),
-              new Pose2d(3.953, 5.250, Rotation2d.fromDegrees(-60)),
-              new Pose2d(5.313, 5.093, Rotation2d.fromDegrees(-120)));
+              new Pose2d(5.803, 3.858, Rotation2d.fromDegrees(180)),
+              new Pose2d(4.999, 2.806, Rotation2d.fromDegrees(120)),
+              new Pose2d(3.691, 2.975, Rotation2d.fromDegrees(60)),
+              new Pose2d(3.181, 4.187, Rotation2d.fromDegrees(0)),
+              new Pose2d(3.975, 5.244, Rotation2d.fromDegrees(-60)),
+              new Pose2d(5.279, 5.077, Rotation2d.fromDegrees(-120)));
+
 
       public static final List<Pose2d> blueReefDefiniteRightPoses =
           List.of(
-              new Pose2d(5.812, 4.175, Rotation2d.fromDegrees(180)),
-              new Pose2d(5.278, 2.957, Rotation2d.fromDegrees(120)),
-              new Pose2d(3.967, 2.800, Rotation2d.fromDegrees(60)),
-              new Pose2d(3.170, 3.861, Rotation2d.fromDegrees(0)),
-              new Pose2d(3.689, 5.086, Rotation2d.fromDegrees(-60)),
-              new Pose2d(5.029, 5.236, Rotation2d.fromDegrees(-120)));
+              new Pose2d(5.803, 4.187, Rotation2d.fromDegrees(180)),
+              new Pose2d(5.288, 2.970, Rotation2d.fromDegrees(120)),
+              new Pose2d(3.976, 2.807, Rotation2d.fromDegrees(60)),
+              new Pose2d(3.186, 3.859, Rotation2d.fromDegrees(0)),
+              new Pose2d(3.690, 5.077, Rotation2d.fromDegrees(-60)),
+              new Pose2d(4.993, 5.245, Rotation2d.fromDegrees(-120)));
+
 
       public static final List<Pose2d> redReefDefiniteRightPoses =
           List.of(
-              new Pose2d(14.385, 4.182, Rotation2d.fromDegrees(180)),
-              new Pose2d(13.861, 2.964, Rotation2d.fromDegrees(120)),
-              new Pose2d(12.557, 2.807, Rotation2d.fromDegrees(60)),
-              new Pose2d(11.755, 3.847, Rotation2d.fromDegrees(0)),
-              new Pose2d(12.258, 5.072, Rotation2d.fromDegrees(-60)),
-              new Pose2d(13.568, 5.250, Rotation2d.fromDegrees(-120)));
+              new Pose2d(14.372, 4.189, Rotation2d.fromDegrees(180)),
+              new Pose2d(13.858, 2.976, Rotation2d.fromDegrees(120)),
+              new Pose2d(12.553, 2.808, Rotation2d.fromDegrees(60)),
+              new Pose2d(11.755, 3.849, Rotation2d.fromDegrees(0)),
+              new Pose2d(12.267, 5.078, Rotation2d.fromDegrees(-60)),
+              new Pose2d(13.572, 5.238, Rotation2d.fromDegrees(-120)));
+
 
       public static final List<Pose2d> redReefDefiniteLeftPoses =
           List.of(
-              new Pose2d(14.385, 3.861, Rotation2d.fromDegrees(180)),
-              new Pose2d(13.576, 2.821, Rotation2d.fromDegrees(120)),
-              new Pose2d(12.258, 2.964, Rotation2d.fromDegrees(60)),
-              new Pose2d(11.755, 4.175, Rotation2d.fromDegrees(0)),
-              new Pose2d(12.557, 5.243, Rotation2d.fromDegrees(-60)),
-              new Pose2d(13.861, 5.079, Rotation2d.fromDegrees(-120)));
+              new Pose2d(14.373, 3.860, Rotation2d.fromDegrees(180)),
+              new Pose2d(13.578, 2.814, Rotation2d.fromDegrees(120)),
+              new Pose2d(12.269, 2.980, Rotation2d.fromDegrees(60)),
+              new Pose2d(11.755, 4.189, Rotation2d.fromDegrees(0)),
+              new Pose2d(12.553, 5.243, Rotation2d.fromDegrees(-60)),
+              new Pose2d(13.854, 5.076, Rotation2d.fromDegrees(-120)));
     }
   }
 
