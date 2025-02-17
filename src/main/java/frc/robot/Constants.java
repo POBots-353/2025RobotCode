@@ -280,7 +280,6 @@ public class Constants {
               new Pose2d(3.690, 5.077, Rotation2d.fromDegrees(-60)),
               new Pose2d(4.993, 5.245, Rotation2d.fromDegrees(-120)));
 
-
       public static final List<Pose2d> redReefDefiniteRightPoses =
           List.of(
               new Pose2d(14.372, 4.189, Rotation2d.fromDegrees(180)),
