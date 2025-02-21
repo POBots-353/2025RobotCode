@@ -270,7 +270,6 @@ public class Constants {
               new Pose2d(3.975, 5.244, Rotation2d.fromDegrees(-60)),
               new Pose2d(5.279, 5.077, Rotation2d.fromDegrees(-120)));
 
-
       public static final List<Pose2d> blueReefDefiniteRightPoses =
           List.of(
               new Pose2d(5.803, 4.187, Rotation2d.fromDegrees(180)),
@@ -288,7 +287,6 @@ public class Constants {
               new Pose2d(11.755, 3.849, Rotation2d.fromDegrees(0)),
               new Pose2d(12.267, 5.078, Rotation2d.fromDegrees(-60)),
               new Pose2d(13.572, 5.238, Rotation2d.fromDegrees(-120)));
-
 
       public static final List<Pose2d> redReefDefiniteLeftPoses =
           List.of(
@@ -450,5 +448,9 @@ public class Constants {
     public static final int armModeButton = 16;
 
     public static final int startingConfigButton = 11;
+  }
+
+  public static class MiscellaneousConstants {
+    public static final double prematchDelay = 2.5;
   }
 }

@@ -77,9 +77,9 @@ public class GroundIntake extends ExpandedSubsystem {
             () -> {
               REVLibError error = groundIntakeMotor.getLastError();
               if (error != REVLibError.kOk) {
-                addError("Intake motor error: " + error.name());
+                addError("Ground Intake motor error: " + error.name());
               } else {
-                addInfo("Intake motor contains no errors");
+                addInfo("Ground Intake motor contains no errors");
               }
             }),
 
@@ -92,14 +92,25 @@ public class GroundIntake extends ExpandedSubsystem {
         Commands.runOnce(
             () -> {
               if (Math.abs(groundIntakeMotor.get()) <= 1e-4) {
-                if (groundIntakeMotor.get() < IntakeConstants.groundIntakeMotorSpeed - 0.1
-                    || groundIntakeMotor.get() > IntakeConstants.groundIntakeMotorSpeed + 0.1) {
-                  addError("Indexer Motor is not at desired velocity");
-                  // We just put a fake range for now; we'll update this later on
-                }
-                addError("Indexer Motor is not moving");
+                addError("Ground Intake Motor is not moving");
               } else {
-                addInfo("Indexer Motor is moving");
+                addInfo("Ground Intake Motor is moving");
+                if ((Math.abs(IntakeConstants.groundIntakeMotorSpeed) - groundIntakeMotor.get())
+                    > 0.1) {
+                  addError("Ground Intake Motor is not at desired velocity");
+                  // We just put a fake range for now; we'll update this later on
+                } else {
+                  addInfo("Ground Intake Motor is at the desired velocity");
+                }
+              }
+            }),
+        stop(),
+        Commands.runOnce(
+            () -> {
+              if (groundIntakeMotor.get() > 0.1) {
+                addError("Ground Intake Motor is not stopping");
+              } else {
+                addInfo("Ground Intake Motor Stopped");
               }
             }));
   }
