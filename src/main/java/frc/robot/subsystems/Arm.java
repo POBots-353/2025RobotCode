@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.REVLibError;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -19,7 +20,9 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.MiscellaneousConstants;
 import frc.robot.util.ExpandedSubsystem;
 
 @Logged(strategy = Strategy.OPT_IN)
@@ -94,8 +97,77 @@ public class Arm extends ExpandedSubsystem {
     armMotor.set(0);
   }
 
+  public double getPosition() {
+    double rotations = armAbsoluteEncoder.getPosition();
+    double degrees = rotations * 360;
+    return degrees;
+  }
+
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Arm/Rotations", armAbsoluteEncoder.getPosition());
+  }
+
+  @Override
+  public Command getPrematchCheckCommand() {
+    return Commands.sequence(
+        // Check for hardware errors
+        Commands.runOnce(
+            () -> {
+              REVLibError error = armMotor.getLastError();
+              if (error != REVLibError.kOk) {
+                addError("Arm motor error: " + error.name());
+              } else {
+                addInfo("Arm motor contains no errors");
+              }
+            }),
+
+        // Checks Ground Intake Motor
+        moveToPosition(ArmConstants.armL1Position),
+        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+        Commands.runOnce(
+            () -> {
+              if (Math.abs(getPosition()) <= 1e-4) {
+                addError("Arm Motor is not moving");
+              } else {
+                addInfo("Arm Motor is moving");
+                if ((Math.abs(ArmConstants.armL1Position) - getPosition()) > 0.1) {
+                  addError("Arm Motor is not at L1 postion");
+                  // We just put a fake range for now; we'll update this later on
+                } else {
+                  addInfo("Arm Motor is at the L1 position");
+                }
+              }
+            }),
+        moveToPosition(ArmConstants.armBottomPosition),
+        Commands.runOnce(
+            () -> {
+              if (Math.abs(getPosition()) <= 1e-4) {
+                addError("Arm Motor is not moving");
+              } else {
+                addInfo("Arm Motor is moving");
+                if ((Math.abs(ArmConstants.armBottomPosition) - getPosition()) > 0.1) {
+                  addError("Arm Motor is not at bottom postion");
+                  // We just put a fake range for now; we'll update this later on
+                } else {
+                  addInfo("Arm Motor is at the bottom position");
+                }
+              }
+            }),
+        moveToPosition(ArmConstants.armTopPosition),
+        Commands.runOnce(
+            () -> {
+              if (Math.abs(getPosition()) <= 1e-4) {
+                addError("Arm Motor is not moving");
+              } else {
+                addInfo("Arm Motor is moving");
+                if ((Math.abs(ArmConstants.armL1Position) - getPosition()) > 0.1) {
+                  addError("Arm Motor is not at top (default) postion");
+                  // We just put a fake range for now; we'll update this later on
+                } else {
+                  addInfo("Arm Motor is at the top (default) position");
+                }
+              }
+            }));
   }
 }
