@@ -18,9 +18,20 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Strategy;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.PIDCommand;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.MiscellaneousConstants;
 import frc.robot.util.ExpandedSubsystem;
@@ -30,6 +41,20 @@ public class Arm extends ExpandedSubsystem {
   private SparkMax armMotor;
   private SparkClosedLoopController armPIDController;
   private SparkAbsoluteEncoder armAbsoluteEncoder;
+  
+  private TrapezoidProfile profile = new TrapezoidProfile(ArmConstants.constraints);
+  private TrapezoidProfile.State previousSetpoint = new TrapezoidProfile.State();
+
+  private ArmFeedforward armFeedforward =
+      new ArmFeedforward(
+          ArmConstants.armKg, ArmConstants.armKs, ArmConstants.armKv, ArmConstants.armKa);
+
+  private PIDController pidController =
+  new PIDController(ArmConstants.armKp, ArmConstants.armKi, ArmConstants.armKd);
+
+  private Debouncer setpointDebouncer = new Debouncer(.353);
+
+
 
   public Arm() {
     armMotor = new SparkMax(ArmConstants.armMotorID, MotorType.kBrushless);
@@ -64,11 +89,50 @@ public class Arm extends ExpandedSubsystem {
     armMotor.configure(armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public Command moveToPosition(double targetAngle) {
-    return runOnce(
-        () ->
-            armPIDController.setReference(
-                targetAngle, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
+  public void setDesiredPosition(Rotation2d position){
+    TrapezoidProfile.State currentState = previousSetpoint;
+    TrapezoidProfile.State targetState = new TrapezoidProfile.State(position.getRadians(), 0.0);
+
+    TrapezoidProfile.State setpoint = profile.calculate(.02, currentState, targetState);
+
+    double positionError = Math.abs(setpoint.position - getPosition().getRadians());
+
+    if (positionError > ArmConstants.replanningError) {
+      setpoint = profile.calculate(0.020, getCurrentState(), targetState);//Position error too high
+    } else if (profile.isFinished(0.0) && positionError > Units.degreesToRadians(7.5)) {
+      setpoint = profile.calculate(0.020, getCurrentState(), targetState);//current profile is finished but too far from setpoint
+    }
+
+    setMotionProfileState(setpoint);
+  }
+
+  private void setMotionProfileState(TrapezoidProfile.State state) {
+    double feedforward = armFeedforward.calculate(state.position, state.velocity, (state.velocity - previousSetpoint.velocity) / 0.020);
+
+    previousSetpoint = state;
+
+    double pidOutput = pidController.calculate(getPosition().getRadians(), state.position);
+    pidOutput = MathUtil.clamp(pidOutput, -1.0, 1.0);
+
+    armMotor.setVoltage(pidOutput * RobotController.getBatteryVoltage() + feedforward);
+  }
+
+  public void setSpeed(double speed) {
+    armMotor.setVoltage(speed * RobotController.getBatteryVoltage());
+  }
+
+
+  public Command moveToPosition(Rotation2d position) {
+    return new FunctionalCommand(()-> previousSetpoint = getCurrentState(),
+    ()-> setDesiredPosition(position),
+    (interrupted) -> setSpeed(0),
+    () -> {
+      double positionError = getPosition().getRadians() - position.getRadians();
+      return setpointDebouncer.calculate(
+          Math.abs(positionError) <= ArmConstants.angleTolerance);
+    }, 
+    this);
+
   }
 
   public Command manualUp(double speed) {
@@ -97,10 +161,17 @@ public class Arm extends ExpandedSubsystem {
     armMotor.set(0);
   }
 
-  public double getPosition() {
-    double rotations = armAbsoluteEncoder.getPosition();
-    double degrees = rotations * 360;
-    return degrees;
+
+  public Rotation2d getAngle() {
+    return Rotation2d.fromRadians(armAbsoluteEncoder.getPosition());
+  }
+
+  public TrapezoidProfile.State getCurrentState(){
+    return new TrapezoidProfile.State(getPosition().getRadians(), armAbsoluteEncoder.getVelocity());
+  }
+
+  public Rotation2d getPosition(){
+    return getAngle().minus(Rotation2d.fromDegrees(0));//put offset where 0 is
   }
 
   @Override

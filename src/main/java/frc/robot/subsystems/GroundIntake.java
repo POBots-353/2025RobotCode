@@ -107,6 +107,7 @@ public class GroundIntake extends ExpandedSubsystem {
                     }))),
         // Checks Ground Intake Motor
         stop(),
+        Commands.waitSeconds(prematchDelay),
         Commands.runOnce(
             () -> {
               if (groundIntakeMotor.get() > 0.1) {

@@ -409,14 +409,26 @@ public class Constants {
 
     public static final int armCurrentLimit = 30;
 
-    public static final double armTopPosition = 90;
-    public static final double armL1Position = 45;
-    public static final double armBottomPosition = 0;
+    public static final Rotation2d armTopPosition = Rotation2d.fromDegrees(0);
+    public static final Rotation2d armL1Position = Rotation2d.fromDegrees(0);
+    public static final Rotation2d armBottomPosition = Rotation2d.fromDegrees(0);
 
     public static final double downHeight = Units.inchesToMeters(0);
 
     public static final TrapezoidProfile.Constraints constraints =
         new TrapezoidProfile.Constraints(armMaxVelocity, armMaxAcceleration);
+
+    public static final double replanningError = Units.degreesToRadians(55.0);
+    public static final double angleTolerance = Units.degreesToRadians(0.15);
+
+    public static double armKg = 0;
+    public static double armKs = 0;
+    public static double armKv = 0;
+    public static double armKa = 0;
+    public static double armKp = 0;
+    public static double armKi = 0;
+    public static double armKd = 0;
+
   }
 
   public static class OperatorConstants {
