@@ -7,7 +7,6 @@ package frc.robot.subsystems;
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
@@ -25,13 +24,11 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.PIDCommand;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.MiscellaneousConstants;
 import frc.robot.util.ExpandedSubsystem;
@@ -41,7 +38,7 @@ public class Arm extends ExpandedSubsystem {
   private SparkMax armMotor;
   private SparkClosedLoopController armPIDController;
   private SparkAbsoluteEncoder armAbsoluteEncoder;
-  
+
   private TrapezoidProfile profile = new TrapezoidProfile(ArmConstants.constraints);
   private TrapezoidProfile.State previousSetpoint = new TrapezoidProfile.State();
 
@@ -50,11 +47,9 @@ public class Arm extends ExpandedSubsystem {
           ArmConstants.armKg, ArmConstants.armKs, ArmConstants.armKv, ArmConstants.armKa);
 
   private PIDController pidController =
-  new PIDController(ArmConstants.armKp, ArmConstants.armKi, ArmConstants.armKd);
+      new PIDController(ArmConstants.armKp, ArmConstants.armKi, ArmConstants.armKd);
 
   private Debouncer setpointDebouncer = new Debouncer(.353);
-
-
 
   public Arm() {
     armMotor = new SparkMax(ArmConstants.armMotorID, MotorType.kBrushless);
@@ -89,7 +84,7 @@ public class Arm extends ExpandedSubsystem {
     armMotor.configure(armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public void setDesiredPosition(Rotation2d position){
+  public void setDesiredPosition(Rotation2d position) {
     TrapezoidProfile.State currentState = previousSetpoint;
     TrapezoidProfile.State targetState = new TrapezoidProfile.State(position.getRadians(), 0.0);
 
@@ -98,16 +93,23 @@ public class Arm extends ExpandedSubsystem {
     double positionError = Math.abs(setpoint.position - getPosition().getRadians());
 
     if (positionError > ArmConstants.replanningError) {
-      setpoint = profile.calculate(0.020, getCurrentState(), targetState);//Position error too high
+      setpoint =
+          profile.calculate(0.020, getCurrentState(), targetState); // Position error too high
     } else if (profile.isFinished(0.0) && positionError > Units.degreesToRadians(7.5)) {
-      setpoint = profile.calculate(0.020, getCurrentState(), targetState);//current profile is finished but too far from setpoint
+      setpoint =
+          profile.calculate(
+              0.020,
+              getCurrentState(),
+              targetState); // current profile is finished but too far from setpoint
     }
 
     setMotionProfileState(setpoint);
   }
 
   private void setMotionProfileState(TrapezoidProfile.State state) {
-    double feedforward = armFeedforward.calculate(state.position, state.velocity, (state.velocity - previousSetpoint.velocity) / 0.020);
+    double feedforward =
+        armFeedforward.calculate(
+            state.position, state.velocity, (state.velocity - previousSetpoint.velocity) / 0.020);
 
     previousSetpoint = state;
 
@@ -121,18 +123,17 @@ public class Arm extends ExpandedSubsystem {
     armMotor.setVoltage(speed * RobotController.getBatteryVoltage());
   }
 
-
   public Command moveToPosition(Rotation2d position) {
-    return new FunctionalCommand(()-> previousSetpoint = getCurrentState(),
-    ()-> setDesiredPosition(position),
-    (interrupted) -> setSpeed(0),
-    () -> {
-      double positionError = getPosition().getRadians() - position.getRadians();
-      return setpointDebouncer.calculate(
-          Math.abs(positionError) <= ArmConstants.angleTolerance);
-    }, 
-    this);
-
+    return new FunctionalCommand(
+        () -> previousSetpoint = getCurrentState(),
+        () -> setDesiredPosition(position),
+        (interrupted) -> setSpeed(0),
+        () -> {
+          double positionError = getPosition().getRadians() - position.getRadians();
+          return setpointDebouncer.calculate(
+              Math.abs(positionError) <= ArmConstants.angleTolerance);
+        },
+        this);
   }
 
   public Command manualUp(double speed) {
@@ -161,17 +162,16 @@ public class Arm extends ExpandedSubsystem {
     armMotor.set(0);
   }
 
-
   public Rotation2d getAngle() {
     return Rotation2d.fromRadians(armAbsoluteEncoder.getPosition());
   }
 
-  public TrapezoidProfile.State getCurrentState(){
+  public TrapezoidProfile.State getCurrentState() {
     return new TrapezoidProfile.State(getPosition().getRadians(), armAbsoluteEncoder.getVelocity());
   }
 
-  public Rotation2d getPosition(){
-    return getAngle().minus(Rotation2d.fromDegrees(0));//put offset where 0 is
+  public Rotation2d getPosition() {
+    return getAngle().minus(Rotation2d.fromDegrees(0)); // put offset where 0 is
   }
 
   @Override
@@ -200,11 +200,13 @@ public class Arm extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPosition()) <= 1e-4) {
+                      if (Math.abs(getPosition().getDegrees()) <= 1e-4) {
                         addError("Arm Motor is not moving");
                       } else {
                         addInfo("Arm Motor is moving");
-                        if ((Math.abs(ArmConstants.armL1Position) - getPosition()) > 0.1) {
+                        if ((Math.abs(ArmConstants.armL1Position.getDegrees())
+                                - getPosition().getDegrees())
+                            > 0.1) {
                           addError("Arm Motor is not at L1 postion");
                           // We just put a fake range for now; we'll update this later on
                         } else {
@@ -218,11 +220,13 @@ public class Arm extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPosition()) <= 1e-4) {
+                      if (Math.abs(getPosition().getDegrees()) <= 1e-4) {
                         addError("Arm Motor is not moving");
                       } else {
                         addInfo("Arm Motor is moving");
-                        if ((Math.abs(ArmConstants.armBottomPosition) - getPosition()) > 0.1) {
+                        if ((Math.abs(ArmConstants.armBottomPosition.getDegrees())
+                                - getPosition().getDegrees())
+                            > 0.1) {
                           addError("Arm Motor is not at bottom postion");
                           // We just put a fake range for now; we'll update this later on
                         } else {
@@ -236,11 +240,13 @@ public class Arm extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPosition()) <= 1e-4) {
+                      if (Math.abs(getPosition().getDegrees()) <= 1e-4) {
                         addError("Arm Motor is not moving");
                       } else {
                         addInfo("Arm Motor is moving");
-                        if ((Math.abs(ArmConstants.armL1Position) - getPosition()) > 0.1) {
+                        if ((Math.abs(ArmConstants.armL1Position.getDegrees())
+                                - getPosition().getDegrees())
+                            > 0.1) {
                           addError("Arm Motor is not at top (default) postion");
                           // We just put a fake range for now; we'll update this later on
                         } else {

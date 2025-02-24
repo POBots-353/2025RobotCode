@@ -44,8 +44,10 @@ public class Constants {
   public static class SwerveConstants {
 
     public static final LinearVelocity maxTranslationalSpeed = FeetPerSecond.of(15);
+    public static final LinearVelocity maxTranslationalSpeedNegative = FeetPerSecond.of(-15);
     public static final LinearVelocity slowModeMaxTranslationalSpeed = FeetPerSecond.of(5);
     public static final AngularVelocity maxRotationalSpeed = RotationsPerSecond.of(1.5);
+    public static final AngularVelocity maxRotationalSpeedNegative = RotationsPerSecond.of(-1.5);
 
     public static final Time translationZeroToFull = Seconds.of(0.5);
     public static final Time rotationZeroToFull = Seconds.of(0.25);
@@ -428,7 +430,6 @@ public class Constants {
     public static double armKp = 0;
     public static double armKi = 0;
     public static double armKd = 0;
-
   }
 
   public static class OperatorConstants {

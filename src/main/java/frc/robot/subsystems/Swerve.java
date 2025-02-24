@@ -7,8 +7,10 @@ import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -41,6 +43,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -48,6 +51,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.FieldConstants.ReefDefinitePoses;
+import frc.robot.Constants.MiscellaneousConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -85,6 +89,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   protected List<Alert> prematchAlerts = new ArrayList<Alert>();
   protected String systemStatus = "Pre-Match not ran";
 
+  private SwerveRequest.FieldCentric fieldOriented =
+      new SwerveRequest.FieldCentric()
+          .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective)
+          .withSteerRequestType(SteerRequestType.Position);
+
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
   private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
   /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
@@ -107,6 +116,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   private int bestTargetID;
   private Pose2d leftPose;
   private Pose2d rightPose;
+
+  private double preMatchTranslationalTolerance = 0.1;
 
   public static record PoseEstimate(Pose3d estimatedPose, double timestamp, Vector<N3> standardDevs)
       implements Comparable<PoseEstimate> {
@@ -922,27 +933,27 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return false;
   }
 
-  // public Command buildPrematch() {
-  //   return Commands.sequence(
-  //           Commands.runOnce(
-  //               () -> {
-  //                 cancelCurrentCommand();
-  //                 clearAlerts();
-  //                 setSystemStatus("Running Pre-Match Check");
-  //               }),
-  //           getPrematchCheckCommand())
-  //       .until(this::containsErrors)
-  //       .finallyDo(
-  //           (interrupted) -> {
-  //             cancelCurrentCommand();
+  public Command buildPrematch() {
+    return Commands.sequence(
+            Commands.runOnce(
+                () -> {
+                  cancelCurrentCommand();
+                  clearAlerts();
+                  setSystemStatus("Running Pre-Match Check");
+                }),
+            getPrematchCheckCommand())
+        .until(this::containsErrors)
+        .finallyDo(
+            (interrupted) -> {
+              cancelCurrentCommand();
 
-  //             if (interrupted && !containsErrors()) {
-  //               addError("Pre-Match Interrpted");
-  //             } else if (!interrupted && !containsErrors()) {
-  //               setSystemStatus("Pre-Match Successful!");
-  //             }
-  //           });
-  // }
+              if (interrupted && !containsErrors()) {
+                addError("Pre-Match Interrpted");
+              } else if (!interrupted && !containsErrors()) {
+                setSystemStatus("Pre-Match Successful!");
+              }
+            });
+  }
 
   @Override
   public void periodic() {
@@ -1006,45 +1017,151 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     m_simNotifier.startPeriodic(kSimLoopPeriod);
   }
 
-  // public Command getPrematchCheckCommand() {
-  //   return Commands.sequence(
-  //       // Check for hardware errors
-  //       Commands.runOnce(
-  //           () -> {
-  //             REVLibError error = algaeRemoverMotor.getLastError();
-  //             if (error != REVLibError.kOk) {
-  //               addError("Intake motor error: " + error.name());
-  //             } else {
-  //               addInfo("Intake motor contains no errors");
-  //             }
-  //           }),
-
-  //       // Checks Ground Intake Motor
-  //       moveToPosition(AlgaeRemoverConstants.horizontalPosition),
-  //       Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-  //       Commands.runOnce(
-  //           () -> {
-  //             if (Math.abs(getPosition()) <= 1e-4) {
-  //               addError("Algae Remover Motor isn't moving");
-  //             } else {
-  //               addInfo("Algae Remover Motor is moving");
-  //               if (Math.abs(AlgaeRemoverConstants.horizontalPosition - getPosition()) > 0.1) {
-  //                 addError("Algae Remover Motor is not at desired position");
-  //                 // We just put a fake range for now; we'll update this later on
-  //               } else {
-  //                 addInfo("Algae Remover Motor is at the desired position");
-  //               }
-  //             }
-  //           }),
-  //       moveToPosition(AlgaeRemoverConstants.downPosition),
-  //       Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-  //       Commands.runOnce(
-  //           () -> {
-  //             if (Math.abs(getPosition()) > 5) {
-  //               addError("Algae Remover Motor isn't fully down");
-  //             } else {
-  //               addInfo("Algae Rmeover motor is fully down");
-  //             }
-  //           }));
-  // }
+  public Command getPrematchCheckCommand() {
+    return Commands.sequence(
+        // Check for hardware errors
+        Commands.parallel(
+            Commands.runOnce(
+                () ->
+                    setControl(
+                        fieldOriented
+                            .withVelocityX(SwerveConstants.maxTranslationalSpeed)
+                            .withVelocityY(0)
+                            .withRotationalRate(0))),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      double forwardSpeed = getState().Speeds.vxMetersPerSecond;
+                      if (Math.abs(forwardSpeed - Units.feetToMeters(15))
+                          > preMatchTranslationalTolerance) {
+                        addError("Forward Speed is too slow");
+                      } else if (Math.abs(getState().Speeds.vyMetersPerSecond)
+                          > preMatchTranslationalTolerance) {
+                        addError("Strafe Speed is too high");
+                      } else {
+                        addInfo("Forward Speed is good!");
+                      }
+                    }))),
+        Commands.waitSeconds(2),
+        Commands.runOnce(
+            () -> {
+              if ((Math.abs(getState().Speeds.vxMetersPerSecond) > preMatchTranslationalTolerance)
+                  || (Math.abs(getState().Speeds.vyMetersPerSecond)
+                      > preMatchTranslationalTolerance)) {
+                addError("Translational Speeds are too high");
+              } else {
+                addInfo("Slow Down was successful");
+              }
+            }),
+        Commands.parallel(
+            Commands.runOnce(
+                () ->
+                    setControl(
+                        fieldOriented
+                            .withVelocityX(SwerveConstants.maxTranslationalSpeedNegative)
+                            .withVelocityY(0)
+                            .withRotationalRate(0))),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      double backwardSpeed = getState().Speeds.vxMetersPerSecond;
+                      if (Math.abs(backwardSpeed - Units.feetToMeters(15))
+                          > preMatchTranslationalTolerance) {
+                        addError("Forward Speed is too slow");
+                      } else if (Math.abs(getState().Speeds.vyMetersPerSecond)
+                          > preMatchTranslationalTolerance) {
+                        addError("Strafe Speed is too high");
+                      } else {
+                        addInfo("Forward Speed is good!");
+                      }
+                    }))),
+        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+        Commands.parallel(
+            Commands.runOnce(
+                () ->
+                    setControl(
+                        fieldOriented
+                            .withVelocityX(0)
+                            .withVelocityY(SwerveConstants.maxTranslationalSpeed)
+                            .withRotationalRate(0))),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      double strafeSpeed = getState().Speeds.vyMetersPerSecond;
+                      if (Math.abs(strafeSpeed - Units.feetToMeters(15))
+                          > preMatchTranslationalTolerance) {
+                        addError("Left Speed is too slow");
+                      } else if (Math.abs(getState().Speeds.vxMetersPerSecond)
+                          > preMatchTranslationalTolerance) {
+                        addError("Forward/Backward Speed is too high");
+                      } else {
+                        addInfo("Left Speed is good!");
+                      }
+                    }))),
+        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+        Commands.parallel(
+            Commands.runOnce(
+                () ->
+                    setControl(
+                        fieldOriented
+                            .withVelocityX(0)
+                            .withVelocityY(SwerveConstants.maxTranslationalSpeedNegative)
+                            .withRotationalRate(0))),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      double strafeSpeed = getState().Speeds.vyMetersPerSecond;
+                      if (Math.abs(strafeSpeed - Units.feetToMeters(15))
+                          > preMatchTranslationalTolerance) {
+                        addError("Right Speed is too slow");
+                      } else if (Math.abs(getState().Speeds.vxMetersPerSecond)
+                          > preMatchTranslationalTolerance) {
+                        addError("Forward/Backward Speed is too high");
+                      } else {
+                        addInfo("Right Speed is good!");
+                      }
+                    }))),
+        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+        Commands.parallel(
+            Commands.runOnce(
+                () ->
+                    setControl(
+                        fieldOriented
+                            .withVelocityX(0)
+                            .withVelocityY(0)
+                            .withRotationalRate(SwerveConstants.maxRotationalSpeed))),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (getState().Speeds.omegaRadiansPerSecond > Units.degreesToRadians(-160)) {
+                        addError("CW Speed is too slow");
+                      } else {
+                        addInfo("CW Speed is good!");
+                      }
+                    }))),
+        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+        Commands.parallel(
+            Commands.runOnce(
+                () ->
+                    setControl(
+                        fieldOriented
+                            .withVelocityX(0)
+                            .withVelocityY(0)
+                            .withRotationalRate(SwerveConstants.maxRotationalSpeedNegative))),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (getState().Speeds.omegaRadiansPerSecond < Units.degreesToRadians(160)) {
+                        addError("CCW Speed is too slow");
+                      } else {
+                        addInfo("CCW Speed is good!");
+                      }
+                    }))));
+  }
 }
