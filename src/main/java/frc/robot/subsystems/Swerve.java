@@ -35,8 +35,6 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -847,37 +845,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return latestArducamRightResult;
   }
 
-  /**
-   * Runs the SysId Quasistatic test in the given direction for the routine specified by {@link
-   * #m_sysIdRoutineToApply}.
-   *
-   * @param direction Direction of the SysId Quasistatic test
-   * @return Command to run
-   */
-  public Command sysIdQuasistaticRotation(SysIdRoutine.Direction direction) {
-    return m_sysIdRoutineRotation.quasistatic(direction);
-  }
-
-  public Command sysIdDynamicRotation(SysIdRoutine.Direction direction) {
-    return m_sysIdRoutineRotation.dynamic(direction);
-  }
-
-  public Command sysIdQuasistaticTranslation(SysIdRoutine.Direction direction) {
-    return m_sysIdRoutineTranslation.quasistatic(direction);
-  }
-
-  public Command sysIdDynamicTranslation(SysIdRoutine.Direction direction) {
-    return m_sysIdRoutineTranslation.dynamic(direction);
-  }
-
-  public Command sysIdQuasistaticSteer(SysIdRoutine.Direction direction) {
-    return m_sysIdRoutineSteer.quasistatic(direction);
-  }
-
-  public Command sysIdDynamicSteer(SysIdRoutine.Direction direction) {
-    return m_sysIdRoutineSteer.dynamic(direction);
-  }
-
   public final void cancelCurrentCommand() {
     Command currentCommand = getCurrentCommand();
     Command defaultCommand = getDefaultCommand();
@@ -955,6 +922,37 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 setSystemStatus("Pre-Match Successful!");
               }
             });
+  }
+
+  /**
+   * Runs the SysId Quasistatic test in the given direction for the routine specified by {@link
+   * #m_sysIdRoutineToApply}.
+   *
+   * @param direction Direction of the SysId Quasistatic test
+   * @return Command to run
+   */
+  public Command sysIdQuasistaticRotation(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutineRotation.quasistatic(direction);
+  }
+
+  public Command sysIdDynamicRotation(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutineRotation.dynamic(direction);
+  }
+
+  public Command sysIdQuasistaticTranslation(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutineTranslation.quasistatic(direction);
+  }
+
+  public Command sysIdDynamicTranslation(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutineTranslation.dynamic(direction);
+  }
+
+  public Command sysIdQuasistaticSteer(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutineSteer.quasistatic(direction);
+  }
+
+  public Command sysIdDynamicSteer(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutineSteer.dynamic(direction);
   }
 
   @Override
