@@ -162,6 +162,7 @@ public class Arm extends ExpandedSubsystem {
     armMotor.set(0);
   }
 
+
   public Rotation2d getAngle() {
     return Rotation2d.fromRadians(armAbsoluteEncoder.getPosition());
   }
@@ -170,8 +171,8 @@ public class Arm extends ExpandedSubsystem {
     return new TrapezoidProfile.State(getPosition().getRadians(), armAbsoluteEncoder.getVelocity());
   }
 
-  public Rotation2d getPosition() {
-    return getAngle().minus(Rotation2d.fromDegrees(0)); // put offset where 0 is
+  public Rotation2d getPosition(){
+    return getAngle().minus(Rotation2d.fromDegrees(0));//put offset where 0 is
   }
 
   @Override
