@@ -82,28 +82,30 @@ public class GroundIntake extends ExpandedSubsystem {
                 addInfo("Ground Intake motor contains no errors");
               }
             }),
-
+        Commands.parallel(
+            Commands.runOnce(
+                () -> {
+                  groundIntake();
+                }),
+            Commands.sequence(
+                Commands.waitSeconds(prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(groundIntakeMotor.get()) <= 1e-4) {
+                        addError("Ground Intake Motor is not moving");
+                      } else {
+                        addInfo("Ground Intake Motor is moving");
+                        if ((Math.abs(IntakeConstants.groundIntakeMotorSpeed)
+                                - groundIntakeMotor.get())
+                            > 0.1) {
+                          addError("Ground Intake Motor is not at desired velocity");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Ground Intake Motor is at the desired velocity");
+                        }
+                      }
+                    }))),
         // Checks Ground Intake Motor
-        Commands.runOnce(
-            () -> {
-              groundIntake();
-            }),
-        Commands.waitSeconds(prematchDelay),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(groundIntakeMotor.get()) <= 1e-4) {
-                addError("Ground Intake Motor is not moving");
-              } else {
-                addInfo("Ground Intake Motor is moving");
-                if ((Math.abs(IntakeConstants.groundIntakeMotorSpeed) - groundIntakeMotor.get())
-                    > 0.1) {
-                  addError("Ground Intake Motor is not at desired velocity");
-                  // We just put a fake range for now; we'll update this later on
-                } else {
-                  addInfo("Ground Intake Motor is at the desired velocity");
-                }
-              }
-            }),
         stop(),
         Commands.runOnce(
             () -> {

@@ -31,6 +31,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -79,6 +81,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   private static final double kSimLoopPeriod = 0.005; // 5 ms
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
+
+  protected List<Alert> prematchAlerts = new ArrayList<Alert>();
+  protected String systemStatus = "Pre-Match not ran";
 
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
   private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -860,6 +865,85 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return m_sysIdRoutineSteer.dynamic(direction);
   }
 
+  public final void cancelCurrentCommand() {
+    Command currentCommand = getCurrentCommand();
+    Command defaultCommand = getDefaultCommand();
+
+    if (currentCommand != null && !(defaultCommand != null && currentCommand == defaultCommand)) {
+      currentCommand.cancel();
+    }
+  }
+
+  public final String getAlertGroup() {
+    return getName() + "/Alerts";
+  }
+
+  public void clearAlerts() {
+    for (Alert alert : prematchAlerts) {
+      alert.close();
+    }
+
+    prematchAlerts.clear();
+  }
+
+  private final void addAlert(Alert alert) {
+    alert.set(true);
+    prematchAlerts.add(alert);
+  }
+
+  public final void addInfo(String message) {
+    addAlert(new Alert(getAlertGroup(), message, AlertType.kInfo));
+  }
+
+  public final void addWarning(String message) {
+    addAlert(new Alert(getAlertGroup(), message, AlertType.kWarning));
+  }
+
+  public final void addError(String message) {
+    addAlert(new Alert(getAlertGroup(), message, AlertType.kError));
+    setSystemStatus("Pre-Match failed with reason: \"" + message + "\"");
+  }
+
+  public final void setSystemStatus(String status) {
+    systemStatus = status;
+  }
+
+  public final String getSystemStatus() {
+    return systemStatus;
+  }
+
+  public final boolean containsErrors() {
+    for (Alert alert : prematchAlerts) {
+      if (alert.getType() == AlertType.kError) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // public Command buildPrematch() {
+  //   return Commands.sequence(
+  //           Commands.runOnce(
+  //               () -> {
+  //                 cancelCurrentCommand();
+  //                 clearAlerts();
+  //                 setSystemStatus("Running Pre-Match Check");
+  //               }),
+  //           getPrematchCheckCommand())
+  //       .until(this::containsErrors)
+  //       .finallyDo(
+  //           (interrupted) -> {
+  //             cancelCurrentCommand();
+
+  //             if (interrupted && !containsErrors()) {
+  //               addError("Pre-Match Interrpted");
+  //             } else if (!interrupted && !containsErrors()) {
+  //               setSystemStatus("Pre-Match Successful!");
+  //             }
+  //           });
+  // }
+
   @Override
   public void periodic() {
     double startTime = Timer.getFPGATimestamp();
@@ -921,4 +1005,46 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             });
     m_simNotifier.startPeriodic(kSimLoopPeriod);
   }
+
+  // public Command getPrematchCheckCommand() {
+  //   return Commands.sequence(
+  //       // Check for hardware errors
+  //       Commands.runOnce(
+  //           () -> {
+  //             REVLibError error = algaeRemoverMotor.getLastError();
+  //             if (error != REVLibError.kOk) {
+  //               addError("Intake motor error: " + error.name());
+  //             } else {
+  //               addInfo("Intake motor contains no errors");
+  //             }
+  //           }),
+
+  //       // Checks Ground Intake Motor
+  //       moveToPosition(AlgaeRemoverConstants.horizontalPosition),
+  //       Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+  //       Commands.runOnce(
+  //           () -> {
+  //             if (Math.abs(getPosition()) <= 1e-4) {
+  //               addError("Algae Remover Motor isn't moving");
+  //             } else {
+  //               addInfo("Algae Remover Motor is moving");
+  //               if (Math.abs(AlgaeRemoverConstants.horizontalPosition - getPosition()) > 0.1) {
+  //                 addError("Algae Remover Motor is not at desired position");
+  //                 // We just put a fake range for now; we'll update this later on
+  //               } else {
+  //                 addInfo("Algae Remover Motor is at the desired position");
+  //               }
+  //             }
+  //           }),
+  //       moveToPosition(AlgaeRemoverConstants.downPosition),
+  //       Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+  //       Commands.runOnce(
+  //           () -> {
+  //             if (Math.abs(getPosition()) > 5) {
+  //               addError("Algae Remover Motor isn't fully down");
+  //             } else {
+  //               addInfo("Algae Rmeover motor is fully down");
+  //             }
+  //           }));
+  // }
 }

@@ -123,51 +123,59 @@ public class Arm extends ExpandedSubsystem {
             }),
 
         // Checks Ground Intake Motor
-        moveToPosition(ArmConstants.armL1Position),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(getPosition()) <= 1e-4) {
-                addError("Arm Motor is not moving");
-              } else {
-                addInfo("Arm Motor is moving");
-                if ((Math.abs(ArmConstants.armL1Position) - getPosition()) > 0.1) {
-                  addError("Arm Motor is not at L1 postion");
-                  // We just put a fake range for now; we'll update this later on
-                } else {
-                  addInfo("Arm Motor is at the L1 position");
-                }
-              }
-            }),
-        moveToPosition(ArmConstants.armBottomPosition),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(getPosition()) <= 1e-4) {
-                addError("Arm Motor is not moving");
-              } else {
-                addInfo("Arm Motor is moving");
-                if ((Math.abs(ArmConstants.armBottomPosition) - getPosition()) > 0.1) {
-                  addError("Arm Motor is not at bottom postion");
-                  // We just put a fake range for now; we'll update this later on
-                } else {
-                  addInfo("Arm Motor is at the bottom position");
-                }
-              }
-            }),
-        moveToPosition(ArmConstants.armTopPosition),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(getPosition()) <= 1e-4) {
-                addError("Arm Motor is not moving");
-              } else {
-                addInfo("Arm Motor is moving");
-                if ((Math.abs(ArmConstants.armL1Position) - getPosition()) > 0.1) {
-                  addError("Arm Motor is not at top (default) postion");
-                  // We just put a fake range for now; we'll update this later on
-                } else {
-                  addInfo("Arm Motor is at the top (default) position");
-                }
-              }
-            }));
+        Commands.parallel(
+            moveToPosition(ArmConstants.armL1Position),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(getPosition()) <= 1e-4) {
+                        addError("Arm Motor is not moving");
+                      } else {
+                        addInfo("Arm Motor is moving");
+                        if ((Math.abs(ArmConstants.armL1Position) - getPosition()) > 0.1) {
+                          addError("Arm Motor is not at L1 postion");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Arm Motor is at the L1 position");
+                        }
+                      }
+                    }))),
+        Commands.parallel(
+            moveToPosition(ArmConstants.armBottomPosition),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(getPosition()) <= 1e-4) {
+                        addError("Arm Motor is not moving");
+                      } else {
+                        addInfo("Arm Motor is moving");
+                        if ((Math.abs(ArmConstants.armBottomPosition) - getPosition()) > 0.1) {
+                          addError("Arm Motor is not at bottom postion");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Arm Motor is at the bottom position");
+                        }
+                      }
+                    }))),
+        Commands.parallel(
+            moveToPosition(ArmConstants.armTopPosition),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(getPosition()) <= 1e-4) {
+                        addError("Arm Motor is not moving");
+                      } else {
+                        addInfo("Arm Motor is moving");
+                        if ((Math.abs(ArmConstants.armL1Position) - getPosition()) > 0.1) {
+                          addError("Arm Motor is not at top (default) postion");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Arm Motor is at the top (default) position");
+                        }
+                      }
+                    }))));
   }
 }

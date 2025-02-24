@@ -101,22 +101,25 @@ public class AlgaeRemover extends ExpandedSubsystem {
             }),
 
         // Checks Ground Intake Motor
-        moveToPosition(AlgaeRemoverConstants.horizontalPosition),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(getPosition()) <= 1e-4) {
-                addError("Algae Remover Motor isn't moving");
-              } else {
-                addInfo("Algae Remover Motor is moving");
-                if (Math.abs(AlgaeRemoverConstants.horizontalPosition - getPosition()) > 0.1) {
-                  addError("Algae Remover Motor is not at desired position");
-                  // We just put a fake range for now; we'll update this later on
-                } else {
-                  addInfo("Algae Remover Motor is at the desired position");
-                }
-              }
-            }),
+        Commands.parallel(
+            moveToPosition(AlgaeRemoverConstants.horizontalPosition),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(getPosition()) <= 1e-4) {
+                        addError("Algae Remover Motor isn't moving");
+                      } else {
+                        addInfo("Algae Remover Motor is moving");
+                        if (Math.abs(AlgaeRemoverConstants.horizontalPosition - getPosition())
+                            > 0.1) {
+                          addError("Algae Remover Motor is not at desired position");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Algae Remover Motor is at the desired position");
+                        }
+                      }
+                    }))),
         moveToPosition(AlgaeRemoverConstants.downPosition),
         Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
         Commands.runOnce(

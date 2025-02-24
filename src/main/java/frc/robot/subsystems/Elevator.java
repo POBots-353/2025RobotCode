@@ -284,161 +284,181 @@ public class Elevator extends ExpandedSubsystem {
         // Checks Ground Intake Motor
         Commands.runOnce(() -> addInfo("CHECK BOTH MOTORS FOR HAZARD LIGHTS")),
         Commands.waitSeconds(20),
-        moveToPosition(ElevatorConstants.L4Height),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(getPosition()) <= 1e-4) {
-                addError("Elevator Motor is not moving");
-              } else {
-                addInfo("Elevator Motor is moving");
-                if (!atSetPoint(ElevatorConstants.L4Height)) {
-                  addError("Elevator Motor is NOT at L4 height");
-                  // We just put a fake range for now; we'll update this later on
-                } else {
-                  addInfo("Elevator Motor is at L4 height");
-                }
-              }
-            }),
-        downPosition(),
-        Commands.waitSeconds(8),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(getPosition()) <= 1e-4) {
-                addError("Elevator Motor is not moving");
-              } else {
-                addInfo("Elevator Motor is moving");
-                if (!buttonPressed()) {
-                  addError("Elevator Motor is not completly down");
-                } else {
-                  addInfo("Elevator Motor is down");
-                }
-              }
-            }),
-        moveToPosition(ElevatorConstants.L3Height),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(getPosition()) <= 1e-4) {
-                addError("Elevator Motor is not moving");
-              } else {
-                addInfo("Elevator Motor is moving");
-                if (!atSetPoint(ElevatorConstants.L3Height)) {
-                  addError("Elevator Motor is NOT at L3 height");
-                  // We just put a fake range for now; we'll update this later on
-                } else {
-                  addInfo("Elevator Motor is at L3 height");
-                }
-              }
-            }),
-        downPosition(),
-        Commands.waitSeconds(8),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(getPosition()) <= 1e-4) {
-                addError("Elevator Motor is not moving");
-              } else {
-                addInfo("Elevator Motor is moving");
-                if (!buttonPressed()) {
-                  addError("Elevator Motor is not completly down");
-                } else {
-                  addInfo("Elevator Motor is down");
-                }
-              }
-            }),
-        moveToPosition(ElevatorConstants.L2Height),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(getPosition()) <= 1e-4) {
-                addError("Elevator Motor is not moving");
-              } else {
-                addInfo("Elevator Motor is moving");
-                if (!atSetPoint(ElevatorConstants.L2Height)) {
-                  addError("Elevator Motor is NOT at L2 height");
-                  // We just put a fake range for now; we'll update this later on
-                } else {
-                  addInfo("Elevator Motor is at L2 height");
-                }
-              }
-            }),
-        downPosition(),
-        Commands.waitSeconds(8),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(getPosition()) <= 1e-4) {
-                addError("Elevator Motor is not moving");
-              } else {
-                addInfo("Elevator Motor is moving");
-                if (!buttonPressed()) {
-                  addError("Elevator Motor is not completly down");
-                } else {
-                  addInfo("Elevator Motor is down");
-                }
-              }
-            }),
-        moveToPosition(ElevatorConstants.L2Height),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(getPosition()) <= 1e-4) {
-                addError("Elevator Motor is not moving");
-              } else {
-                addInfo("Elevator Motor is moving");
-                if (!atSetPoint(ElevatorConstants.L2Height)) {
-                  addError("Elevator Motor is NOT at L2 height");
-                  // We just put a fake range for now; we'll update this later on
-                } else {
-                  addInfo("Elevator Motor is at L2 height");
-                }
-              }
-            }),
-        moveToPosition(ElevatorConstants.L3Height),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(getPosition()) <= 1e-4) {
-                addError("Elevator Motor is not moving");
-              } else {
-                addInfo("Elevator Motor is moving");
-                if (!atSetPoint(ElevatorConstants.L3Height)) {
-                  addError("Elevator Motor is NOT at L3 height");
-                  // We just put a fake range for now; we'll update this later on
-                } else {
-                  addInfo("Elevator Motor is at L3 height");
-                }
-              }
-            }),
-        moveToPosition(ElevatorConstants.L4Height),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(getPosition()) <= 1e-4) {
-                addError("Elevator Motor is not moving");
-              } else {
-                addInfo("Elevator Motor is moving");
-                if (!atSetPoint(ElevatorConstants.L4Height)) {
-                  addError("Elevator Motor is NOT at L4 height");
-                  // We just put a fake range for now; we'll update this later on
-                } else {
-                  addInfo("Elevator Motor is at L4 height");
-                }
-              }
-            }),
-        downPosition(),
-        Commands.waitSeconds(8),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(getPosition()) <= 1e-4) {
-                addError("Elevator Motor is not moving");
-              } else {
-                addInfo("Elevator Motor is moving");
-                if (!buttonPressed()) {
-                  addError("Elevator Motor is not completly down");
-                } else {
-                  addInfo("Elevator Motor is down");
-                }
-              }
-            }));
+        Commands.parallel(
+            moveToPosition(ElevatorConstants.L4Height),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(getPosition()) <= 1e-4) {
+                        addError("Elevator Motor is not moving");
+                      } else {
+                        addInfo("Elevator Motor is moving");
+                        if (!atSetPoint(ElevatorConstants.L4Height)) {
+                          addError("Elevator Motor is NOT at L4 height");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Elevator Motor is at L4 height");
+                        }
+                      }
+                    }))),
+        Commands.parallel(
+            downPosition(),
+            Commands.sequence(
+                Commands.waitSeconds(8),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(getPosition()) <= 1e-4) {
+                        addError("Elevator Motor is not moving");
+                      } else {
+                        addInfo("Elevator Motor is moving");
+                        if (!buttonPressed()) {
+                          addError("Elevator Motor is not completly down");
+                        } else {
+                          addInfo("Elevator Motor is down");
+                        }
+                      }
+                    }))),
+        Commands.parallel(
+            moveToPosition(ElevatorConstants.L3Height),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(getPosition()) <= 1e-4) {
+                        addError("Elevator Motor is not moving");
+                      } else {
+                        addInfo("Elevator Motor is moving");
+                        if (!atSetPoint(ElevatorConstants.L3Height)) {
+                          addError("Elevator Motor is NOT at L3 height");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Elevator Motor is at L3 height");
+                        }
+                      }
+                    }))),
+        Commands.parallel(
+            downPosition(),
+            Commands.sequence(
+                Commands.waitSeconds(8),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(getPosition()) <= 1e-4) {
+                        addError("Elevator Motor is not moving");
+                      } else {
+                        addInfo("Elevator Motor is moving");
+                        if (!buttonPressed()) {
+                          addError("Elevator Motor is not completly down");
+                        } else {
+                          addInfo("Elevator Motor is down");
+                        }
+                      }
+                    }))),
+        Commands.parallel(
+            moveToPosition(ElevatorConstants.L2Height),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(getPosition()) <= 1e-4) {
+                        addError("Elevator Motor is not moving");
+                      } else {
+                        addInfo("Elevator Motor is moving");
+                        if (!atSetPoint(ElevatorConstants.L2Height)) {
+                          addError("Elevator Motor is NOT at L2 height");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Elevator Motor is at L2 height");
+                        }
+                      }
+                    }))),
+        Commands.parallel(
+            downPosition(),
+            Commands.sequence(
+                Commands.waitSeconds(8),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(getPosition()) <= 1e-4) {
+                        addError("Elevator Motor is not moving");
+                      } else {
+                        addInfo("Elevator Motor is moving");
+                        if (!buttonPressed()) {
+                          addError("Elevator Motor is not completly down");
+                        } else {
+                          addInfo("Elevator Motor is down");
+                        }
+                      }
+                    }))),
+        Commands.parallel(
+            moveToPosition(ElevatorConstants.L2Height),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(getPosition()) <= 1e-4) {
+                        addError("Elevator Motor is not moving");
+                      } else {
+                        addInfo("Elevator Motor is moving");
+                        if (!atSetPoint(ElevatorConstants.L2Height)) {
+                          addError("Elevator Motor is NOT at L2 height");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Elevator Motor is at L2 height");
+                        }
+                      }
+                    }))),
+        Commands.parallel(
+            moveToPosition(ElevatorConstants.L3Height),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(getPosition()) <= 1e-4) {
+                        addError("Elevator Motor is not moving");
+                      } else {
+                        addInfo("Elevator Motor is moving");
+                        if (!atSetPoint(ElevatorConstants.L3Height)) {
+                          addError("Elevator Motor is NOT at L3 height");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Elevator Motor is at L3 height");
+                        }
+                      }
+                    }))),
+        Commands.parallel(
+            moveToPosition(ElevatorConstants.L4Height),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(getPosition()) <= 1e-4) {
+                        addError("Elevator Motor is not moving");
+                      } else {
+                        addInfo("Elevator Motor is moving");
+                        if (!atSetPoint(ElevatorConstants.L4Height)) {
+                          addError("Elevator Motor is NOT at L4 height");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Elevator Motor is at L4 height");
+                        }
+                      }
+                    }))),
+        Commands.parallel(
+            downPosition(),
+            Commands.sequence(
+                Commands.waitSeconds(8),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(getPosition()) <= 1e-4) {
+                        addError("Elevator Motor is not moving");
+                      } else {
+                        addInfo("Elevator Motor is moving");
+                        if (!buttonPressed()) {
+                          addError("Elevator Motor is not completly down");
+                        } else {
+                          addInfo("Elevator Motor is down");
+                        }
+                      }
+                    }))));
   }
 }

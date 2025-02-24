@@ -96,38 +96,44 @@ public class Outtake extends ExpandedSubsystem {
               }
             }),
         // Checks Indexer Motor
-        fastOuttake(),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(outtakemotor.get()) <= 1e-4) {
-                addError("Outtake Motor is not moving");
-              } else {
-                addInfo("Outtake Motor is moving");
-                if (Math.abs(OuttakeConstants.fastOuttakeSpeed - outtakemotor.get()) > 0.1) {
-                  addError("Outtake Motor is not at fast velocity");
-                  // We just put a fake range for now; we'll update this later on
-                } else {
-                  addInfo("Outtake Motor is at the fast velocity");
-                }
-              }
-            }),
-        slowOuttake(),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(outtakemotor.get()) <= 1e-4) {
-                addError("Outtake Motor is not moving");
-              } else {
-                addInfo("Outtake Motor is moving");
-                if (Math.abs(OuttakeConstants.slowOuttakeSpeed - outtakemotor.get()) > 0.1) {
-                  addError("Outtake Motor is not at slow velocity");
-                  // We just put a fake range for now; we'll update this later on
-                } else {
-                  addInfo("Outtake Motor is at the slow velocity");
-                }
-              }
-            }),
+        Commands.parallel(
+            fastOuttake(),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(outtakemotor.get()) <= 1e-4) {
+                        addError("Outtake Motor is not moving");
+                      } else {
+                        addInfo("Outtake Motor is moving");
+                        if (Math.abs(OuttakeConstants.fastOuttakeSpeed - outtakemotor.get())
+                            > 0.1) {
+                          addError("Outtake Motor is not at fast velocity");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Outtake Motor is at the fast velocity");
+                        }
+                      }
+                    }))),
+        Commands.parallel(
+            slowOuttake(),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(outtakemotor.get()) <= 1e-4) {
+                        addError("Outtake Motor is not moving");
+                      } else {
+                        addInfo("Outtake Motor is moving");
+                        if (Math.abs(OuttakeConstants.slowOuttakeSpeed - outtakemotor.get())
+                            > 0.1) {
+                          addError("Outtake Motor is not at slow velocity");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Outtake Motor is at the slow velocity");
+                        }
+                      }
+                    }))),
         Commands.runOnce(() -> stop()),
         Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
         Commands.runOnce(

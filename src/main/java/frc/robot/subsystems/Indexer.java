@@ -88,25 +88,28 @@ public class Indexer extends ExpandedSubsystem {
               }
             }),
         // Checks Indexer Motor
-        Commands.runOnce(
-            () -> {
-              index();
-            }),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.runOnce(
-            () -> {
-              if (Math.abs(indexerMotor.get()) <= 1e-4) {
-                addError("Indexer Motor is not moving");
-              } else {
-                addInfo("Indexer Motor is moving");
-                if (Math.abs(IntakeConstants.indexerMotorSpeed - indexerMotor.get()) > 0.1) {
-                  addError("Indexer Motor is not at desired velocity");
-                  // We just put a fake range for now; we'll update this later on
-                } else {
-                  addInfo("Indexer Motor is at the desired velocity");
-                }
-              }
-            }),
+        Commands.parallel(
+            Commands.runOnce(
+                () -> {
+                  index();
+                }),
+            Commands.sequence(
+                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(indexerMotor.get()) <= 1e-4) {
+                        addError("Indexer Motor is not moving");
+                      } else {
+                        addInfo("Indexer Motor is moving");
+                        if (Math.abs(IntakeConstants.indexerMotorSpeed - indexerMotor.get())
+                            > 0.1) {
+                          addError("Indexer Motor is not at desired velocity");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Indexer Motor is at the desired velocity");
+                        }
+                      }
+                    }))),
         Commands.runOnce(() -> stopIndexer()),
         Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
         Commands.runOnce(
