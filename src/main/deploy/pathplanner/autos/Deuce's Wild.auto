@@ -246,6 +246,24 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "OuttakeUntilBeamBreak"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.353
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Indexer"
+          }
+        },
+        {
           "type": "deadline",
           "data": {
             "commands": [
@@ -256,35 +274,15 @@
                 }
               },
               {
-                "type": "sequential",
+                "type": "wait",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "OuttakeUntilBeamBreak"
-                      }
-                    },
-                    {
-                      "type": "parallel",
-                      "data": {
-                        "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Stop Indexer"
-                            }
-                          },
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Elevator: L4"
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
+                  "waitTime": 0.5
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: L4"
                 }
               }
             ]
@@ -297,15 +295,9 @@
           }
         },
         {
-          "type": "deadline",
+          "type": "parallel",
           "data": {
             "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "K to HP Left"
-                }
-              },
               {
                 "type": "named",
                 "data": {
@@ -313,22 +305,9 @@
                 }
               },
               {
-                "type": "sequential",
+                "type": "path",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.1
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Start Indexer"
-                      }
-                    }
-                  ]
+                  "pathName": "K to L"
                 }
               }
             ]
@@ -339,41 +318,34 @@
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "HP Left to L"
+                  "name": "OuttakeUntilBeamBreak"
                 }
               },
               {
-                "type": "sequential",
+                "type": "named",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "OuttakeUntilBeamBreak"
-                      }
-                    },
-                    {
-                      "type": "parallel",
-                      "data": {
-                        "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Stop Indexer"
-                            }
-                          },
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Elevator: L4"
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
+                  "name": "Start Indexer"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop Indexer"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: L4"
                 }
               }
             ]
@@ -408,7 +380,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.2
+                        "waitTime": 0.353
                       }
                     },
                     {
@@ -444,15 +416,34 @@
                       }
                     },
                     {
-                      "type": "named",
+                      "type": "parallel",
                       "data": {
-                        "name": "Stop Indexer"
+                        "commands": [
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "Stop Indexer"
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "Elevator: L4"
+                            }
+                          }
+                        ]
                       }
                     }
                   ]
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Auto Outtake"
           }
         }
       ]

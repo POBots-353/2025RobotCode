@@ -49,7 +49,7 @@ public class Constants {
     public static final AngularVelocity maxRotationalSpeed = RotationsPerSecond.of(1.5);
     public static final AngularVelocity maxRotationalSpeedNegative = RotationsPerSecond.of(-1.5);
 
-    public static final Time translationZeroToFull = Seconds.of(0.5);
+    public static final Time translationZeroToFull = Seconds.of(0.6);
     public static final Time rotationZeroToFull = Seconds.of(0.25);
 
     public static final LinearAcceleration maxTransationalAcceleration =
@@ -61,8 +61,8 @@ public class Constants {
   }
 
   public static class AutoConstants {
-    public static final PIDConstants translationPID = new PIDConstants(7.353, 0.0, 0.0); // 5
-    public static final PIDConstants rotationPID = new PIDConstants(1.0, 0.0, 0.0); // 1
+    public static final PIDConstants translationPID = new PIDConstants(3, 0.0, 0.0); // 5
+    public static final PIDConstants rotationPID = new PIDConstants(3, 0.0, 0.0); // 1
 
     public static final LinearVelocity autoMaxTranslationalSpeed = FeetPerSecond.of(18);
     public static final AngularVelocity autoMaxRotationalSpeed = RotationsPerSecond.of(1.5);
@@ -76,6 +76,13 @@ public class Constants {
         new PathConstraints(
             autoMaxTranslationalSpeed.in(MetersPerSecond),
             autoMaxTransationalAcceleration.in(MetersPerSecondPerSecond),
+            autoMaxRotationalSpeed.in(RadiansPerSecond),
+            autoMaxAngularAcceleration.in(RadiansPerSecondPerSecond));
+
+    public static final PathConstraints slowPathConstraints =
+        new PathConstraints(
+            5,
+            5,
             autoMaxRotationalSpeed.in(RadiansPerSecond),
             autoMaxAngularAcceleration.in(RadiansPerSecondPerSecond));
   }
@@ -345,10 +352,10 @@ public class Constants {
     public static final int elevatorFollowerMotorID = 22;
     public static final int buttonSwitchID = 0;
 
-    public static final double maxHeight = Units.inchesToMeters(28.07);
+    public static final double maxHeight = Units.inchesToMeters(28.09);
     public static final double minHeight = 0.0;
 
-    public static final double L4Height = Units.inchesToMeters(28.05);
+    public static final double L4Height = Units.inchesToMeters(28.09);
     public static final double L3Height = Units.inchesToMeters(15.5);
     public static final double L2Height = Units.inchesToMeters(7.3);
     public static final double downHeight = Units.inchesToMeters(0);
@@ -373,10 +380,10 @@ public class Constants {
     public static final Slot0Configs slot0Configs =
         new Slot0Configs()
             .withKS(0.01) // .01
-            .withKV(4.14) // 4.14
+            .withKV(4.75) // 4.14
             .withKA(0.03) // .03
             .withKG(0.31) // .31
-            .withKP(25)
+            .withKP(26)
             .withKI(0.0)
             .withKD(0.25) // 1
             .withGravityType(GravityTypeValue.Elevator_Static)

@@ -11,7 +11,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "StartB to H"
+                  "pathName": "StartR to G"
                 }
               },
               {
@@ -36,7 +36,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "H to HP Left"
+                  "pathName": "G to HP Right"
                 }
               },
               {
@@ -74,7 +74,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP Left to I"
+                  "pathName": "HP Right to F"
                 }
               },
               {
@@ -125,7 +125,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "I to HP Left"
+                  "pathName": "F to HP Right"
                 }
               },
               {
@@ -163,7 +163,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP Left to J"
+                  "pathName": "HP Right to E"
                 }
               },
               {
@@ -214,7 +214,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "J to HP Left"
+                  "pathName": "E to HP Right"
                 }
               },
               {
@@ -252,7 +252,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP Left to K"
+                  "pathName": "HP Right to D"
                 }
               },
               {
@@ -272,13 +272,13 @@
                           {
                             "type": "named",
                             "data": {
-                              "name": "Stop Indexer"
+                              "name": "Elevator: L4"
                             }
                           },
                           {
                             "type": "named",
                             "data": {
-                              "name": "Elevator: L4"
+                              "name": "Stop Indexer"
                             }
                           }
                         ]
@@ -303,7 +303,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "K to HP Left"
+                  "pathName": "D to HP right"
                 }
               },
               {
@@ -341,7 +341,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP Left to L"
+                  "pathName": "HP Right to C"
                 }
               },
               {
@@ -392,7 +392,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "L to HP Left"
+                  "pathName": "C to HP Right"
                 }
               },
               {
@@ -430,7 +430,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP Left to A"
+                  "pathName": "HP Right to B"
                 }
               },
               {
