@@ -37,7 +37,6 @@ public class AlgaeRemover extends ExpandedSubsystem {
     algaeRemoverConfig.absoluteEncoder.inverted(false).positionConversionFactor(360).zeroOffset(0);
 
     algaeRemoverConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
-    algaeRemoverConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 
     algaeRemoverConfig
         .inverted(false)

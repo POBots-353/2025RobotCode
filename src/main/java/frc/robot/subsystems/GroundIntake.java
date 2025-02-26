@@ -49,7 +49,7 @@ public class GroundIntake extends ExpandedSubsystem {
   }
 
   public Command runIntake() {
-    return run(this::groundIntake);
+    return run(this::groundIntake).withName("Ground Intake");
   }
 
   public Command stop() {

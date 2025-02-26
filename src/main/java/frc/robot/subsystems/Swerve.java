@@ -473,7 +473,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           SmartDashboard.putNumber("Swerve/Attempted Pose X", goalPose.getX());
           SmartDashboard.putNumber("Swerve/Attempted Pose Y", goalPose.getY());
           // return new InstantCommand();
-          return AutoBuilder.pathfindToPose(goalPose, AutoConstants.pathConstraints, 0.0);
+          return AutoBuilder.pathfindToPose(goalPose, AutoConstants.slowPathConstraints, 0.0);
         },
         Set.of(this));
   }
@@ -496,7 +496,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
               nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses);
             }
           }
-          return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.pathConstraints, 0.0);
+          return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.slowPathConstraints, 0.0);
         },
         Set.of(this));
   }
@@ -540,7 +540,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         () -> {
           PathPlannerPath goalPath = getNearestPickupPath();
           if (goalPath != null) {
-            return AutoBuilder.pathfindThenFollowPath(goalPath, AutoConstants.pathConstraints);
+            return AutoBuilder.pathfindThenFollowPath(goalPath, AutoConstants.slowPathConstraints);
           } else {
             System.err.println("Invalid goalPath, path cannot be followed.");
             return new InstantCommand();
@@ -564,7 +564,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             closestPose = getState().Pose.nearest(blueSetupPoses);
           }
 
-          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.pathConstraints);
+          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.slowPathConstraints);
         },
         Set.of(this));
   }

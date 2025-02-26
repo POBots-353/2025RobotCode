@@ -66,7 +66,7 @@ public class Arm extends ExpandedSubsystem {
         .smartCurrentLimit(20)
         .secondaryCurrentLimit(25);
 
-    armConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(0).i(0).d(0);
+    armConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(.15).i(0).d(0);
 
     armConfig
         .closedLoop
@@ -176,7 +176,9 @@ public class Arm extends ExpandedSubsystem {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Arm/Rotations", armAbsoluteEncoder.getPosition());
+    SmartDashboard.putNumber(
+        "Arm/Rotations", Units.rotationsToDegrees(armAbsoluteEncoder.getPosition()));
+    SmartDashboard.putNumber("armmmss, ", armMotor.getAbsoluteEncoder().getPosition());
   }
 
   @Override

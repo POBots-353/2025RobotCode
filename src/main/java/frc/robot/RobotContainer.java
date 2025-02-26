@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -30,7 +29,6 @@ import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
-import frc.robot.commands.TurnToReef;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeRemover;
 import frc.robot.subsystems.Arm;
@@ -86,13 +84,13 @@ public class RobotContainer {
   private Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
 
   // Just put a bunch of instantcommands as placeholders for now
-  Command outtakePrematch = new InstantCommand();
-  Command algaeRemoverPrematch = new InstantCommand();
-  Command armPrematch = new InstantCommand();
-  Command elevatorPrematch = new InstantCommand();
-  Command groundIntakePrematch = groundIntake.buildPrematch();
-  Command indexerPrematch = indexer.buildPrematch();
-  Command swervePrematch = new InstantCommand();
+  //   Command outtakePrematch = new InstantCommand();
+  //   Command algaeRemoverPrematch = new InstantCommand();
+  //   Command armPrematch = new InstantCommand();
+  //   Command elevatorPrematch = new InstantCommand();
+  //   Command groundIntakePrematch = groundIntake.buildPrematch();
+  //   Command indexerPrematch = indexer.buildPrematch();
+  //   Command swervePrematch = new InstantCommand();
 
   public RobotContainer() {
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
@@ -169,18 +167,19 @@ public class RobotContainer {
         .leftBumper()
         .whileTrue(
             Commands.sequence(
-                drivetrain.pathFindToSetup(),
-                new TurnToReef(drivetrain),
-                Commands.waitSeconds(.08),
-                drivetrain.reefAlign(true)));
+                // drivetrain.pathFindToSetup(),
+                // new TurnToReef(drivetrain),
+                // Commands.waitSeconds(.08),
+                drivetrain.reefAlignNoVision(true)));
     driverController
         .rightBumper()
         .whileTrue(
             Commands.sequence(
-                drivetrain.pathFindToSetup(),
-                new TurnToReef(drivetrain),
-                Commands.waitSeconds(.08),
-                drivetrain.reefAlign(false)));
+                // drivetrain.pathFindToSetup(),
+                // new TurnToReef(drivetrain),
+                // Commands.waitSeconds(.08),
+                drivetrain.reefAlignNoVision(false)));
+
     driverController.x().whileTrue(drivetrain.pathFindForAlgaeRemover());
 
     // reset the field-centric heading on left bumper press
@@ -190,10 +189,10 @@ public class RobotContainer {
         .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
 
     drivetrain.registerTelemetry(logger::telemeterize);
-    // driverController.triangle().onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
-    // driverController.square().onTrue(elevator.moveToPosition(ElevatorConstants.L3Height));
-    // driverController.circle().onTrue(elevator.moveToPosition(ElevatorConstants.L2Height));
-    // driverController.cross().onTrue(elevator.downPosition());
+    // driverController.y().onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+    // driverController.x().whileTrue(indexer.runIndexer().alongWith(outtake.outtakeUntilBeamBreak()));
+    // driverController.b().whileTrue(outtake.autoOuttake());
+    // driverController.a().onTrue(elevator.downPosition());
   }
 
   private void configureElevatorBindings() {
@@ -215,10 +214,8 @@ public class RobotContainer {
                 .button(OperatorConstants.elevatorOverrideButton)
                 .and(operatorStick.button(OperatorConstants.L4HeightButton))
                 .and(armMode.negate()))
-        .onTrue(
-            elevator
-                .moveToPosition(ElevatorConstants.L4Height)
-                .andThen(elevator.upSpeed(.1).withTimeout(.25)));
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+    // .andThen(elevator.upSpeed(.1).withTimeout(.15)));
 
     operatorStick
         .button(OperatorConstants.L3HeightButton)
