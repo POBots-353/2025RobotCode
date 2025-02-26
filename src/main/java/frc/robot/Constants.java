@@ -81,7 +81,7 @@ public class Constants {
   }
 
   public static class VisionConstants {
-    public static final String limelightName = "LemonLime";
+    public static final String arducamFrontName = "Arducam_Front";
     public static final String arducamLeftName = "Arducam_Left";
     public static final String arducamRightName = "Arducam_Right";
 
@@ -100,18 +100,18 @@ public class Constants {
             Units.inchesToMeters(8.079),
             new Rotation3d(0.0, Units.degreesToRadians(-25), Units.degreesToRadians(180 + 45)));
 
-    public static final Transform3d limelightTransform =
+    public static final Transform3d arducamFrontTransform =
         new Transform3d(
             Units.inchesToMeters(13.479863),
             Units.inchesToMeters(-0.115166),
             Units.inchesToMeters(7.908),
             new Rotation3d(0.0, Units.degreesToRadians(-15), Units.degreesToRadians(0)));
 
-    public static final Transform2d limelightTransform2d =
+    public static final Transform2d arducamFrontTransform2d =
         new Transform2d(
-            limelightTransform.getX(),
-            limelightTransform.getY(),
-            limelightTransform.getRotation().toRotation2d());
+            arducamFrontTransform.getX(),
+            arducamFrontTransform.getY(),
+            arducamFrontTransform.getRotation().toRotation2d());
 
     public static final int[] reefAprilTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
   }

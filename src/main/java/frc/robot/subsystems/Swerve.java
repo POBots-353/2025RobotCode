@@ -146,20 +146,20 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
           VisionConstants.arducamRightTransform);
 
-  private PhotonCamera limelight = new PhotonCamera(VisionConstants.limelightName);
-  private PhotonPoseEstimator limelightPoseEstimator =
+  private PhotonCamera arducamFront = new PhotonCamera(VisionConstants.arducamFrontName);
+  private PhotonPoseEstimator arducamFrontPoseEstimator =
       new PhotonPoseEstimator(
           FieldConstants.aprilTagLayout,
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-          VisionConstants.limelightTransform);
+          VisionConstants.arducamFrontTransform);
 
   private List<PhotonPipelineResult> latestArducamLeftResult;
   private List<PhotonPipelineResult> latestArducamRightResult;
-  private List<PhotonPipelineResult> latestLimelightResult;
+  private List<PhotonPipelineResult> latestArducamFrontResult;
 
   private PhotonCameraSim arducamSimLeft;
-  private PhotonCameraSim arducamSimTwo;
-  private PhotonCameraSim limelightSim;
+  private PhotonCameraSim arducamSimRight;
+  private PhotonCameraSim arducamFrontSim;
 
   private VisionSystemSim visionSim;
 
@@ -321,29 +321,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     arducamProperties.setExposureTimeMs(45);
 
     arducamSimLeft = new PhotonCameraSim(arducamLeft, arducamProperties);
-    arducamSimTwo = new PhotonCameraSim(arducamRight, arducamProperties);
+    arducamSimRight = new PhotonCameraSim(arducamRight, arducamProperties);
+    arducamFrontSim = new PhotonCameraSim(arducamFront, arducamProperties);
     visionSim.addCamera(arducamSimLeft, VisionConstants.arducamLeftTransform);
-    visionSim.addCamera(arducamSimTwo, VisionConstants.arducamRightTransform);
+    visionSim.addCamera(arducamSimRight, VisionConstants.arducamRightTransform);
+    visionSim.addCamera(arducamFrontSim, VisionConstants.arducamFrontTransform);
 
     arducamSimLeft.enableRawStream(true);
     arducamSimLeft.enableProcessedStream(true);
-    arducamSimTwo.enableRawStream(true);
-    arducamSimTwo.enableProcessedStream(true);
-
-    SimCameraProperties limelightProperties = new SimCameraProperties();
-    limelightProperties.setCalibration(640, 480, Rotation2d.fromDegrees(60)); // 960 720 97
-    limelightProperties.setCalibError(0.58, 0.10);
-    limelightProperties.setFPS(26); // 30
-    limelightProperties.setAvgLatencyMs(70); // 36
-    limelightProperties.setLatencyStdDevMs(15);
-    limelightProperties.setExposureTimeMs(45);
-
-    limelightSim = new PhotonCameraSim(limelight, limelightProperties);
-    visionSim.addCamera(limelightSim, VisionConstants.limelightTransform);
-
-    limelightSim.enableRawStream(true);
-    limelightSim.enableProcessedStream(true);
-    limelightSim.enableDrawWireframe(true);
+    arducamSimRight.enableRawStream(true);
+    arducamSimRight.enableProcessedStream(true);
+    arducamFrontSim.enableRawStream(true);
+    arducamFrontSim.enableProcessedStream(true);
   }
 
   public void configureAutoBuilder() {
@@ -387,7 +376,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   public void updateBestAlignmentPose() {
-    List<PhotonPipelineResult> latestResult = latestLimelightResult;
+    List<PhotonPipelineResult> latestResult = latestArducamFrontResult;
 
     if (latestResult == null || latestResult.isEmpty()) {
       return;
@@ -437,7 +426,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         new Pose2d(
             getState()
                 .Pose
-                .transformBy(VisionConstants.limelightTransform2d)
+                .transformBy(VisionConstants.arducamFrontTransform2d)
                 .transformBy(
                     new Transform2d(
                         bestTransform.getTranslation().plus(leftAprilTagOffset.getTranslation()),
@@ -448,7 +437,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         new Pose2d(
             getState()
                 .Pose
-                .transformBy(VisionConstants.limelightTransform2d)
+                .transformBy(VisionConstants.arducamFrontTransform2d)
                 .transformBy(
                     new Transform2d(
                         bestTransform.getTranslation().plus(rightAprilTagOffset.getTranslation()),
@@ -607,8 +596,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return new Pose3d(getState().Pose).plus(VisionConstants.arducamRightTransform);
   }
 
-  public Pose3d getLimelightPose() {
-    return new Pose3d(getState().Pose).plus(VisionConstants.limelightTransform);
+  public Pose3d getarducamFrontPose() {
+    return new Pose3d(getState().Pose).plus(VisionConstants.arducamFrontTransform);
   }
 
   private Pose3d calculateSingleTagPose(
@@ -817,9 +806,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5));
     updateVisionPoses(
-        latestLimelightResult,
-        limelightPoseEstimator,
-        VisionConstants.limelightTransform,
+        latestArducamFrontResult,
+        arducamFrontPoseEstimator,
+        VisionConstants.arducamFrontTransform,
         Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5));
 
@@ -833,8 +822,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
   }
 
-  public List<PhotonPipelineResult> getLimelightResults() {
-    return latestLimelightResult;
+  public List<PhotonPipelineResult> getarducamFrontResults() {
+    return latestArducamFrontResult;
   }
 
   public List<PhotonPipelineResult> getArducamLeftResults() {
@@ -962,7 +951,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     latestArducamLeftResult = arducamLeft.getAllUnreadResults();
     latestArducamRightResult = arducamRight.getAllUnreadResults();
-    latestLimelightResult = limelight.getAllUnreadResults();
+    latestArducamFrontResult = arducamFront.getAllUnreadResults();
 
     updateVisionPoseEstimates();
     updateBestAlignmentPose();
