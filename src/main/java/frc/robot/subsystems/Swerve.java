@@ -705,7 +705,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       PhotonPoseEstimator poseEstimator,
       Transform3d cameraTransform,
       double baseSingleTagStdDev,
-      double baseMultiTagStdDev) {
+      double baseMultiTagStdDev,
+      double cameraWeight) {
     if (latestResults.isEmpty()) {
       return;
     }
@@ -746,7 +747,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             new PoseEstimate(
                 visionPose.estimatedPose,
                 visionPose.timestampSeconds,
-                getVisionStdDevs(tagCount, averageDistance, baseMultiTagStdDev)));
+                getVisionStdDevs(
+                    tagCount, averageDistance, baseMultiTagStdDev * (1 / cameraWeight))));
       } else {
         PhotonTrackedTarget target = visionPose.targetsUsed.get(0);
         Optional<Pose2d> robotPoseAtTime =
@@ -771,7 +773,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             new PoseEstimate(
                 singleTagPose,
                 visionPose.timestampSeconds,
-                getVisionStdDevs(tagCount, averageDistance, baseSingleTagStdDev)));
+                getVisionStdDevs(
+                    tagCount, averageDistance, baseSingleTagStdDev * (1 / cameraWeight))));
       }
 
       for (PhotonTrackedTarget target : visionPose.targetsUsed) {
@@ -798,19 +801,22 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         arducamLeftPoseEstimator,
         VisionConstants.arducamLeftTransform,
         Units.inchesToMeters(3.0),
-        Units.inchesToMeters(2.5));
+        Units.inchesToMeters(2.5),
+        1.5);
     updateVisionPoses(
         latestArducamRightResult,
         arducamRightPoseEstimator,
         VisionConstants.arducamRightTransform,
         Units.inchesToMeters(3.0),
-        Units.inchesToMeters(2.5));
+        Units.inchesToMeters(2.5),
+        1);
     updateVisionPoses(
         latestArducamFrontResult,
         arducamFrontPoseEstimator,
         VisionConstants.arducamFrontTransform,
         Units.inchesToMeters(3.0),
-        Units.inchesToMeters(2.5));
+        Units.inchesToMeters(2.5),
+        1);
 
     Collections.sort(poseEstimates);
 
@@ -1009,7 +1015,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   public Command getPrematchCheckCommand() {
     return Commands.sequence(
         // Check for hardware errors
-        Commands.parallel(
+        Commands.race(
             Commands.runOnce(
                 () ->
                     setControl(
@@ -1043,7 +1049,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 addInfo("Slow Down was successful");
               }
             }),
-        Commands.parallel(
+        Commands.race(
             Commands.runOnce(
                 () ->
                     setControl(
@@ -1067,7 +1073,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                       }
                     }))),
         Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.parallel(
+        Commands.race(
             Commands.runOnce(
                 () ->
                     setControl(
@@ -1091,7 +1097,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                       }
                     }))),
         Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.parallel(
+        Commands.race(
             Commands.runOnce(
                 () ->
                     setControl(
@@ -1115,7 +1121,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                       }
                     }))),
         Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.parallel(
+        Commands.race(
             Commands.runOnce(
                 () ->
                     setControl(
@@ -1134,7 +1140,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                       }
                     }))),
         Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.parallel(
+        Commands.race(
             Commands.runOnce(
                 () ->
                     setControl(
