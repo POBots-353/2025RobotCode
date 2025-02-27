@@ -171,7 +171,7 @@ public class Arm extends ExpandedSubsystem {
   }
 
   public Rotation2d getPosition() {
-    return getAngle().minus(Rotation2d.fromDegrees(0)); // put offset where 0 is
+    return getAngle(); // put offset where 0 is
   }
 
   @Override

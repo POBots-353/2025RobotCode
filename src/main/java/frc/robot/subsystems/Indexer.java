@@ -45,6 +45,10 @@ public class Indexer extends ExpandedSubsystem {
         indexerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
+  public double getSpeed() {
+    return indexerMotor.get();
+  }
+
   public Command runIndexer() {
     return run(this::index);
   }
