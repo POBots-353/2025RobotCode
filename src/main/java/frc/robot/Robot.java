@@ -109,8 +109,8 @@ public class Robot extends TimedRobot {
 
     CommandScheduler.getInstance().run();
 
-    CANBusStatus canStatus = frc.robot.generated.TunerConstants.kCANBus.getStatus();
-    CANStatus rioCanStatus = RobotController.getCANStatus();
+    // CANBusStatus canStatus = frc.robot.generated.TunerConstants.kCANBus.getStatus();
+    // CANStatus rioCanStatus = RobotController.getCANStatus();
 
     // SmartDashboard.putNumber("CANivore/CAN Utilization %", canStatus.BusUtilization * 100.0);
     // SmartDashboard.putNumber("CANivore/Bus Off Count", canStatus.BusOffCount);
