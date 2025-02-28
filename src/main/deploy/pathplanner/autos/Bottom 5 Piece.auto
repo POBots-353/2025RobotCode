@@ -5,7 +5,7 @@
     "data": {
       "commands": [
         {
-          "type": "deadline",
+          "type": "parallel",
           "data": {
             "commands": [
               {
@@ -15,9 +15,22 @@
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "Elevator: L4"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.4
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Elevator: L4"
+                      }
+                    }
+                  ]
                 }
               }
             ]
@@ -40,9 +53,22 @@
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "Elevator: Bottom"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.4
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Elevator: Bottom"
+                      }
+                    }
+                  ]
                 }
               },
               {
@@ -88,22 +114,15 @@
                       }
                     },
                     {
-                      "type": "parallel",
+                      "type": "wait",
                       "data": {
-                        "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Stop Indexer"
-                            }
-                          },
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Elevator: L4"
-                            }
-                          }
-                        ]
+                        "waitTime": 0.15
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Elevator: L4"
                       }
                     }
                   ]
@@ -129,19 +148,19 @@
                 }
               },
               {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: Bottom"
-                }
-              },
-              {
                 "type": "sequential",
                 "data": {
                   "commands": [
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 1.0
+                        "waitTime": 0.4
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Elevator: Bottom"
                       }
                     },
                     {
@@ -177,22 +196,15 @@
                       }
                     },
                     {
-                      "type": "parallel",
+                      "type": "wait",
                       "data": {
-                        "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Stop Indexer"
-                            }
-                          },
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Elevator: L4"
-                            }
-                          }
-                        ]
+                        "waitTime": 0.15
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Elevator: L4"
                       }
                     }
                   ]
@@ -218,19 +230,19 @@
                 }
               },
               {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: Bottom"
-                }
-              },
-              {
                 "type": "sequential",
                 "data": {
                   "commands": [
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 1.0
+                        "waitTime": 0.4
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Elevator: Bottom"
                       }
                     },
                     {
@@ -266,22 +278,15 @@
                       }
                     },
                     {
-                      "type": "parallel",
+                      "type": "wait",
                       "data": {
-                        "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Elevator: L4"
-                            }
-                          },
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Stop Indexer"
-                            }
-                          }
-                        ]
+                        "waitTime": 0.15
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Elevator: L4"
                       }
                     }
                   ]
@@ -307,19 +312,19 @@
                 }
               },
               {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: Bottom"
-                }
-              },
-              {
                 "type": "sequential",
                 "data": {
                   "commands": [
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.1
+                        "waitTime": 0.4
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Elevator: Bottom"
                       }
                     },
                     {
@@ -355,22 +360,15 @@
                       }
                     },
                     {
-                      "type": "parallel",
+                      "type": "wait",
                       "data": {
-                        "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Stop Indexer"
-                            }
-                          },
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Elevator: L4"
-                            }
-                          }
-                        ]
+                        "waitTime": 0.15
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Elevator: L4"
                       }
                     }
                   ]
@@ -396,19 +394,19 @@
                 }
               },
               {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: Bottom"
-                }
-              },
-              {
                 "type": "sequential",
                 "data": {
                   "commands": [
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.2
+                        "waitTime": 0.4
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Elevator: Bottom"
                       }
                     },
                     {
@@ -444,9 +442,15 @@
                       }
                     },
                     {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.15
+                      }
+                    },
+                    {
                       "type": "named",
                       "data": {
-                        "name": "Stop Indexer"
+                        "name": "Elevator: L4"
                       }
                     }
                   ]

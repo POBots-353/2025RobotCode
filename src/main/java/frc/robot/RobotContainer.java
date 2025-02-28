@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -29,6 +30,7 @@ import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
+import frc.robot.commands.TurnToReef;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeRemover;
 import frc.robot.subsystems.Arm;
@@ -95,17 +97,15 @@ public class RobotContainer {
   public RobotContainer() {
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
     NamedCommands.registerCommand("Stop Indexer", indexer.stop().asProxy());
-    NamedCommands.registerCommand(
-        "Elevator: L4",
-        elevator
-            .moveToPosition(ElevatorConstants.L4Height)
-            // .onlyIf(outtakeLaserBroken)
-            .withTimeout(4)
-            .asProxy());
+    NamedCommands.registerCommand("Elevator: L4", new InstantCommand().asProxy());
+    // elevator
+    //     .moveToPosition(ElevatorConstants.L4Height)
+    //     // .onlyIf(outtakeLaserBroken)
+    //     .withTimeout(4)
+    //     .asProxy());
     NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(3).asProxy());
     NamedCommands.registerCommand("Outtake", outtake.fastOuttake().withTimeout(1.5).asProxy());
-    NamedCommands.registerCommand(
-        "Elevator: Bottom", elevator.downPosition().withTimeout(4).asProxy());
+    NamedCommands.registerCommand("Elevator: Bottom", new InstantCommand().asProxy());
     NamedCommands.registerCommand(
         "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(5).asProxy());
 
@@ -167,18 +167,18 @@ public class RobotContainer {
         .leftBumper()
         .whileTrue(
             Commands.sequence(
-                // drivetrain.pathFindToSetup(),
-                // new TurnToReef(drivetrain),
-                // Commands.waitSeconds(.08),
-                drivetrain.reefAlignNoVision(true)));
+                drivetrain.pathFindToSetup(),
+                new TurnToReef(drivetrain),
+                Commands.waitSeconds(.08),
+                drivetrain.reefAlign(true)));
     driverController
         .rightBumper()
         .whileTrue(
             Commands.sequence(
-                // drivetrain.pathFindToSetup(),
-                // new TurnToReef(drivetrain),
-                // Commands.waitSeconds(.08),
-                drivetrain.reefAlignNoVision(false)));
+                drivetrain.pathFindToSetup(),
+                new TurnToReef(drivetrain),
+                Commands.waitSeconds(.08),
+                drivetrain.reefAlign(false)));
 
     driverController.x().whileTrue(drivetrain.pathFindForAlgaeRemover());
 
@@ -278,7 +278,7 @@ public class RobotContainer {
   }
 
   private void configureArmBindings() {
-    arm.setDefaultCommand(arm.moveToPosition(ArmConstants.armTopPosition));
+    arm.setDefaultCommand(arm.moveToPosition(ArmConstants.armL1Position));
 
     operatorStick
         .button(OperatorConstants.groundIntakeButton)
@@ -445,6 +445,13 @@ public class RobotContainer {
         });
 
     SmartDashboard.putData("Battery Chooser", batteryChooser);
+  }
+
+  public void stopIfBeamBroken() {
+    if (outtake.outtakeLaserBroken() && indexer.getSpeed() > 0.0) {
+      outtake.stop();
+    }
+    return;
   }
 
   public Command getAutonomousCommand() {
