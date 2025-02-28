@@ -112,20 +112,20 @@ public class Robot extends TimedRobot {
     CANBusStatus canStatus = frc.robot.generated.TunerConstants.kCANBus.getStatus();
     CANStatus rioCanStatus = RobotController.getCANStatus();
 
-    SmartDashboard.putNumber("CANivore/CAN Utilization %", canStatus.BusUtilization * 100.0);
-    SmartDashboard.putNumber("CANivore/Bus Off Count", canStatus.BusOffCount);
-    SmartDashboard.putNumber("CANivore/Receive Error Count", canStatus.REC);
-    SmartDashboard.putNumber("CANivore/Transmit Error Count", canStatus.TEC);
-    SmartDashboard.putNumber("CANivore/Tx Full Count", canStatus.TxFullCount);
+    // SmartDashboard.putNumber("CANivore/CAN Utilization %", canStatus.BusUtilization * 100.0);
+    // SmartDashboard.putNumber("CANivore/Bus Off Count", canStatus.BusOffCount);
+    // SmartDashboard.putNumber("CANivore/Receive Error Count", canStatus.REC);
+    // SmartDashboard.putNumber("CANivore/Transmit Error Count", canStatus.TEC);
+    // SmartDashboard.putNumber("CANivore/Tx Full Count", canStatus.TxFullCount);
 
-    SmartDashboard.putNumber(
-        "RoboRIO/CAN Status/Utilization %", rioCanStatus.percentBusUtilization * 100.0);
-    SmartDashboard.putNumber("RoboRIO/CAN Status/Bus Off Count", rioCanStatus.busOffCount);
-    SmartDashboard.putNumber(
-        "RoboRIO/CAN Status/Receive Error Count", rioCanStatus.receiveErrorCount);
-    SmartDashboard.putNumber(
-        "RoboRIO/CAN Status/Transmit Error Count", rioCanStatus.transmitErrorCount);
-    SmartDashboard.putNumber("RoboRIO/CAN Status/Tx Full Count", rioCanStatus.txFullCount);
+    // SmartDashboard.putNumber(
+    //     "RoboRIO/CAN Status/Utilization %", rioCanStatus.percentBusUtilization * 100.0);
+    // SmartDashboard.putNumber("RoboRIO/CAN Status/Bus Off Count", rioCanStatus.busOffCount);
+    // SmartDashboard.putNumber(
+    //     "RoboRIO/CAN Status/Receive Error Count", rioCanStatus.receiveErrorCount);
+    // SmartDashboard.putNumber(
+    //     "RoboRIO/CAN Status/Transmit Error Count", rioCanStatus.transmitErrorCount);
+    // SmartDashboard.putNumber("RoboRIO/CAN Status/Tx Full Count", rioCanStatus.txFullCount);
 
     SmartDashboard.putNumber("RoboRIO/CPU Temperature", RobotController.getCPUTemp());
     SmartDashboard.putBoolean("RoboRIO/RSL", RobotController.getRSLState());

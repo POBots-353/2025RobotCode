@@ -14,8 +14,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.util.FileVersionException;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Strategy;
@@ -45,7 +43,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.AutoConstants;
@@ -56,7 +53,6 @@ import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.util.AllianceUtil;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -64,7 +60,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-import org.json.simple.parser.ParseException;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -490,50 +485,73 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         Set.of(this));
   }
 
-  public PathPlannerPath getNearestPickupPath() {
-    Pose2d closestStation;
-    PathPlannerPath path = null;
+  // public PathPlannerPath getNearestPickupPath() {
+  //   Pose2d closestStation;
+  //   PathPlannerPath path = null;
 
-    List<Pose2d> redStations =
-        List.of(FieldConstants.redStationLeft, FieldConstants.redStationRight);
-    List<Pose2d> blueStations =
-        List.of(FieldConstants.blueStationLeft, FieldConstants.blueStationRight);
+  //   List<Pose2d> redStations =
+  //       List.of(FieldConstants.redStationLeft, FieldConstants.redStationRight);
+  //   List<Pose2d> blueStations =
+  //       List.of(FieldConstants.blueStationLeft, FieldConstants.blueStationRight);
 
-    try {
-      if (AllianceUtil.isRedAlliance()) {
-        closestStation = getState().Pose.nearest(redStations);
-        if (redStations.indexOf(closestStation) == 0) {
-          path = PathPlannerPath.fromPathFile("Human Player Pickup Left");
-        } else {
-          path = PathPlannerPath.fromPathFile("Human Player Pickup Right");
-        }
-      } else {
-        closestStation = getState().Pose.nearest(blueStations);
-        if (blueStations.indexOf(closestStation) == 0) {
-          path = PathPlannerPath.fromPathFile("Human Player Pickup Left");
-        } else {
-          path = PathPlannerPath.fromPathFile("Human Player Pickup Right");
-        }
-      }
-    } catch (IOException | FileVersionException | ParseException e) {
-      System.err.println("Error loading PathPlanner path: " + e.getMessage());
-      e.printStackTrace();
-      path = null;
-    }
+  //   try {
+  //     if (AllianceUtil.isRedAlliance()) {
+  //       closestStation = getState().Pose.nearest(redStations);
+  //       if (redStations.indexOf(closestStation) == 0) {
+  //         path = PathPlannerPath.fromPathFile("Human Player Pickup Left");
+  //       } else {
+  //         path = PathPlannerPath.fromPathFile("Human Player Pickup Right");
+  //       }
+  //     } else {
+  //       closestStation = getState().Pose.nearest(blueStations);
+  //       if (blueStations.indexOf(closestStation) == 0) {
+  //         path = PathPlannerPath.fromPathFile("Human Player Pickup Left");
+  //       } else {
+  //         path = PathPlannerPath.fromPathFile("Human Player Pickup Right");
+  //       }
+  //     }
+  //   } catch (IOException | FileVersionException | ParseException e) {
+  //     System.err.println("Error loading PathPlanner path: " + e.getMessage());
+  //     e.printStackTrace();
+  //     path = null;
+  //   }
 
-    return path;
-  }
+  //   return path;
+  // }
+
+  // public Command humanPlayerAlign() {
+  //   return new DeferredCommand(
+  //       () -> {
+  //         PathPlannerPath goalPath = getNearestPickupPath();
+  //         if (goalPath != null) {
+  //           return AutoBuilder.pathfindThenFollowPath(goalPath,
+  // AutoConstants.slowPathConstraints);
+  //         } else {
+  //           System.err.println("Invalid goalPath, path cannot be followed.");
+  //           return new InstantCommand();
+  //         }
+  //       },
+  //       Set.of(this));
+  // }
 
   public Command humanPlayerAlign() {
     return new DeferredCommand(
         () -> {
-          PathPlannerPath goalPath = getNearestPickupPath();
-          if (goalPath != null) {
-            return AutoBuilder.pathfindThenFollowPath(goalPath, AutoConstants.slowPathConstraints);
+          Pose2d closestPose;
+
+          List<Pose2d> redStationPoses =
+              List.of(FieldConstants.redStationLeft, FieldConstants.redStationRight);
+          List<Pose2d> blueStationPoses =
+              List.of(FieldConstants.blueStationLeft, FieldConstants.blueStationRight);
+
+          if (AllianceUtil.isRedAlliance()) {
+            closestPose = getState().Pose.nearest(redStationPoses);
+
           } else {
-            System.err.println("Invalid goalPath, path cannot be followed.");
-            return new InstantCommand();
+            closestPose = getState().Pose.nearest(blueStationPoses);
           }
+
+          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.pathConstraints);
         },
         Set.of(this));
   }

@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
@@ -110,7 +109,7 @@ public class RobotContainer {
         "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(5).asProxy());
 
     SmartDashboard.putData("Power Distribution", powerDistribution);
-    SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
+    // SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
 
     drivetrain.configureAutoBuilder();
 
@@ -275,35 +274,45 @@ public class RobotContainer {
                 .and(armMode.negate()))
         .whileTrue(elevator.upSpeed(0.1))
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
+
+    operatorStick
+        .button(OperatorConstants.algaeHighPosition)
+        .and(armMode)
+        .onTrue(elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight));
+
+    operatorStick
+        .button(OperatorConstants.algaeLowPosition)
+        .and(armMode)
+        .onTrue(elevator.moveToPosition(ElevatorConstants.AlgaeLowHeight));
   }
 
   private void configureArmBindings() {
     arm.setDefaultCommand(arm.moveToPosition(ArmConstants.armL1Position));
 
-    operatorStick
-        .button(OperatorConstants.groundIntakeButton)
-        .and(armMode)
-        .whileTrue(groundIntake.runIntake())
-        .onFalse(groundIntake.stop());
+    // operatorStick
+    //     .button(OperatorConstants.groundIntakeButton)
+    //     .and(armMode)
+    //     .whileTrue(groundIntake.runIntake())
+    //     .onFalse(groundIntake.stop());
 
-    operatorStick
-        .button(OperatorConstants.armManualOuttakeButton)
-        .and(armMode)
-        .whileTrue(groundIntake.run(groundIntake::manualOuttake))
-        .onFalse(groundIntake.stop());
+    // operatorStick
+    //     .button(OperatorConstants.armManualOuttakeButton)
+    //     .and(armMode)
+    //     .whileTrue(groundIntake.run(groundIntake::manualOuttake))
+    //     .onFalse(groundIntake.stop());
 
-    // Button to raise arm manual up
+    // // Button to raise arm manual up
 
-    // button to raise arm manual down
-    operatorStick
-        .button(OperatorConstants.armPickupHeightButton)
-        .and(armMode)
-        .onTrue(arm.moveToPosition(ArmConstants.armBottomPosition));
+    // // button to raise arm manual down
+    // operatorStick
+    //     .button(OperatorConstants.armPickupHeightButton)
+    //     .and(armMode)
+    //     .onTrue(arm.moveToPosition(ArmConstants.armBottomPosition));
 
-    operatorStick
-        .button(OperatorConstants.armL1HeightButton)
-        .and(armMode)
-        .onTrue(arm.moveToPosition(ArmConstants.armL1Position));
+    // operatorStick
+    //     .button(OperatorConstants.armL1HeightButton)
+    //     .and(armMode)
+    //     .onTrue(arm.moveToPosition(ArmConstants.armL1Position));
   }
 
   private void configureOuttakeBindings() {
@@ -335,25 +344,29 @@ public class RobotContainer {
   }
 
   private void configureAlgaeRemoverBindings() {
-    algaeRemover.setDefaultCommand(algaeRemover.moveToPosition(AlgaeRemoverConstants.downPosition));
 
     operatorStick
-        .button(OperatorConstants.algaeRemoverHighPosition)
-        .whileTrue(
+        .button(OperatorConstants.algaeIntakeButton)
+        .and(armMode)
+        .onTrue(
             algaeRemover
-                .moveToPosition(AlgaeRemoverConstants.horizontalPosition)
-                .alongWith(indexer.runIndexer())
-                .alongWith(outtake.fastOuttake())
-                .alongWith(elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight)));
+                .moveToPosition(AlgaeRemoverConstants.intakePosition)
+                .alongWith(outtake.fastOuttake()));
 
     operatorStick
-        .button(OperatorConstants.algaeRemoverLowPosition)
-        .whileTrue(
+        .button(OperatorConstants.algaeOutButton)
+        .and(armMode)
+        .onTrue(
             algaeRemover
-                .moveToPosition(AlgaeRemoverConstants.horizontalPosition)
-                .alongWith(indexer.runIndexer())
-                .alongWith(outtake.fastOuttake())
-                .alongWith(elevator.moveToPosition(ElevatorConstants.AlgaeLowHeight)));
+                .moveToPosition(AlgaeRemoverConstants.outPosition)
+                .alongWith(outtake.reverseOuttake()));
+
+    operatorStick
+        .button(OperatorConstants.algaeHoldButton)
+        .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition));
+    operatorStick
+        .button(OperatorConstants.algaeTopButton)
+        .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.topPosition));
   }
 
   private void configureOperatorBindings() {
