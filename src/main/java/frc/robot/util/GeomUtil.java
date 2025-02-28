@@ -1,4 +1,4 @@
-// Copyright (c) 2023 FRC 6328
+// Copyright (c) 2025 FRC 6328
 // http://github.com/Mechanical-Advantage
 //
 // Use of this source code is governed by an MIT-style
@@ -13,8 +13,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 /** Geometry utilities for working with translations, rotations, transforms, and poses. */
 public class GeomUtil {
@@ -24,19 +24,19 @@ public class GeomUtil {
    * @param translation The translation to create the transform with
    * @return The resulting transform
    */
-  public static Transform2d translationToTransform(Translation2d translation) {
+  public static Transform2d toTransform2d(Translation2d translation) {
     return new Transform2d(translation, new Rotation2d());
   }
 
   /**
    * Creates a pure translating transform
    *
-   * @param x The x componenet of the translation
-   * @param y The y componenet of the translation
+   * @param x The x coordinate of the translation
+   * @param y The y coordinate of the translation
    * @return The resulting transform
    */
-  public static Transform2d translationToTransform(double x, double y) {
-    return new Transform2d(new Translation2d(x, y), new Rotation2d());
+  public static Transform2d toTransform2d(double x, double y) {
+    return new Transform2d(x, y, new Rotation2d());
   }
 
   /**
@@ -45,7 +45,7 @@ public class GeomUtil {
    * @param rotation The rotation to create the transform with
    * @return The resulting transform
    */
-  public static Transform2d rotationToTransform(Rotation2d rotation) {
+  public static Transform2d toTransform2d(Rotation2d rotation) {
     return new Transform2d(new Translation2d(), rotation);
   }
 
@@ -55,8 +55,14 @@ public class GeomUtil {
    * @param pose The pose that will represent the transform
    * @return The resulting transform
    */
-  public static Transform2d poseToTransform(Pose2d pose) {
+  public static Transform2d toTransform2d(Pose2d pose) {
     return new Transform2d(pose.getTranslation(), pose.getRotation());
+  }
+
+  public static Pose2d inverse(Pose2d pose) {
+    Rotation2d rotationInverse = pose.getRotation().unaryMinus();
+    return new Pose2d(
+        pose.getTranslation().unaryMinus().rotateBy(rotationInverse), rotationInverse);
   }
 
   /**
@@ -66,7 +72,7 @@ public class GeomUtil {
    * @param transform The transform that will represent the pose
    * @return The resulting pose
    */
-  public static Pose2d transformToPose(Transform2d transform) {
+  public static Pose2d toPose2d(Transform2d transform) {
     return new Pose2d(transform.getTranslation(), transform.getRotation());
   }
 
@@ -76,7 +82,7 @@ public class GeomUtil {
    * @param translation The translation to create the pose with
    * @return The resulting pose
    */
-  public static Pose2d translationToPose(Translation2d translation) {
+  public static Pose2d toPose2d(Translation2d translation) {
     return new Pose2d(translation, new Rotation2d());
   }
 
@@ -86,7 +92,7 @@ public class GeomUtil {
    * @param rotation The rotation to create the pose with
    * @return The resulting pose
    */
-  public static Pose2d rotationToPose(Rotation2d rotation) {
+  public static Pose2d toPose2d(Rotation2d rotation) {
     return new Pose2d(new Translation2d(), rotation);
   }
 
@@ -97,7 +103,7 @@ public class GeomUtil {
    * @param factor The scaling factor for the twist components
    * @return The new twist
    */
-  public static Twist2d multiplyTwist(Twist2d twist, double factor) {
+  public static Twist2d multiply(Twist2d twist, double factor) {
     return new Twist2d(twist.dx * factor, twist.dy * factor, twist.dtheta * factor);
   }
 
@@ -107,7 +113,7 @@ public class GeomUtil {
    * @param pose The pose that will represent the transform
    * @return The resulting transform
    */
-  public static Transform3d pose3dToTransform3d(Pose3d pose) {
+  public static Transform3d toTransform3d(Pose3d pose) {
     return new Transform3d(pose.getTranslation(), pose.getRotation());
   }
 
@@ -118,27 +124,40 @@ public class GeomUtil {
    * @param transform The transform that will represent the pose
    * @return The resulting pose
    */
-  public static Pose3d transform3dToPose3d(Transform3d transform) {
+  public static Pose3d toPose3d(Transform3d transform) {
     return new Pose3d(transform.getTranslation(), transform.getRotation());
   }
 
   /**
-   * Converts a Translation3d to a Translation2d by extracting two dimensions (X and Y). chain
+   * Converts a ChassisSpeeds to a Twist2d by extracting two dimensions (Y and Z). chain
    *
-   * @param transform The original translation
+   * @param speeds The original translation
    * @return The resulting translation
    */
-  public static Translation2d translation3dTo2dXY(Translation3d translation) {
-    return new Translation2d(translation.getX(), translation.getY());
+  public static Twist2d toTwist2d(ChassisSpeeds speeds) {
+    return new Twist2d(
+        speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond);
   }
 
   /**
-   * Converts a Translation3d to a Translation2d by extracting two dimensions (X and Z). chain
+   * Creates a new pose from an existing one using a different translation value.
    *
-   * @param transform The original translation
-   * @return The resulting translation
+   * @param pose The original pose
+   * @param translation The new translation to use
+   * @return The new pose with the new translation and original rotation
    */
-  public static Translation2d translation3dTo2dXZ(Translation3d translation) {
-    return new Translation2d(translation.getX(), translation.getZ());
+  public static Pose2d withTranslation(Pose2d pose, Translation2d translation) {
+    return new Pose2d(translation, pose.getRotation());
+  }
+
+  /**
+   * Creates a new pose from an existing one using a different rotation value.
+   *
+   * @param pose The original pose
+   * @param rotation The new rotation to use
+   * @return The new pose with the original translation and new rotation
+   */
+  public static Pose2d withRotation(Pose2d pose, Rotation2d rotation) {
+    return new Pose2d(pose.getTranslation(), rotation);
   }
 }
