@@ -14,8 +14,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.util.FileVersionException;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Strategy;
@@ -45,7 +43,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.AutoConstants;
@@ -57,7 +54,6 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.ReefAlignmentPID;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.util.AllianceUtil;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -66,7 +62,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import org.json.simple.parser.ParseException;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -424,7 +419,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             FieldConstants.right_aprilTagOffsets.getOrDefault(bestTargetID, 0.0),
             new Rotation2d(0));
 
-    leftPose =
+    Pose2d estimatedLeftPose =
         new Pose2d(
             getState()
                 .Pose
@@ -435,7 +430,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                         Rotation2d.fromDegrees(0)))
                 .getTranslation(),
             Rotation2d.fromDegrees(desiredRotation));
-    rightPose =
+
+    Pose2d estimatedRightPose =
         new Pose2d(
             getState()
                 .Pose
@@ -447,6 +443,28 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 .getTranslation(),
             Rotation2d.fromDegrees(desiredRotation));
 
+    List<Pose2d> leftPoses =
+        AllianceUtil.isRedAlliance()
+            ? ReefDefinitePoses.redReefDefiniteLeftPoses
+            : ReefDefinitePoses.blueReefDefiniteLeftPoses;
+
+    List<Pose2d> rightPoses =
+        AllianceUtil.isRedAlliance()
+            ? ReefDefinitePoses.redReefDefiniteRightPoses
+            : ReefDefinitePoses.blueReefDefiniteRightPoses;
+
+    if (isPoseWithinTolerance(estimatedLeftPose, leftPoses)) {
+      leftPose = estimatedLeftPose;
+    } else {
+      return;
+    }
+
+    if (isPoseWithinTolerance(estimatedRightPose, rightPoses)) {
+      rightPose = estimatedRightPose;
+    } else {
+      return;
+    }
+
     SmartDashboard.putNumber("Swerve/Goal Rotation", desiredRotation);
     SmartDashboard.putNumber("Swerve/Best Tag ID", bestTargetID);
     SmartDashboard.putNumber("Swerve/Current Rotation", getState().Pose.getRotation().getDegrees());
@@ -455,6 +473,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     SmartDashboard.putNumber("Swerve/Right Y Pose", rightPose.getY());
     SmartDashboard.putNumber("Swerve/Left X Pose", leftPose.getX());
     SmartDashboard.putNumber("Swerve/Left Y Pose", leftPose.getY());
+  }
+
+  private boolean isPoseWithinTolerance(Pose2d estimatedPose, List<Pose2d> definitePoses) {
+    double tolerance = 0.0762; // 3 inches in meters
+    for (Pose2d pose : definitePoses) {
+      double distance =
+          Math.hypot(estimatedPose.getX() - pose.getX(), estimatedPose.getY() - pose.getY());
+      if (distance <= tolerance) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public Command reefAlign(boolean leftAlign) {
@@ -517,50 +547,73 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         Set.of(this));
   }
 
-  public PathPlannerPath getNearestPickupPath() {
-    Pose2d closestStation;
-    PathPlannerPath path = null;
+  // public PathPlannerPath getNearestPickupPath() {
+  //   Pose2d closestStation;
+  //   PathPlannerPath path = null;
 
-    List<Pose2d> redStations =
-        List.of(FieldConstants.redStationLeft, FieldConstants.redStationRight);
-    List<Pose2d> blueStations =
-        List.of(FieldConstants.blueStationLeft, FieldConstants.blueStationRight);
+  //   List<Pose2d> redStations =
+  //       List.of(FieldConstants.redStationLeft, FieldConstants.redStationRight);
+  //   List<Pose2d> blueStations =
+  //       List.of(FieldConstants.blueStationLeft, FieldConstants.blueStationRight);
 
-    try {
-      if (AllianceUtil.isRedAlliance()) {
-        closestStation = getState().Pose.nearest(redStations);
-        if (redStations.indexOf(closestStation) == 0) {
-          path = PathPlannerPath.fromPathFile("Human Player Pickup Left");
-        } else {
-          path = PathPlannerPath.fromPathFile("Human Player Pickup Right");
-        }
-      } else {
-        closestStation = getState().Pose.nearest(blueStations);
-        if (blueStations.indexOf(closestStation) == 0) {
-          path = PathPlannerPath.fromPathFile("Human Player Pickup Left");
-        } else {
-          path = PathPlannerPath.fromPathFile("Human Player Pickup Right");
-        }
-      }
-    } catch (IOException | FileVersionException | ParseException e) {
-      System.err.println("Error loading PathPlanner path: " + e.getMessage());
-      e.printStackTrace();
-      path = null;
-    }
+  //   try {
+  //     if (AllianceUtil.isRedAlliance()) {
+  //       closestStation = getState().Pose.nearest(redStations);
+  //       if (redStations.indexOf(closestStation) == 0) {
+  //         path = PathPlannerPath.fromPathFile("Human Player Pickup Left");
+  //       } else {
+  //         path = PathPlannerPath.fromPathFile("Human Player Pickup Right");
+  //       }
+  //     } else {
+  //       closestStation = getState().Pose.nearest(blueStations);
+  //       if (blueStations.indexOf(closestStation) == 0) {
+  //         path = PathPlannerPath.fromPathFile("Human Player Pickup Left");
+  //       } else {
+  //         path = PathPlannerPath.fromPathFile("Human Player Pickup Right");
+  //       }
+  //     }
+  //   } catch (IOException | FileVersionException | ParseException e) {
+  //     System.err.println("Error loading PathPlanner path: " + e.getMessage());
+  //     e.printStackTrace();
+  //     path = null;
+  //   }
 
-    return path;
-  }
+  //   return path;
+  // }
+
+  // public Command humanPlayerAlign() {
+  //   return new DeferredCommand(
+  //       () -> {
+  //         PathPlannerPath goalPath = getNearestPickupPath();
+  //         if (goalPath != null) {
+  //           return AutoBuilder.pathfindThenFollowPath(goalPath,
+  // AutoConstants.slowPathConstraints);
+  //         } else {
+  //           System.err.println("Invalid goalPath, path cannot be followed.");
+  //           return new InstantCommand();
+  //         }
+  //       },
+  //       Set.of(this));
+  // }
 
   public Command humanPlayerAlign() {
     return new DeferredCommand(
         () -> {
-          PathPlannerPath goalPath = getNearestPickupPath();
-          if (goalPath != null) {
-            return AutoBuilder.pathfindThenFollowPath(goalPath, AutoConstants.slowPathConstraints);
+          Pose2d closestPose;
+
+          List<Pose2d> redStationPoses =
+              List.of(FieldConstants.redStationLeft, FieldConstants.redStationRight);
+          List<Pose2d> blueStationPoses =
+              List.of(FieldConstants.blueStationLeft, FieldConstants.blueStationRight);
+
+          if (AllianceUtil.isRedAlliance()) {
+            closestPose = getState().Pose.nearest(redStationPoses);
+
           } else {
-            System.err.println("Invalid goalPath, path cannot be followed.");
-            return new InstantCommand();
+            closestPose = getState().Pose.nearest(blueStationPoses);
           }
+
+          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.pathConstraints);
         },
         Set.of(this));
   }

@@ -49,6 +49,10 @@ public class Outtake extends ExpandedSubsystem {
     return run(() -> outtakemotor.set(OuttakeConstants.slowOuttakeSpeed));
   }
 
+  public Command reverseOuttake() {
+    return run(() -> outtakemotor.set(-OuttakeConstants.fastOuttakeSpeed));
+  }
+
   public Command outtakeUntilBeamBreak() {
     return slowOuttake()
         .unless(this::outtakeLaserBroken)

@@ -4,13 +4,11 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.CANBus.CANBusStatus;
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import com.revrobotics.spark.SparkBase;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.hal.can.CANStatus;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
@@ -109,23 +107,23 @@ public class Robot extends TimedRobot {
 
     CommandScheduler.getInstance().run();
 
-    CANBusStatus canStatus = frc.robot.generated.TunerConstants.kCANBus.getStatus();
-    CANStatus rioCanStatus = RobotController.getCANStatus();
+    // CANBusStatus canStatus = frc.robot.generated.TunerConstants.kCANBus.getStatus();
+    // CANStatus rioCanStatus = RobotController.getCANStatus();
 
-    SmartDashboard.putNumber("CANivore/CAN Utilization %", canStatus.BusUtilization * 100.0);
-    SmartDashboard.putNumber("CANivore/Bus Off Count", canStatus.BusOffCount);
-    SmartDashboard.putNumber("CANivore/Receive Error Count", canStatus.REC);
-    SmartDashboard.putNumber("CANivore/Transmit Error Count", canStatus.TEC);
-    SmartDashboard.putNumber("CANivore/Tx Full Count", canStatus.TxFullCount);
+    // SmartDashboard.putNumber("CANivore/CAN Utilization %", canStatus.BusUtilization * 100.0);
+    // SmartDashboard.putNumber("CANivore/Bus Off Count", canStatus.BusOffCount);
+    // SmartDashboard.putNumber("CANivore/Receive Error Count", canStatus.REC);
+    // SmartDashboard.putNumber("CANivore/Transmit Error Count", canStatus.TEC);
+    // SmartDashboard.putNumber("CANivore/Tx Full Count", canStatus.TxFullCount);
 
-    SmartDashboard.putNumber(
-        "RoboRIO/CAN Status/Utilization %", rioCanStatus.percentBusUtilization * 100.0);
-    SmartDashboard.putNumber("RoboRIO/CAN Status/Bus Off Count", rioCanStatus.busOffCount);
-    SmartDashboard.putNumber(
-        "RoboRIO/CAN Status/Receive Error Count", rioCanStatus.receiveErrorCount);
-    SmartDashboard.putNumber(
-        "RoboRIO/CAN Status/Transmit Error Count", rioCanStatus.transmitErrorCount);
-    SmartDashboard.putNumber("RoboRIO/CAN Status/Tx Full Count", rioCanStatus.txFullCount);
+    // SmartDashboard.putNumber(
+    //     "RoboRIO/CAN Status/Utilization %", rioCanStatus.percentBusUtilization * 100.0);
+    // SmartDashboard.putNumber("RoboRIO/CAN Status/Bus Off Count", rioCanStatus.busOffCount);
+    // SmartDashboard.putNumber(
+    //     "RoboRIO/CAN Status/Receive Error Count", rioCanStatus.receiveErrorCount);
+    // SmartDashboard.putNumber(
+    //     "RoboRIO/CAN Status/Transmit Error Count", rioCanStatus.transmitErrorCount);
+    // SmartDashboard.putNumber("RoboRIO/CAN Status/Tx Full Count", rioCanStatus.txFullCount);
 
     SmartDashboard.putNumber("RoboRIO/CPU Temperature", RobotController.getCPUTemp());
     SmartDashboard.putBoolean("RoboRIO/RSL", RobotController.getRSLState());

@@ -57,12 +57,12 @@ public class Constants {
     public static final AngularAcceleration maxAngularAcceleration =
         maxRotationalSpeed.div(rotationZeroToFull);
 
-    public static final double centerToBumber = Units.inchesToMeters(19);
+    public static final double centerToBumber = Units.inchesToMeters(18);
   }
 
   public static class AutoConstants {
-    public static final PIDConstants translationPID = new PIDConstants(2.2, 0.0, 0.0); // 5
-    public static final PIDConstants rotationPID = new PIDConstants(2.8, 0.0, 0.0); // 1
+    public static final PIDConstants translationPID = new PIDConstants(5, 5.0, 0.0); // 5 2.2
+    public static final PIDConstants rotationPID = new PIDConstants(2.8, 0.0, 0.0); // 1  2.8
 
     public static final LinearVelocity autoMaxTranslationalSpeed = FeetPerSecond.of(15);
     public static final AngularVelocity autoMaxRotationalSpeed = RotationsPerSecond.of(1.0);
@@ -79,7 +79,7 @@ public class Constants {
             autoMaxRotationalSpeed.in(RadiansPerSecond),
             autoMaxAngularAcceleration.in(RadiansPerSecondPerSecond));
 
-    public static final PathConstraints slowPathConstraints = new PathConstraints(1.5, 2, .55, .75);
+    public static final PathConstraints slowPathConstraints = new PathConstraints(2, 2, 7, 13);
   }
 
   public static class VisionConstants {
@@ -135,12 +135,13 @@ public class Constants {
     }
 
     public static final Pose2d redStationLeft =
-        new Pose2d(16.638, 0.645, Rotation2d.fromDegrees(0));
+        new Pose2d(15.980, 0.686, Rotation2d.fromDegrees(126.87));
     public static final Pose2d redStationRight =
-        new Pose2d(16.638, 7.415, Rotation2d.fromDegrees(0));
-    public static final Pose2d blueStationLeft = new Pose2d(0.85, 7.415, Rotation2d.fromDegrees(0));
+        new Pose2d(15.980, 7.400, Rotation2d.fromDegrees(-126.87));
+    public static final Pose2d blueStationLeft =
+        new Pose2d(1.58, 7.400, Rotation2d.fromDegrees(-53.130));
     public static final Pose2d blueStationRight =
-        new Pose2d(0.85, 0.645, Rotation2d.fromDegrees(0));
+        new Pose2d(1.58, 0.686, Rotation2d.fromDegrees(53.130));
 
     public static final List<Pose2d> redSetupPoses =
         List.of(
@@ -332,9 +333,16 @@ public class Constants {
 
   public static class AlgaeRemoverConstants {
     public static final int algaeRemoverMotorID = 17;
+
     public static final double algaeRemoverSpeed = .2;
-    public static final double downPosition = 0.0; // Degrees
-    public static final double horizontalPosition = 90.0; // Degrees
+
+    public static final double topPosition = 0.0; // Degrees
+    public static final double intakePosition = 0.0;
+    public static final double holdPosition = 0.0;
+    public static final double outPosition = 0.0;
+    public static final double HighestPosition = 0.0;
+    public static final double LowestPosition = 0.0;
+
     public static final double maxVelocity = 30.0; // Degrees per second
     public static final double maxAcceleration = 50.0; // Degrees per second squared
   }
@@ -438,13 +446,13 @@ public class Constants {
     public static final int indexerButton = 13;
     public static final int reverseIndexerButton = 4;
 
-    public static final int groundIntakeButton = 13;
-    public static final int armManualOuttakeButton = 12;
+    // public static final int groundIntakeButton = 13;
+    // public static final int armManualOuttakeButton = 12;
 
-    public static final int armPickupHeightButton = 5;
-    public static final int armL1HeightButton = 6;
-    public static final int armManualUp = 10;
-    public static final int armManualDown = 9;
+    // public static final int armPickupHeightButton = 5;
+    // public static final int armL1HeightButton = 6;
+    // public static final int armManualUp = 10;
+    // public static final int armManualDown = 9;
 
     public static final int L4HeightButton = 8;
     public static final int L3HeightButton = 7;
@@ -454,11 +462,15 @@ public class Constants {
     public static final int elevatorManualDown = 9;
     public static final int homeElevatorButon = 2;
     public static final int elevatorOverrideButton = 3;
+    public static final int algaeHighPosition = 8;
+    public static final int algaeLowPosition = 7;
 
     public static final int outtakeButton = 12;
 
-    public static final int algaeRemoverHighPosition = 14;
-    public static final int algaeRemoverLowPosition = 15;
+    public static final int algaeIntakeButton = 13;
+    public static final int algaeOutButton = 12;
+    public static final int algaeHoldButton = 14;
+    public static final int algaeTopButton = 15;
 
     public static final int armModeButton = 16;
 

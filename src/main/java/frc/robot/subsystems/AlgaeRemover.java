@@ -41,10 +41,10 @@ public class AlgaeRemover extends ExpandedSubsystem {
     algaeRemoverConfig
         .inverted(false)
         .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(20)
-        .secondaryCurrentLimit(25);
+        .smartCurrentLimit(25)
+        .secondaryCurrentLimit(30);
 
-    algaeRemoverConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(0.1).i(0).d(0);
+    algaeRemoverConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(0.5).i(0).d(0);
 
     algaeRemoverConfig
         .closedLoop
@@ -54,9 +54,9 @@ public class AlgaeRemover extends ExpandedSubsystem {
 
     algaeRemoverConfig
         .softLimit
-        .forwardSoftLimit(AlgaeRemoverConstants.horizontalPosition)
+        .forwardSoftLimit(AlgaeRemoverConstants.HighestPosition)
         .forwardSoftLimitEnabled(true)
-        .reverseSoftLimit(AlgaeRemoverConstants.downPosition)
+        .reverseSoftLimit(AlgaeRemoverConstants.LowestPosition)
         .reverseSoftLimitEnabled(true);
 
     algaeRemoverMotor.configure(
@@ -75,9 +75,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
   }
 
   public double getPosition() {
-    double rotations = algaeRemoverAbsoluteEncoder.getPosition();
-    double degrees = rotations * 360;
-    return degrees;
+    return algaeRemoverAbsoluteEncoder.getPosition() * 360; // in degrees
   }
 
   @Override
@@ -101,7 +99,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
 
         // Checks Ground Intake Motor
         Commands.parallel(
-            moveToPosition(AlgaeRemoverConstants.horizontalPosition),
+            moveToPosition(AlgaeRemoverConstants.intakePosition),
             Commands.sequence(
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
@@ -110,8 +108,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
                         addError("Algae Remover Motor isn't moving");
                       } else {
                         addInfo("Algae Remover Motor is moving");
-                        if (Math.abs(AlgaeRemoverConstants.horizontalPosition - getPosition())
-                            > 0.1) {
+                        if (Math.abs(AlgaeRemoverConstants.intakePosition - getPosition()) > 0.1) {
                           addError("Algae Remover Motor is not at desired position");
                           // We just put a fake range for now; we'll update this later on
                         } else {
@@ -119,7 +116,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
                         }
                       }
                     }))),
-        moveToPosition(AlgaeRemoverConstants.downPosition),
+        moveToPosition(AlgaeRemoverConstants.outPosition),
         Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
         Commands.runOnce(
             () -> {

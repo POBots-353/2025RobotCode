@@ -29,7 +29,7 @@ public class TurnToReef extends Command {
 
   public TurnToReef(Swerve swerve) {
     this.swerve = swerve;
-    rotationController = new PIDController(10, 0, 0); // kP, kI, kD
+    rotationController = new PIDController(7, 0, .5); // kP, kI, kD
     rotationController.enableContinuousInput(-Math.PI, Math.PI); // Allow wrapping at -π to π
 
     addRequirements(swerve);
