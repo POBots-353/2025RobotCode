@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -102,11 +103,13 @@ public class RobotContainer {
     //     // .onlyIf(outtakeLaserBroken)
     //     .withTimeout(4)
     //     .asProxy());
-    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(3).asProxy());
+    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(2).asProxy());
     NamedCommands.registerCommand("Outtake", outtake.fastOuttake().withTimeout(1.5).asProxy());
     NamedCommands.registerCommand("Elevator: Bottom", new InstantCommand().asProxy());
     NamedCommands.registerCommand(
-        "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(5).asProxy());
+        "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(3).asProxy());
+    NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(3));
+    NamedCommands.registerCommand("AutoAlignRight", drivetrain.reefAlign(false).withTimeout(3));
 
     SmartDashboard.putData("Power Distribution", powerDistribution);
     // SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
@@ -183,8 +186,8 @@ public class RobotContainer {
 
     // reset the field-centric heading on left bumper press
     driverController
-        .start()
-        .and(driverController.back())
+        .back()
+        .and(driverController.start())
         .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
 
     drivetrain.registerTelemetry(logger::telemeterize);

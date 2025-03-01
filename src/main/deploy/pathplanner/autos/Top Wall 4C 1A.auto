@@ -11,7 +11,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "StartRWall to E"
+                  "pathName": "StartLWall to J"
                 }
               },
               {
@@ -55,7 +55,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "E to HP Right"
+                  "pathName": "J to HP Left"
                 }
               },
               {
@@ -93,7 +93,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP Right to D"
+                  "pathName": "HP Left to K"
                 }
               },
               {
@@ -143,7 +143,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "D to HP right"
+                  "pathName": "K to HP Left"
                 }
               },
               {
@@ -181,7 +181,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP Right to C"
+                  "pathName": "HP Left to L"
                 }
               },
               {
@@ -231,7 +231,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "C to HP Right"
+                  "pathName": "L to HP Left"
                 }
               },
               {
@@ -269,7 +269,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP Right to B"
+                  "pathName": "HP Left to A"
                 }
               },
               {
@@ -319,7 +319,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Algae Remover B-A"
+                  "pathName": "Algae Remover A-B"
                 }
               },
               {

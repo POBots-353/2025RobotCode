@@ -57,12 +57,12 @@ public class Constants {
     public static final AngularAcceleration maxAngularAcceleration =
         maxRotationalSpeed.div(rotationZeroToFull);
 
-    public static final double centerToBumber = Units.inchesToMeters(19);
+    public static final double centerToBumber = Units.inchesToMeters(18);
   }
 
   public static class AutoConstants {
-    public static final PIDConstants translationPID = new PIDConstants(2.2, 0.0, 0.0); // 5
-    public static final PIDConstants rotationPID = new PIDConstants(2.8, 0.0, 0.0); // 1
+    public static final PIDConstants translationPID = new PIDConstants(5, 5.0, 0.0); // 5 2.2
+    public static final PIDConstants rotationPID = new PIDConstants(2.8, 0.0, 0.0); // 1  2.8
 
     public static final LinearVelocity autoMaxTranslationalSpeed = FeetPerSecond.of(15);
     public static final AngularVelocity autoMaxRotationalSpeed = RotationsPerSecond.of(1.0);
@@ -79,7 +79,7 @@ public class Constants {
             autoMaxRotationalSpeed.in(RadiansPerSecond),
             autoMaxAngularAcceleration.in(RadiansPerSecondPerSecond));
 
-    public static final PathConstraints slowPathConstraints = new PathConstraints(1.5, 2, .55, .75);
+    public static final PathConstraints slowPathConstraints = new PathConstraints(2, 2, 7, 13);
   }
 
   public static class VisionConstants {
