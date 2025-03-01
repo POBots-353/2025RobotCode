@@ -419,7 +419,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             FieldConstants.right_aprilTagOffsets.getOrDefault(bestTargetID, 0.0),
             new Rotation2d(0));
 
-    leftPose =
+    Pose2d estimatedLeftPose =
         new Pose2d(
             getState()
                 .Pose
@@ -430,7 +430,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                         Rotation2d.fromDegrees(0)))
                 .getTranslation(),
             Rotation2d.fromDegrees(desiredRotation));
-    rightPose =
+
+    Pose2d estimatedRightPose =
         new Pose2d(
             getState()
                 .Pose
@@ -442,6 +443,28 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 .getTranslation(),
             Rotation2d.fromDegrees(desiredRotation));
 
+    List<Pose2d> leftPoses =
+        AllianceUtil.isRedAlliance()
+            ? ReefDefinitePoses.redReefDefiniteLeftPoses
+            : ReefDefinitePoses.blueReefDefiniteLeftPoses;
+
+    List<Pose2d> rightPoses =
+        AllianceUtil.isRedAlliance()
+            ? ReefDefinitePoses.redReefDefiniteRightPoses
+            : ReefDefinitePoses.blueReefDefiniteRightPoses;
+
+    if (isPoseWithinTolerance(estimatedLeftPose, leftPoses)) {
+      leftPose = estimatedLeftPose;
+    } else {
+      return;
+    }
+
+    if (isPoseWithinTolerance(estimatedRightPose, rightPoses)) {
+      rightPose = estimatedRightPose;
+    } else {
+      return;
+    }
+
     SmartDashboard.putNumber("Swerve/Goal Rotation", desiredRotation);
     SmartDashboard.putNumber("Swerve/Best Tag ID", bestTargetID);
     SmartDashboard.putNumber("Swerve/Current Rotation", getState().Pose.getRotation().getDegrees());
@@ -450,6 +473,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     SmartDashboard.putNumber("Swerve/Right Y Pose", rightPose.getY());
     SmartDashboard.putNumber("Swerve/Left X Pose", leftPose.getX());
     SmartDashboard.putNumber("Swerve/Left Y Pose", leftPose.getY());
+  }
+
+  private boolean isPoseWithinTolerance(Pose2d estimatedPose, List<Pose2d> definitePoses) {
+    double tolerance = 0.0762; // 3 inches in meters
+    for (Pose2d pose : definitePoses) {
+      double distance =
+          Math.hypot(estimatedPose.getX() - pose.getX(), estimatedPose.getY() - pose.getY());
+      if (distance <= tolerance) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public Command reefAlign(boolean leftAlign) {

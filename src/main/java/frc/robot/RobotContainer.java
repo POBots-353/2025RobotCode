@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.AlgaeRemoverConstants;
@@ -70,7 +70,7 @@ public class RobotContainer {
   private PersistentSendableChooser<String> batteryChooser;
   private SendableChooser<Command> autoChooser;
 
-  private final CommandXboxController driverController = new CommandXboxController(0);
+  private final CommandPS5Controller driverController = new CommandPS5Controller(0);
   private final CommandJoystick operatorStick = new CommandJoystick(1);
 
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -102,11 +102,13 @@ public class RobotContainer {
     //     // .onlyIf(outtakeLaserBroken)
     //     .withTimeout(4)
     //     .asProxy());
-    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(3).asProxy());
+    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(2).asProxy());
     NamedCommands.registerCommand("Outtake", outtake.fastOuttake().withTimeout(1.5).asProxy());
     NamedCommands.registerCommand("Elevator: Bottom", new InstantCommand().asProxy());
     NamedCommands.registerCommand(
-        "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(5).asProxy());
+        "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(3).asProxy());
+    NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(3));
+    NamedCommands.registerCommand("AutoAlignRight", drivetrain.reefAlign(false).withTimeout(3));
 
     SmartDashboard.putData("Power Distribution", powerDistribution);
     // SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
@@ -135,7 +137,7 @@ public class RobotContainer {
   }
 
   private void configureDriverBindings() {
-    Trigger slowMode = driverController.leftTrigger();
+    Trigger slowMode = driverController.L2();
 
     drivetrain.setDefaultCommand(
         new TeleopSwerve(
@@ -160,10 +162,10 @@ public class RobotContainer {
     //                     new Rotation2d(
     //                         -driverController.getLeftY(), -driverController.getLeftX()))));
 
-    driverController.rightTrigger().whileTrue(drivetrain.humanPlayerAlign());
+    driverController.R2().whileTrue(drivetrain.humanPlayerAlign());
 
     driverController
-        .leftBumper()
+        .L1()
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
@@ -171,7 +173,7 @@ public class RobotContainer {
                 Commands.waitSeconds(.08),
                 drivetrain.reefAlign(true)));
     driverController
-        .rightBumper()
+        .R1()
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
@@ -179,12 +181,12 @@ public class RobotContainer {
                 Commands.waitSeconds(.08),
                 drivetrain.reefAlign(false)));
 
-    driverController.x().whileTrue(drivetrain.pathFindForAlgaeRemover());
+    driverController.circle().whileTrue(drivetrain.pathFindForAlgaeRemover());
 
     // reset the field-centric heading on left bumper press
     driverController
-        .start()
-        .and(driverController.back())
+        .options()
+        .and(driverController.create())
         .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
 
     drivetrain.registerTelemetry(logger::telemeterize);

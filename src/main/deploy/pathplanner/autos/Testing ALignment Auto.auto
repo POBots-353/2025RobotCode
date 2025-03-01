@@ -1,0 +1,92 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Alignment Test Path (1)"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 4.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "AutoAlignLeft"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "E to HP Right"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Alignment Test Path (2)"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoAlignRight"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "D to HP right"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Alignment Test Path (3)"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoAlignLeft"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C to HP Right"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Alignment Test Path (4)"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoAlignRight"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": true
+}
