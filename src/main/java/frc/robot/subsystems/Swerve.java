@@ -43,6 +43,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.AutoConstants;
@@ -475,7 +476,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   private boolean isPoseWithinTolerance(Pose2d estimatedPose, List<Pose2d> definitePoses) {
-    double tolerance = 0.0762; // 3 inches in meters
+    double tolerance = 0.0762 * 4; // 3 inches in meters
     for (Pose2d pose : definitePoses) {
       double distance =
           Math.hypot(estimatedPose.getX() - pose.getX(), estimatedPose.getY() - pose.getY());
@@ -489,6 +490,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   public Command reefAlign(boolean leftAlign) {
     return new DeferredCommand(
         () -> {
+          if (leftPose == null || rightPose == null) {
+            return new InstantCommand();
+          }
           Pose2d goalPose = leftAlign ? leftPose : rightPose;
           SmartDashboard.putNumber("Swerve/Attempted Pose X", goalPose.getX());
           SmartDashboard.putNumber("Swerve/Attempted Pose Y", goalPose.getY());
@@ -793,6 +797,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     poseEstimator.setReferencePose(getState().Pose);
 
     for (PhotonPipelineResult result : latestResults) {
+
+      // List<PhotonTrackedTarget> filterTargets = result.getTargets().stream().filter(target->
+      // !FieldConstants.rejectedTAGS.contains(target.getFiducialId())).toList();
+      // if(filterTargets.isEmpty()) {
+      //   continue;
+      // }
+      // PhotonPipelineResult filteredResult = new PhotonPipelineResult(filterTargets);
+
       Optional<EstimatedRobotPose> optionalVisionPose = poseEstimator.update(result);
       if (optionalVisionPose.isEmpty()) {
         continue;
@@ -804,6 +816,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       int tagCount = 0;
 
       for (PhotonTrackedTarget target : visionPose.targetsUsed) {
+        // if (target.getFiducialId() == 5 ||target.getFiducialId() == 4 || target.getFiducialId()
+        // == 15 || target.getFiducialId() == 14) {
+        //   continue;
+        // }
         tagCount++;
         totalDistance +=
             target.getBestCameraToTarget().getTranslation().toTranslation2d().getNorm();

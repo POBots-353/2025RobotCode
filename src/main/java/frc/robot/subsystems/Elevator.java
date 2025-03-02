@@ -121,7 +121,14 @@ public class Elevator extends ExpandedSubsystem {
     return downSpeed(0.1)
         .until(() -> buttonDebouncer.calculate(buttonPressed()))
         .unless(() -> buttonDebouncer.calculate(buttonPressed()))
-        .finallyDo(this::stopElevator)
+        .finallyDo(
+            () ->
+                runOnce(
+                    () -> {
+                      stopElevator();
+                      elevatorMainMotor.setPosition(0, 1);
+                      elevatorFollowerMotor.setPosition(0, 1);
+                    }))
         .withName("Home elevator");
   }
 
@@ -171,7 +178,7 @@ public class Elevator extends ExpandedSubsystem {
               motionMagicRequest.withPosition(ElevatorConstants.downHeight));
         })
         .until(() -> (atSetPoint(ElevatorConstants.downHeight)))
-        .andThen(downSpeed(.01).until(() -> buttonDebouncer.calculate(buttonPressed())))
+        .andThen(downSpeed(.02).until(() -> buttonDebouncer.calculate(buttonPressed())))
         .withName("Down Position");
   }
 

@@ -120,7 +120,8 @@ public class Constants {
 
   // .890 7.415
   public static class FieldConstants {
-    public static final String aprilTagJson = "2025-official-welded";
+    public static final List<Integer> rejectedTAGS = List.of(4, 14, 15, 5);
+    public static final String aprilTagJson = "regalEagle";
     public static final Path aprilTagJsonPath =
         Path.of(Filesystem.getDeployDirectory().getPath(), "apriltags", aprilTagJson + ".json");
 
@@ -358,14 +359,14 @@ public class Constants {
     public static final double maxHeight = Units.inchesToMeters(28.09);
     public static final double minHeight = 0.0;
 
-    public static final double L4Height = Units.inchesToMeters(28.09);
+    public static final double L4Height = Units.inchesToMeters(27.11); // 28.09
     public static final double L3Height = Units.inchesToMeters(15.5);
     public static final double L2Height = Units.inchesToMeters(7.3);
     public static final double downHeight = Units.inchesToMeters(0);
-    public static final double coralInTheWayAdd = Units.inchesToMeters(2.74);
+    public static final double coralInTheWayAdd = 2.74;
 
-    public static final double AlgaeHighHeight = Units.inchesToMeters(15);
-    public static final double AlgaeLowHeight = Units.inchesToMeters(6.8);
+    public static final double AlgaeHighHeight = Units.inchesToMeters(8.66);
+    public static final double AlgaeLowHeight = Units.inchesToMeters(1.845);
 
     public static final double sensorToMechanismRatio =
         elevatorGearRatio / (sprocketDiameter * Math.PI);
@@ -463,8 +464,8 @@ public class Constants {
     public static final int elevatorManualDown = 9;
     public static final int homeElevatorButon = 2;
     public static final int elevatorOverrideButton = 3;
-    public static final int algaeHighPosition = 8;
-    public static final int algaeLowPosition = 7;
+    public static final int algaeHighPosition = 6;
+    public static final int algaeLowPosition = 5;
 
     public static final int coralInTheWay = 1;
 
