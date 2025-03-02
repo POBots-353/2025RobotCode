@@ -57,7 +57,7 @@ public class Outtake extends ExpandedSubsystem {
     return slowOuttake()
         .unless(this::outtakeLaserBroken)
         .until(this::outtakeLaserBroken)
-        .finallyDo(this::stop);
+        .finallyDo(this::stop); // ()-> Commands.waitSeconds(.05).andThen(this::stop));
   }
 
   public Command autoOuttake() {

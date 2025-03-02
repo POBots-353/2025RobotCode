@@ -51,7 +51,7 @@ import frc.robot.Constants.FieldConstants.ReefDefinitePoses;
 import frc.robot.Constants.MiscellaneousConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.commands.ReefAlignmentPID;
+// import frc.robot.commands.ReefAlignmentPID;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.util.AllianceUtil;
 import java.util.ArrayList;
@@ -60,7 +60,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -499,53 +498,53 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         Set.of(this));
   }
 
-  public Command reefAlignNoPathPlanner(boolean leftAlign) {
-    return new DeferredCommand(
-        () -> {
-          Pose2d robotPose = getState().Pose;
-          AtomicReference<Pose2d> nearestPose = new AtomicReference<>(Pose2d.kZero);
-          if (AllianceUtil.isRedAlliance()) {
-            if (leftAlign) {
-              nearestPose.set(robotPose.nearest(ReefDefinitePoses.redReefDefiniteLeftPoses));
-            } else {
-              nearestPose.set(robotPose.nearest(ReefDefinitePoses.redReefDefiniteRightPoses));
-            }
-          } else {
-            if (leftAlign) {
-              nearestPose.set(robotPose.nearest(ReefDefinitePoses.blueReefDefiniteLeftPoses));
-            } else {
-              nearestPose.set(robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses));
-            }
-          }
-          Supplier<Pose2d> nearestPoseSupplier = () -> nearestPose.get();
-          Command pathCommand = new ReefAlignmentPID(nearestPoseSupplier);
-          return pathCommand;
-        },
-        Set.of(this));
-  }
+  // public Command reefAlignNoPathPlanner(boolean leftAlign) {
+  //   return new DeferredCommand(
+  //       () -> {
+  //         Pose2d robotPose = getState().Pose;
+  //         AtomicReference<Pose2d> nearestPose = new AtomicReference<>(Pose2d.kZero);
+  //         if (AllianceUtil.isRedAlliance()) {
+  //           if (leftAlign) {
+  //             nearestPose.set(robotPose.nearest(ReefDefinitePoses.redReefDefiniteLeftPoses));
+  //           } else {
+  //             nearestPose.set(robotPose.nearest(ReefDefinitePoses.redReefDefiniteRightPoses));
+  //           }
+  //         } else {
+  //           if (leftAlign) {
+  //             nearestPose.set(robotPose.nearest(ReefDefinitePoses.blueReefDefiniteLeftPoses));
+  //           } else {
+  //             nearestPose.set(robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses));
+  //           }
+  //         }
+  //         Supplier<Pose2d> nearestPoseSupplier = () -> nearestPose.get();
+  //         Command pathCommand = new ReefAlignmentPID(nearestPoseSupplier);
+  //         return pathCommand;
+  //       },
+  //       Set.of(this));
+  // }
 
-  public Command reefAlignNoVision(boolean leftAlign) {
-    return new DeferredCommand(
-        () -> {
-          Pose2d robotPose = getState().Pose;
-          Pose2d nearestPose = Pose2d.kZero;
-          if (AllianceUtil.isRedAlliance()) {
-            if (leftAlign) {
-              nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteLeftPoses);
-            } else {
-              nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteRightPoses);
-            }
-          } else {
-            if (leftAlign) {
-              nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteLeftPoses);
-            } else {
-              nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses);
-            }
-          }
-          return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.slowPathConstraints, 0.0);
-        },
-        Set.of(this));
-  }
+  // public Command reefAlignNoVision(boolean leftAlign) {
+  //   return new DeferredCommand(
+  //       () -> {
+  //         Pose2d robotPose = getState().Pose;
+  //         Pose2d nearestPose = Pose2d.kZero;
+  //         if (AllianceUtil.isRedAlliance()) {
+  //           if (leftAlign) {
+  //             nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteLeftPoses);
+  //           } else {
+  //             nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteRightPoses);
+  //           }
+  //         } else {
+  //           if (leftAlign) {
+  //             nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteLeftPoses);
+  //           } else {
+  //             nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses);
+  //           }
+  //         }
+  //         return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.slowPathConstraints, 0.0);
+  //       },
+  //       Set.of(this));
+  // }
 
   // public PathPlannerPath getNearestPickupPath() {
   //   Pose2d closestStation;

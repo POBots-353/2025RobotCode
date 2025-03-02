@@ -206,7 +206,7 @@ public class Elevator extends ExpandedSubsystem {
     return elevatorSysIdRoutine.dynamic(direction);
   }
 
-  public double getPosition() {
+  public double getPos() {
     return Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble());
   }
 
@@ -221,6 +221,7 @@ public class Elevator extends ExpandedSubsystem {
 
   @Override
   public void periodic() {
+    getPos();
     SmartDashboard.putNumber(
         "Elevator/Main Stage 1 Position",
         Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()));
@@ -290,7 +291,7 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPosition()) <= 1e-4) {
+                      if (Math.abs(getPos()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
@@ -308,7 +309,7 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(8),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPosition()) <= 1e-4) {
+                      if (Math.abs(getPos()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
@@ -325,7 +326,7 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPosition()) <= 1e-4) {
+                      if (Math.abs(getPos()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
@@ -343,7 +344,7 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(8),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPosition()) <= 1e-4) {
+                      if (Math.abs(getPos()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
@@ -360,7 +361,7 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPosition()) <= 1e-4) {
+                      if (Math.abs(getPos()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
@@ -378,7 +379,7 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(8),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPosition()) <= 1e-4) {
+                      if (Math.abs(getPos()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
@@ -395,7 +396,7 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPosition()) <= 1e-4) {
+                      if (Math.abs(getPos()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
@@ -413,7 +414,7 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPosition()) <= 1e-4) {
+                      if (Math.abs(getPos()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
@@ -431,7 +432,7 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPosition()) <= 1e-4) {
+                      if (Math.abs(getPos()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
@@ -449,7 +450,7 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(8),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPosition()) <= 1e-4) {
+                      if (Math.abs(getPos()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");

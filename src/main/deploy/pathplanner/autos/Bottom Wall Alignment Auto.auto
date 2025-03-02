@@ -5,32 +5,25 @@
     "data": {
       "commands": [
         {
+          "type": "path",
+          "data": {
+            "pathName": "Alignment Test Path (1)"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "StartLWall to J"
+                  "name": "AutoAlignLeft"
                 }
               },
               {
-                "type": "sequential",
+                "type": "named",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.0
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Elevator: L4"
-                      }
-                    }
-                  ]
+                  "name": "Elevator: L4"
                 }
               }
             ]
@@ -59,7 +52,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "J to HP Left"
+                        "pathName": "E to HP Right"
                       }
                     }
                   ]
@@ -100,47 +93,28 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "Alignment Test Path (2)"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "HP Left to K"
+                  "name": "AutoAlignRight"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "Stop Indexer"
-                }
-              },
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.0
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Elevator: L4"
-                      }
-                    }
-                  ]
+                  "name": "Elevator: L4"
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Auto Outtake"
           }
         },
         {
@@ -160,10 +134,16 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "K to HP Left"
+                        "pathName": "D to HP right"
                       }
                     }
                   ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: Bottom"
                 }
               },
               {
@@ -184,12 +164,6 @@
                     }
                   ]
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: Bottom"
-                }
               }
             ]
           }
@@ -201,47 +175,28 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "Alignment Test Path (3)"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "HP Left to L"
+                  "name": "AutoAlignLeft"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "Stop Indexer"
-                }
-              },
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.0
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Elevator: L4"
-                      }
-                    }
-                  ]
+                  "name": "Elevator: L4"
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Auto Outtake"
           }
         },
         {
@@ -261,10 +216,16 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "L to HP Left"
+                        "pathName": "C to HP Right"
                       }
                     }
                   ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: Bottom"
                 }
               },
               {
@@ -285,12 +246,6 @@
                     }
                   ]
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: Bottom"
-                }
               }
             ]
           }
@@ -302,79 +257,34 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "Alignment Test Path (4)"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "HP Left to A"
+                  "name": "AutoAlignRight"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "Stop Indexer"
-                }
-              },
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.0
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Elevator: L4"
-                      }
-                    }
-                  ]
+                  "name": "Elevator: L4"
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Auto Outtake"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Elevator: Bottom"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Algae Remover A-B"
-                }
-              },
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.2
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
           }
         }
       ]
