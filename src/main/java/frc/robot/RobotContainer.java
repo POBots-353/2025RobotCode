@@ -79,11 +79,11 @@ public class RobotContainer {
   private Trigger elevatorIsDown = new Trigger(elevator::elevatorIsDown);
   private Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
 
-    Command outtakePrematch = outtake.buildPrematch();
-    Command algaeRemoverPrematch = algaeRemover.buildPrematch();
-    Command elevatorPrematch = elevator.buildPrematch();
-    Command indexerPrematch = indexer.buildPrematch();
-    Command swervePrematch = drivetrain.buildPrematch();
+  Command outtakePrematch = outtake.buildPrematch();
+  Command algaeRemoverPrematch = algaeRemover.buildPrematch();
+  Command elevatorPrematch = elevator.buildPrematch();
+  Command indexerPrematch = indexer.buildPrematch();
+  Command swervePrematch = drivetrain.buildPrematch();
 
   public RobotContainer() {
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
