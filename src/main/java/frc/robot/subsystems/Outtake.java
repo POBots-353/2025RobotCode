@@ -37,6 +37,14 @@ public class Outtake extends ExpandedSubsystem {
         .smartCurrentLimit(OuttakeConstants.outtakeCurrentLimit)
         .secondaryCurrentLimit(OuttakeConstants.outtakeShutOffLimit);
 
+    outtakeConfig
+        .signals
+        .absoluteEncoderPositionAlwaysOn(false)
+        .absoluteEncoderVelocityAlwaysOn(false)
+        .primaryEncoderPositionAlwaysOn(false)
+        .externalOrAltEncoderPositionAlwaysOn(false)
+        .externalOrAltEncoderVelocityAlwaysOn(false);
+
     outtakemotor.configure(
         outtakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }

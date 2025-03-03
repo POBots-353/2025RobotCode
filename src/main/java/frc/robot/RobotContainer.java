@@ -50,17 +50,11 @@ public class RobotContainer {
   @Logged(name = "Elevator")
   private final Elevator elevator = new Elevator();
 
-  //   @Logged(name = "Arm")
-  //   private final Arm arm = new Arm();
-
   @Logged(name = "Indexer")
   private final Indexer indexer = new Indexer();
 
   @Logged(name = "Outtake")
   private final Outtake outtake = new Outtake();
-
-  //   @Logged(name = "Ground Intake")
-  //   private final GroundIntake groundIntake = new GroundIntake();
 
   @Logged(name = "Algae Remover")
   private final AlgaeRemover algaeRemover = new AlgaeRemover();
@@ -85,14 +79,11 @@ public class RobotContainer {
   private Trigger elevatorIsDown = new Trigger(elevator::elevatorIsDown);
   private Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
 
-  // Just put a bunch of instantcommands as placeholders for now
-  //   Command outtakePrematch = new InstantCommand();
-  //   Command algaeRemoverPrematch = new InstantCommand();
-  //   Command armPrematch = new InstantCommand();
-  //   Command elevatorPrematch = new InstantCommand();
-  //   Command groundIntakePrematch = groundIntake.buildPrematch();
-  //   Command indexerPrematch = indexer.buildPrematch();
-  //   Command swervePrematch = new InstantCommand();
+    Command outtakePrematch = outtake.buildPrematch();
+    Command algaeRemoverPrematch = algaeRemover.buildPrematch();
+    Command elevatorPrematch = elevator.buildPrematch();
+    Command indexerPrematch = indexer.buildPrematch();
+    Command swervePrematch = drivetrain.buildPrematch();
 
   public RobotContainer() {
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
