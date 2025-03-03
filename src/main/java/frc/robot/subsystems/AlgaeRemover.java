@@ -52,12 +52,12 @@ public class AlgaeRemover extends ExpandedSubsystem {
         .maxVelocity(AlgaeRemoverConstants.maxVelocity)
         .maxAcceleration(AlgaeRemoverConstants.maxAcceleration);
 
-    algaeRemoverConfig
-        .softLimit
-        .forwardSoftLimit(AlgaeRemoverConstants.HighestPosition)
-        .forwardSoftLimitEnabled(true)
-        .reverseSoftLimit(AlgaeRemoverConstants.LowestPosition)
-        .reverseSoftLimitEnabled(true);
+    // algaeRemoverConfig
+    //     .softLimit
+    //     .forwardSoftLimit(AlgaeRemoverConstants.HighestPosition)
+    //     .forwardSoftLimitEnabled(true)
+    //     .reverseSoftLimit(AlgaeRemoverConstants.LowestPosition)
+    //     .reverseSoftLimitEnabled(true);
 
     algaeRemoverMotor.configure(
         algaeRemoverConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -74,8 +74,16 @@ public class AlgaeRemover extends ExpandedSubsystem {
     algaeRemoverMotor.set(0);
   }
 
+  public void algaeRemoverUp() {
+    algaeRemoverMotor.set(-.08);
+  }
+
+  public void algaeRemoverDown() {
+    algaeRemoverMotor.set(.08);
+  }
+
   public double getPosition() {
-    return algaeRemoverAbsoluteEncoder.getPosition() * 360; // in degrees
+    return algaeRemoverAbsoluteEncoder.getPosition(); // in degrees
   }
 
   @Override

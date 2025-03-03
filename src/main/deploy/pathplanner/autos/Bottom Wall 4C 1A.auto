@@ -21,7 +21,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0
+                        "waitTime": 1.0
                       }
                     },
                     {
@@ -43,19 +43,32 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Elevator: Bottom"
-          }
-        },
-        {
           "type": "deadline",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "sequential",
                 "data": {
-                  "pathName": "E to HP Right"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.5
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "E to HP Right"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: Bottom"
                 }
               },
               {
@@ -131,19 +144,26 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Elevator: Bottom"
-          }
-        },
-        {
           "type": "deadline",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "sequential",
                 "data": {
-                  "pathName": "D to HP right"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.5
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "D to HP right"
+                      }
+                    }
+                  ]
                 }
               },
               {
@@ -163,6 +183,12 @@
                       }
                     }
                   ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: Bottom"
                 }
               }
             ]
@@ -219,19 +245,26 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Elevator: Bottom"
-          }
-        },
-        {
           "type": "deadline",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "sequential",
                 "data": {
-                  "pathName": "C to HP Right"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.5
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "C to HP Right"
+                      }
+                    }
+                  ]
                 }
               },
               {
@@ -251,6 +284,12 @@
                       }
                     }
                   ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: Bottom"
                 }
               }
             ]
@@ -330,12 +369,6 @@
                       "type": "wait",
                       "data": {
                         "waitTime": 0.2
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "AlgaeIntake"
                       }
                     }
                   ]
