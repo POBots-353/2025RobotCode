@@ -61,8 +61,8 @@ public class Constants {
   }
 
   public static class AutoConstants {
-    public static final PIDConstants translationPID = new PIDConstants(5, 5.0, 0.0); // 5 2.2
-    public static final PIDConstants rotationPID = new PIDConstants(2.8, 0.0, 0.0); // 1  2.8
+    public static final PIDConstants translationPID = new PIDConstants(2, 0.0, 0.1); // 5 2.2
+    public static final PIDConstants rotationPID = new PIDConstants(1.4, 0.0, 0.1); // 1  2.8
 
     public static final LinearVelocity autoMaxTranslationalSpeed = FeetPerSecond.of(15);
     public static final AngularVelocity autoMaxRotationalSpeed = RotationsPerSecond.of(1.0);
@@ -120,7 +120,8 @@ public class Constants {
 
   // .890 7.415
   public static class FieldConstants {
-    public static final String aprilTagJson = "2025-official-welded";
+    public static final List<Integer> rejectedTAGS = List.of(4, 14, 15, 5);
+    public static final String aprilTagJson = "regalEagle";
     public static final Path aprilTagJsonPath =
         Path.of(Filesystem.getDeployDirectory().getPath(), "apriltags", aprilTagJson + ".json");
 
@@ -206,7 +207,7 @@ public class Constants {
     static {
       left_aprilTagOffsets.put(6, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(7, Units.inchesToMeters(6.488));
-      left_aprilTagOffsets.put(8, Units.inchesToMeters(6.488));
+      left_aprilTagOffsets.put(8, Units.inchesToMeters(7.488));
       left_aprilTagOffsets.put(9, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(10, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(11, Units.inchesToMeters(6.488));
@@ -358,13 +359,14 @@ public class Constants {
     public static final double maxHeight = Units.inchesToMeters(28.09);
     public static final double minHeight = 0.0;
 
-    public static final double L4Height = Units.inchesToMeters(28.09);
+    public static final double L4Height = Units.inchesToMeters(27.11); // 28.09
     public static final double L3Height = Units.inchesToMeters(15.5);
     public static final double L2Height = Units.inchesToMeters(7.3);
     public static final double downHeight = Units.inchesToMeters(0);
+    public static final double coralInTheWayAdd = 2.74;
 
-    public static final double AlgaeHighHeight = Units.inchesToMeters(15);
-    public static final double AlgaeLowHeight = Units.inchesToMeters(6.8);
+    public static final double AlgaeHighHeight = Units.inchesToMeters(8.66);
+    public static final double AlgaeLowHeight = Units.inchesToMeters(1.845);
 
     public static final double sensorToMechanismRatio =
         elevatorGearRatio / (sprocketDiameter * Math.PI);
@@ -385,7 +387,7 @@ public class Constants {
             .withKS(0.01) // .01
             .withKV(4.75) // 4.14
             .withKA(0.03) // .03
-            .withKG(0.31) // .31
+            .withKG(0.36) // .31
             .withKP(26)
             .withKI(0.0)
             .withKD(0.25) // 1
@@ -462,8 +464,10 @@ public class Constants {
     public static final int elevatorManualDown = 9;
     public static final int homeElevatorButon = 2;
     public static final int elevatorOverrideButton = 3;
-    public static final int algaeHighPosition = 8;
-    public static final int algaeLowPosition = 7;
+    public static final int algaeHighPosition = 6;
+    public static final int algaeLowPosition = 5;
+
+    public static final int coralInTheWay = 1;
 
     public static final int outtakeButton = 12;
 
