@@ -36,6 +36,17 @@ public class GroundIntake extends ExpandedSubsystem {
         .smartCurrentLimit(IntakeConstants.groundIntakeCurrentLimit)
         .secondaryCurrentLimit(IntakeConstants.groundIntakeShutOffLimit);
 
+    groundIntakeConfig
+        .signals
+        .absoluteEncoderPositionAlwaysOn(false)
+        .absoluteEncoderVelocityAlwaysOn(false)
+        .primaryEncoderPositionAlwaysOn(false)
+        .externalOrAltEncoderPositionAlwaysOn(false)
+        .externalOrAltEncoderVelocityAlwaysOn(false)
+        .analogVelocityAlwaysOn(false)
+        .analogPositionAlwaysOn(false)
+        .iAccumulationAlwaysOn(false);
+
     groundIntakeMotor.configure(
         groundIntakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }

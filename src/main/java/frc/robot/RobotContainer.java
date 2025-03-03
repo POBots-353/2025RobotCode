@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -85,14 +84,12 @@ public class RobotContainer {
   private Trigger elevatorIsDown = new Trigger(elevator::elevatorIsDown);
   private Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
 
-  // Just put a bunch of instantcommands as placeholders for now
-  //   Command outtakePrematch = new InstantCommand();
-  //   Command algaeRemoverPrematch = new InstantCommand();
-  //   Command armPrematch = new InstantCommand();
-  //   Command elevatorPrematch = new InstantCommand();
-  //   Command groundIntakePrematch = groundIntake.buildPrematch();
-  //   Command indexerPrematch = indexer.buildPrematch();
-  //   Command swervePrematch = new InstantCommand();
+    Command outtakePrematch = outtake.buildPrematch();
+    Command algaeRemoverPrematch = algaeRemover.buildPrematch();
+    Command elevatorPrematch = elevator.buildPrematch();
+    Command groundIntakePrematch = groundIntake.buildPrematch();
+    Command indexerPrematch = indexer.buildPrematch();
+    Command swervePrematch = drivetrain.buildPrematch();
 
   public RobotContainer() {
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());

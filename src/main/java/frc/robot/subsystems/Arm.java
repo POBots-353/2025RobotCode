@@ -81,6 +81,12 @@ public class Arm extends ExpandedSubsystem {
         .reverseSoftLimit(-100)
         .reverseSoftLimitEnabled(true);
 
+    armConfig.signals
+        .externalOrAltEncoderPositionAlwaysOn(false)
+        .externalOrAltEncoderVelocityAlwaysOn(false)
+        .analogVelocityAlwaysOn(false)
+        .analogPositionAlwaysOn(false);
+
     armMotor.configure(armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
