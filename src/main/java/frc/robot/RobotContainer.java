@@ -70,20 +70,20 @@ public class RobotContainer {
 
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
-
+  private boolean positionMode = true;
   private final PowerDistribution powerDistribution = new PowerDistribution(1, ModuleType.kRev);
 
   private Trigger outtakeLaserBroken = new Trigger(outtake::outtakeLaserBroken);
-
+  private Trigger isPositionMode = new Trigger(() -> positionMode);
   private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
   private Trigger elevatorIsDown = new Trigger(elevator::elevatorIsDown);
   private Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
 
-  Command outtakePrematch = outtake.buildPrematch();
-  Command algaeRemoverPrematch = algaeRemover.buildPrematch();
-  Command elevatorPrematch = elevator.buildPrematch();
-  Command indexerPrematch = indexer.buildPrematch();
-  Command swervePrematch = drivetrain.buildPrematch();
+  //   Command outtakePrematch = outtake.buildPrematch();
+  //   Command algaeRemoverPrematch = algaeRemover.buildPrematch();
+  //   Command elevatorPrematch = elevator.buildPrematch();
+  //   Command indexerPrematch = indexer.buildPrematch();
+  //   Command swervePrematch = drivetrain.buildPrematch();
 
   public RobotContainer() {
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
@@ -166,9 +166,10 @@ public class RobotContainer {
     //                         -driverController.getLeftY(), -driverController.getLeftX()))));
 
     driverController.rightTrigger().whileTrue(drivetrain.humanPlayerAlign());
-
+    driverController.povUp().onTrue(Commands.runOnce(() -> positionMode = !positionMode));
     driverController
         .leftBumper()
+        .and(isPositionMode.negate())
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
@@ -177,12 +178,19 @@ public class RobotContainer {
                 drivetrain.reefAlign(true)));
     driverController
         .rightBumper()
+        .and(isPositionMode.negate())
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
                 new TurnToReef(drivetrain),
                 Commands.waitSeconds(.08),
                 drivetrain.reefAlign(false)));
+
+    driverController.leftBumper().and(isPositionMode).whileTrue(drivetrain.reefAlignNoVision(true));
+    driverController
+        .rightBumper()
+        .and(isPositionMode)
+        .whileTrue(drivetrain.reefAlignNoVision(false));
 
     driverController.x().whileTrue(drivetrain.pathFindForAlgaeRemover());
 
@@ -401,11 +409,11 @@ public class RobotContainer {
         .onFalse(outtake.stopOuttakeMotor());
 
     operatorStick
-        .button(OperatorConstants.algaeHoldButton)
-        .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition));
-    operatorStick
-        .button(OperatorConstants.algaeTopButton)
-        .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.topPosition));
+        .button(1)
+        .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition));
+    // operatorStick
+    //     .button(OperatorConstants.algaeTopButton)
+    //     .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.topPosition));
   }
 
   private void configureOperatorBindings() {

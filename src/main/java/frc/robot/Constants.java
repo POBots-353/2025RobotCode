@@ -72,14 +72,16 @@ public class Constants {
     public static final AngularAcceleration autoMaxAngularAcceleration =
         autoMaxRotationalSpeed.div(SwerveConstants.rotationZeroToFull);
 
-    public static final PathConstraints pathConstraints =
+    public static final PathConstraints fastPathConstraints =
         new PathConstraints(
             autoMaxTranslationalSpeed.in(MetersPerSecond),
             autoMaxTransationalAcceleration.in(MetersPerSecondPerSecond),
             autoMaxRotationalSpeed.in(RadiansPerSecond),
             autoMaxAngularAcceleration.in(RadiansPerSecondPerSecond));
 
-    public static final PathConstraints slowPathConstraints = new PathConstraints(2, 2, 7, 13);
+    public static final PathConstraints midPathConstraints = new PathConstraints(3.53, 3.53, 7, 13);
+
+    public static final PathConstraints slowPathConstraints = new PathConstraints(1, 2, 7, 13);
   }
 
   public static class VisionConstants {
@@ -89,24 +91,24 @@ public class Constants {
 
     public static final Transform3d arducamLeftTransform =
         new Transform3d(
-            Units.inchesToMeters(-13.110),
+            Units.inchesToMeters(-13.11),
             Units.inchesToMeters(13.165),
-            Units.inchesToMeters(8.079),
+            Units.inchesToMeters(7.948),
             new Rotation3d(
                 0, Units.degreesToRadians(-25), Units.degreesToRadians(180 - 45))); // Pitch: 65
 
     public static final Transform3d arducamRightTransform =
         new Transform3d(
-            Units.inchesToMeters(-13.102380),
-            Units.inchesToMeters(-13.402856),
-            Units.inchesToMeters(8.079),
+            Units.inchesToMeters(-13.11),
+            Units.inchesToMeters(-13.403),
+            Units.inchesToMeters(7.77),
             new Rotation3d(0.0, Units.degreesToRadians(-25), Units.degreesToRadians(180 + 45)));
 
     public static final Transform3d arducamFrontTransform =
         new Transform3d(
-            Units.inchesToMeters(13.8),
-            Units.inchesToMeters(-0.115166),
-            Units.inchesToMeters(8.09),
+            Units.inchesToMeters(13.779),
+            Units.inchesToMeters(-0.1055),
+            Units.inchesToMeters(7.948),
             new Rotation3d(0.0, Units.degreesToRadians(-15), Units.degreesToRadians(0)));
 
     public static final Transform2d arducamFrontTransform2d =
@@ -121,7 +123,7 @@ public class Constants {
   // .890 7.415
   public static class FieldConstants {
     public static final List<Integer> rejectedTAGS = List.of(4, 14, 15, 5);
-    public static final String aprilTagJson = "regalEagle";
+    public static final String aprilTagJson = "2025-official-welded";
     public static final Path aprilTagJsonPath =
         Path.of(Filesystem.getDeployDirectory().getPath(), "apriltags", aprilTagJson + ".json");
 
@@ -207,7 +209,7 @@ public class Constants {
     static {
       left_aprilTagOffsets.put(6, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(7, Units.inchesToMeters(6.488));
-      left_aprilTagOffsets.put(8, Units.inchesToMeters(7.488));
+      left_aprilTagOffsets.put(8, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(9, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(10, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(11, Units.inchesToMeters(6.488));
@@ -337,12 +339,12 @@ public class Constants {
 
     public static final double algaeRemoverSpeed = .2;
 
-    public static final double topPosition = 0.0; // Degrees
-    public static final double intakePosition = 0.0;
-    public static final double holdPosition = 0.0;
+    public static final double topPosition = 244.5; // Degrees
+    public static final double intakePosition = 333.0;
+    public static final double holdPosition = 275; // 275
     public static final double outPosition = 0.0;
-    public static final double HighestPosition = 0.0;
-    public static final double LowestPosition = 0.0;
+    public static final double HighestPosition = 237;
+    public static final double LowestPosition = 50;
 
     public static final double maxVelocity = 30.0; // Degrees per second
     public static final double maxAcceleration = 50.0; // Degrees per second squared

@@ -10,7 +10,6 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.SignalLogger;
-import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -22,7 +21,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -57,8 +55,9 @@ public class Elevator extends ExpandedSubsystem {
 
   private double positionTolerance = Units.inchesToMeters(0.2);
 
-  private StatusSignal<Angle> elevatorMainPosition = elevatorMainMotor.getPosition();
-  private StatusSignal<Angle> elevatorFollowerPosition = elevatorFollowerMotor.getPosition();
+  // private StatusSignal<Angle> elevatorMainPosition = elevatorMainMotor.getPosition();
+  // private StatusSignal<Angle> elevatorFollowerPosition = elevatorFollowerMotor.getPosition();
+  // private StatusSignal<Double> currentHeight = elevatorMainMotor.getPosition();
 
   private final SysIdRoutine elevatorSysIdRoutine =
       new SysIdRoutine(
@@ -236,13 +235,13 @@ public class Elevator extends ExpandedSubsystem {
     getPos();
     SmartDashboard.putNumber(
         "Elevator/Main Stage 1 Position",
-        Units.metersToInches(elevatorMainPosition.refresh().getValueAsDouble()));
+        Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()));
     // SmartDashboard.putNumber(
     //     "Elevator/Main Carriage Position",
     //     Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) * 2);
     SmartDashboard.putNumber(
         "Elevator/Follower Stage 1 Position",
-        Units.metersToInches(elevatorFollowerPosition.refresh().getValueAsDouble()));
+        Units.metersToInches(elevatorFollowerMotor.getPosition().getValueAsDouble()));
     // SmartDashboard.putNumber(
     //     "Elevator/Follower Carriage Position",
     //     Units.metersToInches(elevatorFollowerMotor.getPosition().getValueAsDouble()) * 2);

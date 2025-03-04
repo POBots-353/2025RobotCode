@@ -431,6 +431,26 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 .getTranslation(),
             Rotation2d.fromDegrees(desiredRotation));
 
+    Pose2d estimatedRIGHTPOSE =
+        (FieldConstants.aprilTagLayout.getTagPose(bestTargetID))
+            .map(Pose3d::toPose2d)
+            .orElse(new Pose2d())
+            .transformBy(
+                new Transform2d(
+                        rightAprilTagOffset.getTranslation().rotateBy(Rotation2d.fromDegrees(180)),
+                        Rotation2d.fromDegrees(180))
+                    .inverse());
+
+    Pose2d estimatedLEFTPOSE =
+        (FieldConstants.aprilTagLayout.getTagPose(bestTargetID))
+            .map(Pose3d::toPose2d)
+            .orElse(new Pose2d())
+            .transformBy(
+                new Transform2d(
+                        leftAprilTagOffset.getTranslation().rotateBy(Rotation2d.fromDegrees(180)),
+                        Rotation2d.fromDegrees(180))
+                    .inverse());
+
     Pose2d estimatedRightPose =
         new Pose2d(
             getState()
@@ -453,17 +473,21 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             ? ReefDefinitePoses.redReefDefiniteRightPoses
             : ReefDefinitePoses.blueReefDefiniteRightPoses;
 
-    if (isPoseWithinTolerance(estimatedLeftPose, leftPoses)) {
-      leftPose = estimatedLeftPose;
-    } else {
-      return;
-    }
+    // if (isPoseWithinTolerance(estimatedLEFTPOSE, leftPoses)) {
+    //   leftPose = estimatedLEFTPOSE;
+    // } else {
+    //   return;
+    // }
 
-    if (isPoseWithinTolerance(estimatedRightPose, rightPoses)) {
-      rightPose = estimatedRightPose;
-    } else {
-      return;
-    }
+    // if (isPoseWithinTolerance(estimatedRIGHTPOSE, rightPoses)) {
+    //   // rightPose = estimatedRightPose;
+    //   rightPose = estimatedRIGHTPOSE;
+    // } else {
+    //   return;
+    // }
+
+    leftPose = estimatedLEFTPOSE;
+    rightPose = estimatedRIGHTPOSE;
 
     SmartDashboard.putNumber("Swerve/Goal Rotation", desiredRotation);
     SmartDashboard.putNumber("Swerve/Best Tag ID", bestTargetID);
@@ -476,7 +500,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   private boolean isPoseWithinTolerance(Pose2d estimatedPose, List<Pose2d> definitePoses) {
-    double tolerance = 0.0762 * 4; // 3 inches in meters
+    double tolerance = 0.0762; // 3 inches in meters
     for (Pose2d pose : definitePoses) {
       double distance =
           Math.hypot(estimatedPose.getX() - pose.getX(), estimatedPose.getY() - pose.getY());
@@ -527,28 +551,28 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   //       Set.of(this));
   // }
 
-  // public Command reefAlignNoVision(boolean leftAlign) {
-  //   return new DeferredCommand(
-  //       () -> {
-  //         Pose2d robotPose = getState().Pose;
-  //         Pose2d nearestPose = Pose2d.kZero;
-  //         if (AllianceUtil.isRedAlliance()) {
-  //           if (leftAlign) {
-  //             nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteLeftPoses);
-  //           } else {
-  //             nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteRightPoses);
-  //           }
-  //         } else {
-  //           if (leftAlign) {
-  //             nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteLeftPoses);
-  //           } else {
-  //             nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses);
-  //           }
-  //         }
-  //         return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.slowPathConstraints, 0.0);
-  //       },
-  //       Set.of(this));
-  // }
+  public Command reefAlignNoVision(boolean leftAlign) {
+    return new DeferredCommand(
+        () -> {
+          Pose2d robotPose = getState().Pose;
+          Pose2d nearestPose = Pose2d.kZero;
+          if (AllianceUtil.isRedAlliance()) {
+            if (leftAlign) {
+              nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteLeftPoses);
+            } else {
+              nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteRightPoses);
+            }
+          } else {
+            if (leftAlign) {
+              nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteLeftPoses);
+            } else {
+              nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses);
+            }
+          }
+          return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.midPathConstraints, 0.0);
+        },
+        Set.of(this));
+  }
 
   // public PathPlannerPath getNearestPickupPath() {
   //   Pose2d closestStation;
@@ -616,7 +640,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             closestPose = getState().Pose.nearest(blueStationPoses);
           }
 
-          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.pathConstraints);
+          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.fastPathConstraints);
         },
         Set.of(this));
   }
@@ -636,7 +660,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             closestPose = getState().Pose.nearest(blueSetupPoses);
           }
 
-          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.slowPathConstraints);
+          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.midPathConstraints);
         },
         Set.of(this));
   }
@@ -656,7 +680,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             closestPose = getState().Pose.nearest(blueAlgaeRemoverPoses);
           }
 
-          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.pathConstraints);
+          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.midPathConstraints);
         },
         Set.of(this));
   }
@@ -739,9 +763,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       return false;
     }
 
-    if (DriverStation.isAutonomous()) {
-      return false;
-    }
+    // if (DriverStation.isAutonomous()) {
+    //   return false;
+    // }
 
     if (isOutOfBounds(visionPose)) {
       return false;
@@ -756,9 +780,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       return false;
     }
 
-    if (DriverStation.isAutonomous()) {
-      return false;
-    }
+    // if (DriverStation.isAutonomous()) {
+    //   return false;
+    // }
 
     if (isOutOfBounds(visionPose)) {
       return false;
@@ -897,7 +921,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         VisionConstants.arducamLeftTransform,
         Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5),
-        1.5);
+        1);
     updateVisionPoses(
         latestArducamRightResult,
         arducamRightPoseEstimator,
@@ -911,7 +935,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         VisionConstants.arducamFrontTransform,
         Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5),
-        1);
+        4);
 
     Collections.sort(poseEstimates);
 

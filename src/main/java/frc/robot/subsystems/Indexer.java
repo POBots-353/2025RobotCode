@@ -41,16 +41,16 @@ public class Indexer extends ExpandedSubsystem {
         .smartCurrentLimit(IntakeConstants.indexerCurrentLimit)
         .secondaryCurrentLimit(IntakeConstants.indexerShutOffLimit);
 
-    indexerConfig
-        .signals
-        .absoluteEncoderPositionAlwaysOn(false)
-        .absoluteEncoderVelocityAlwaysOn(false)
-        .primaryEncoderPositionAlwaysOn(false)
-        .externalOrAltEncoderPositionAlwaysOn(false)
-        .externalOrAltEncoderVelocityAlwaysOn(false)
-        .analogVelocityAlwaysOn(false)
-        .analogPositionAlwaysOn(false)
-        .iAccumulationAlwaysOn(false);
+    // indexerConfig
+    //     .signals
+    //     .absoluteEncoderPositionAlwaysOn(false)
+    //     .absoluteEncoderVelocityAlwaysOn(false)
+    //     .primaryEncoderPositionAlwaysOn(false)
+    //     .externalOrAltEncoderPositionAlwaysOn(false)
+    //     .externalOrAltEncoderVelocityAlwaysOn(false)
+    //     .analogVelocityAlwaysOn(false)
+    //     .analogPositionAlwaysOn(false)
+    //     .iAccumulationAlwaysOn(false);
 
     indexerMotor.configure(
         indexerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
