@@ -21,6 +21,10 @@ import frc.robot.Constants.AlgaeRemoverConstants;
 import frc.robot.Constants.MiscellaneousConstants;
 import frc.robot.util.ExpandedSubsystem;
 
+// TODO:
+// Increase Speed of Algae Remover
+// Automate it as much as possible.
+
 @Logged(strategy = Strategy.OPT_IN)
 public class AlgaeRemover extends ExpandedSubsystem {
   private SparkMax algaeRemoverMotor;
