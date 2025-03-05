@@ -65,6 +65,7 @@ import java.util.function.Supplier;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.ConstrainedSolvepnpParams;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.PhotonUtils;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -149,6 +150,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           FieldConstants.aprilTagLayout,
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
           VisionConstants.arducamFrontTransform);
+
+  private static final Optional<ConstrainedSolvepnpParams> constrainedPnpParams =
+      Optional.of(new ConstrainedSolvepnpParams(false, 1.5));
 
   private List<PhotonPipelineResult> latestArducamLeftResult;
   private List<PhotonPipelineResult> latestArducamRightResult;
@@ -241,6 +245,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       SwerveDrivetrainConstants drivetrainConstants, SwerveModuleConstants<?, ?, ?>... modules) {
     super(drivetrainConstants, modules);
 
+    initVision();
+
     if (Utils.isSimulation()) {
       startSimThread();
       initVisionSim();
@@ -263,6 +269,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       double odometryUpdateFrequency,
       SwerveModuleConstants<?, ?, ?>... modules) {
     super(drivetrainConstants, odometryUpdateFrequency, modules);
+
+    initVision();
 
     if (Utils.isSimulation()) {
       startSimThread();
@@ -298,10 +306,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         visionStandardDeviation,
         modules);
 
+    initVision();
+
     if (Utils.isSimulation()) {
       startSimThread();
       initVisionSim();
     }
+  }
+
+  private void initVision() {
+    arducamRightPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
+    arducamLeftPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
+    arducamFrontPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
   }
 
   private void initVisionSim() {
@@ -829,7 +845,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       // }
       // PhotonPipelineResult filteredResult = new PhotonPipelineResult(filterTargets);
 
-      Optional<EstimatedRobotPose> optionalVisionPose = poseEstimator.update(result);
+      Optional<EstimatedRobotPose> optionalVisionPose =
+          poseEstimator.update(result, Optional.empty(), Optional.empty(), constrainedPnpParams);
       if (optionalVisionPose.isEmpty()) {
         continue;
       }
@@ -869,28 +886,28 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 getVisionStdDevs(
                     tagCount, averageDistance, baseMultiTagStdDev * (1 / cameraWeight))));
       } else {
-        PhotonTrackedTarget target = visionPose.targetsUsed.get(0);
-        Optional<Pose2d> robotPoseAtTime =
-            samplePoseAt(Utils.fpgaToCurrentTime(visionPose.timestampSeconds));
-        Optional<Pose3d> tagOnField =
-            FieldConstants.aprilTagLayout.getTagPose(target.getFiducialId());
+        // PhotonTrackedTarget target = visionPose.targetsUsed.get(0);
+        // Optional<Pose2d> robotPoseAtTime =
+        //     samplePoseAt(Utils.fpgaToCurrentTime(visionPose.timestampSeconds));
+        // Optional<Pose3d> tagOnField =
+        //     FieldConstants.aprilTagLayout.getTagPose(target.getFiducialId());
 
-        if (robotPoseAtTime.isEmpty() || tagOnField.isEmpty()) {
-          continue;
-        }
+        // if (robotPoseAtTime.isEmpty() || tagOnField.isEmpty()) {
+        //   continue;
+        // }
 
-        Pose3d singleTagPose =
-            calculateSingleTagPose(
-                target, tagOnField.get(), robotPoseAtTime.get(), cameraTransform);
+        // Pose3d singleTagPose =
+        //     calculateSingleTagPose(
+        //         target, tagOnField.get(), robotPoseAtTime.get(), cameraTransform);
 
-        if (!isValidSingleTagPose(singleTagPose, averageDistance)) {
-          rejectedPoses.add(singleTagPose);
+        if (!isValidSingleTagPose(visionPose.estimatedPose, averageDistance)) {
+          rejectedPoses.add(visionPose.estimatedPose);
           continue;
         }
 
         poseEstimates.add(
             new PoseEstimate(
-                singleTagPose,
+                visionPose.estimatedPose,
                 visionPose.timestampSeconds,
                 getVisionStdDevs(
                     tagCount, averageDistance, baseSingleTagStdDev * (1 / cameraWeight))));
@@ -921,21 +938,21 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         VisionConstants.arducamLeftTransform,
         Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5),
-        1);
+        0.25);
     updateVisionPoses(
         latestArducamRightResult,
         arducamRightPoseEstimator,
         VisionConstants.arducamRightTransform,
         Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5),
-        1);
+        0.25);
     updateVisionPoses(
         latestArducamFrontResult,
         arducamFrontPoseEstimator,
         VisionConstants.arducamFrontTransform,
         Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5),
-        4);
+        1);
 
     Collections.sort(poseEstimates);
 
@@ -1069,10 +1086,21 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return m_sysIdRoutineSteer.dynamic(direction);
   }
 
+  double ctreToFpgaTime(double timestamp) {
+    return (Timer.getFPGATimestamp() - Utils.getCurrentTimeSeconds()) + timestamp;
+  }
+
   @Override
   public void periodic() {
     double startTime = Timer.getFPGATimestamp();
-    field.setRobotPose(getState().Pose);
+    SwerveDriveState state = getState();
+    field.setRobotPose(state.Pose);
+
+    double stateTimestamp = ctreToFpgaTime(state.Timestamp);
+
+    arducamLeftPoseEstimator.addHeadingData(stateTimestamp, state.Pose.getRotation());
+    arducamRightPoseEstimator.addHeadingData(stateTimestamp, state.Pose.getRotation());
+    arducamFrontPoseEstimator.addHeadingData(stateTimestamp, state.Pose.getRotation());
 
     latestArducamLeftResult = arducamLeft.getAllUnreadResults();
     latestArducamRightResult = arducamRight.getAllUnreadResults();
