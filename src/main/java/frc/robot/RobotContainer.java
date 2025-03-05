@@ -70,7 +70,7 @@ public class RobotContainer {
 
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
-  private boolean positionMode = true;
+  private boolean positionMode = false;
   private final PowerDistribution powerDistribution = new PowerDistribution(1, ModuleType.kRev);
 
   private Trigger outtakeLaserBroken = new Trigger(outtake::outtakeLaserBroken);
@@ -88,6 +88,9 @@ public class RobotContainer {
   public RobotContainer() {
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
     NamedCommands.registerCommand("Stop Indexer", indexer.stop().asProxy());
+    NamedCommands.registerCommand("PathFindToSetup", drivetrain.pathFindToSetup());
+
+    NamedCommands.registerCommand("go to HP", drivetrain.humanPlayerAlign());
     NamedCommands.registerCommand(
         "Elevator: L4",
         elevator
@@ -102,7 +105,7 @@ public class RobotContainer {
             // .onlyIf(outtakeLaserBroken)
             .withTimeout(4)
             .asProxy());
-    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(2).asProxy());
+    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().asProxy());
     NamedCommands.registerCommand("Outtake", outtake.fastOuttake().withTimeout(1.5).asProxy());
     NamedCommands.registerCommand(
         "Elevator: Bottom",
@@ -379,7 +382,7 @@ public class RobotContainer {
 
   private void configureAlgaeRemoverBindings() {
     operatorStick
-        .button(OperatorConstants.elevatorManualUp)
+        .button(OperatorConstants.startingConfigButton)
         .and(armMode)
         .onTrue(
             Commands.sequence(
@@ -390,28 +393,28 @@ public class RobotContainer {
                     elevator.upSpeed(0.075))))
         .onFalse(Commands.runOnce(() -> outtake.stop()));
 
-    operatorStick
-        .button(OperatorConstants.elevatorManualDown)
-        .and(armMode)
-        .onTrue(
-            Commands.sequence(
-                elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight),
-                Commands.parallel(
-                    Commands.runOnce(() -> outtake.fastOuttake()),
-                    algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition),
-                    elevator.upSpeed(0.075))))
-        .onFalse(Commands.runOnce(() -> outtake.stop()));
-
-    // operatorStick
-    //     .button(OperatorConstants.elevatorManualUp)
-    //     .and(armMode)
-    //     .whileTrue(algaeRemover.run(() -> algaeRemover.algaeRemoverUp()))
-    //     .onFalse(algaeRemover.runOnce(() -> algaeRemover.stopAlgaeRemover()));
     // operatorStick
     //     .button(OperatorConstants.elevatorManualDown)
     //     .and(armMode)
-    //     .whileTrue(algaeRemover.run(() -> algaeRemover.algaeRemoverDown()))
-    //     .onFalse(algaeRemover.runOnce(() -> algaeRemover.stopAlgaeRemover()));
+    //     .onTrue(
+    //         Commands.sequence(
+    //             elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight),
+    //             Commands.parallel(
+    //                 Commands.runOnce(() -> outtake.fastOuttake()),
+    //                 algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition),
+    //                 elevator.upSpeed(0.075))))
+    //     .onFalse(Commands.runOnce(() -> outtake.stop()));
+
+    operatorStick
+        .button(OperatorConstants.elevatorManualUp)
+        .and(armMode)
+        .whileTrue(algaeRemover.run(() -> algaeRemover.algaeRemoverUp()))
+        .onFalse(algaeRemover.runOnce(() -> algaeRemover.stopAlgaeRemover()));
+    operatorStick
+        .button(OperatorConstants.elevatorManualDown)
+        .and(armMode)
+        .whileTrue(algaeRemover.run(() -> algaeRemover.algaeRemoverDown()))
+        .onFalse(algaeRemover.runOnce(() -> algaeRemover.stopAlgaeRemover()));
 
     operatorStick
         .button(OperatorConstants.algaeIntakeButton)
@@ -431,9 +434,9 @@ public class RobotContainer {
             outtake.reverseOuttake())
         .onFalse(outtake.stopOuttakeMotor());
 
-    operatorStick
-        .button(1)
-        .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition));
+    // operatorStick
+    //     .button(1)
+    //     .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition));
     // operatorStick
     //     .button(OperatorConstants.algaeTopButton)
     //     .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.topPosition));

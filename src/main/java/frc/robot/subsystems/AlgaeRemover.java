@@ -83,11 +83,11 @@ public class AlgaeRemover extends ExpandedSubsystem {
   }
 
   public void algaeRemoverUp() {
-    algaeRemoverMotor.set(-.08);
+    algaeRemoverMotor.set(-1);
   }
 
   public void algaeRemoverDown() {
-    algaeRemoverMotor.set(.08);
+    algaeRemoverMotor.set(1);
   }
 
   public double getPosition() {

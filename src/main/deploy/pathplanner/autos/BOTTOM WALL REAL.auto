@@ -7,23 +7,36 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Alignment Test Path (1)"
+            "pathName": "Start Alignment auto"
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 0.2
+            "name": "PathFindToSetup"
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "AutoAlignLeft"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.2
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "AutoAlignLeft"
+                      }
+                    }
+                  ]
                 }
               },
               {
@@ -56,9 +69,9 @@
                       }
                     },
                     {
-                      "type": "path",
+                      "type": "named",
                       "data": {
-                        "pathName": "E to HP Right"
+                        "name": "go to HP"
                       }
                     }
                   ]
@@ -99,25 +112,32 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Alignment Test Path (2)"
+            "name": "PathFindToSetup"
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.2
-          }
-        },
-        {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "AutoAlignRight"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.2
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "AutoAlignRight"
+                      }
+                    }
+                  ]
                 }
               },
               {
@@ -150,9 +170,9 @@
                       }
                     },
                     {
-                      "type": "path",
+                      "type": "named",
                       "data": {
-                        "pathName": "D to HP right"
+                        "name": "go to HP"
                       }
                     }
                   ]
@@ -193,40 +213,9 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Alignment Test Path (3)"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.2
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "AutoAlignLeft"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: L3"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "Auto Outtake"
+            "name": "PathFindToSetup"
           }
         },
         {
@@ -240,72 +229,16 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.5
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "C to HP Right"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: Bottom"
-                }
-              },
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.0
+                        "waitTime": 0.2
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "Start Indexer"
+                        "name": "AutoAlignRight"
                       }
                     }
                   ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "OuttakeUntilBeamBreak"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Alignment Test Path (4)"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.2
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "AutoAlignRight"
                 }
               },
               {
@@ -324,9 +257,35 @@
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "Elevator: Bottom"
+            "commands": [
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.5
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "go to HP"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: Bottom"
+                }
+              }
+            ]
           }
         }
       ]
