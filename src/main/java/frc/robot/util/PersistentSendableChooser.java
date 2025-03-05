@@ -44,14 +44,16 @@ public class PersistentSendableChooser<V> implements Sendable {
   public PersistentSendableChooser(String preferenceName) {
     this.preferenceName = preferenceName;
     Preferences.initString(preferenceName, "");
+
+    m_instance = s_instances.getAndIncrement();
+  }
+
+  public void initializeFromPreferences() {
     String persistentString = Preferences.getString(preferenceName, "");
-    if (!persistentString.equals("")) {
-      m_previousVal = persistentString;
+    if (!persistentString.equals("") && m_map.containsKey(persistentString)) {
       m_selected = persistentString;
       m_defaultChoice = persistentString;
     }
-
-    m_instance = s_instances.getAndIncrement();
   }
 
   public void addOption(String name, V object) {

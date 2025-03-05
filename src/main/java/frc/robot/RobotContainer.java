@@ -519,10 +519,12 @@ public class RobotContainer {
     batteryChooser.addOption("2024 #5", "Richard");
     batteryChooser.addOption("2025 #1", "Josh");
 
-    if (batteryChooser.getSelectedName() != null && !batteryChooser.getSelectedName().equals("")) {
-      LogUtil.recordMetadata("Battery Number", batteryChooser.getSelectedName());
-      LogUtil.recordMetadata("Battery Nickname", batteryChooser.getSelected());
-    }
+    batteryChooser.initializeFromPreferences();
+
+    // if (batteryChooser.getSelectedName() != null && !batteryChooser.getSelectedName().equals("")) {
+    //   LogUtil.recordMetadata("Battery Number", batteryChooser.getSelectedName());
+    //   LogUtil.recordMetadata("Battery Nickname", batteryChooser.getSelected());
+    // }
 
     batteryChooser.onChange(
         (nickname) -> {
