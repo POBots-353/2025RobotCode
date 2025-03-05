@@ -18,6 +18,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -28,8 +29,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -325,13 +325,40 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     visionSim.addAprilTags(FieldConstants.aprilTagLayout);
 
-    SimCameraProperties arducamProperties = new SimCameraProperties();
-    arducamProperties.setCalibration(800, 600, Rotation2d.fromDegrees(85.4));
-    arducamProperties.setCalibError(0.21, 0.10);
-    arducamProperties.setFPS(28);
-    arducamProperties.setAvgLatencyMs(36);
-    arducamProperties.setLatencyStdDevMs(15);
-    arducamProperties.setExposureTimeMs(45);
+    Matrix<N3, N3> calibError =
+        new Matrix<>(
+            Nat.N3(),
+            Nat.N3(),
+            new double[] {
+              689.4460449566128,
+              0,
+              441.7426355934763,
+              0,
+              688.5536260717645,
+              292.82342214293885,
+              0,
+              0,
+              1
+            });
+    Vector<N8> distCoefficients =
+        VecBuilder.fill(
+            0.03728225626399143,
+            -0.022115127374557862,
+            0.0001637647682633715,
+            0.0003334141823199474,
+            -0.03915318108680384,
+            -0.0015121698705335032,
+            0.0009546599698249316,
+            0.0016260200999396255);
+
+    SimCameraProperties arducamProperties =
+        new SimCameraProperties()
+            .setCalibration(800, 600, calibError, distCoefficients)
+            .setCalibError(0.21, 0.10)
+            .setFPS(28)
+            .setAvgLatencyMs(36)
+            .setLatencyStdDevMs(15)
+            .setExposureTimeMs(45);
 
     arducamSimLeft = new PhotonCameraSim(arducamLeft, arducamProperties);
     arducamSimRight = new PhotonCameraSim(arducamRight, arducamProperties);
