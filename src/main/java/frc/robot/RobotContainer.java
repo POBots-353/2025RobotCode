@@ -521,11 +521,20 @@ public class RobotContainer {
 
     batteryChooser.initializeFromPreferences();
 
-    // if (batteryChooser.getSelectedName() != null && !batteryChooser.getSelectedName().equals(""))
-    // {
-    //   LogUtil.recordMetadata("Battery Number", batteryChooser.getSelectedName());
-    //   LogUtil.recordMetadata("Battery Nickname", batteryChooser.getSelected());
-    // }
+    Commands.sequence(
+            Commands.waitUntil(DriverStation::isDSAttached),
+            Commands.waitSeconds(5),
+            Commands.runOnce(
+                () -> {
+                  if (batteryChooser.getSelectedName() != null
+                      && !batteryChooser.getSelectedName().equals("")) {
+                    LogUtil.recordMetadata("Battery Number", batteryChooser.getSelectedName());
+                    LogUtil.recordMetadata("Battery Nickname", batteryChooser.getSelected());
+                  }
+                }))
+        .ignoringDisable(true)
+        .withName("Battery Logger")
+        .schedule();
 
     batteryChooser.onChange(
         (nickname) -> {
