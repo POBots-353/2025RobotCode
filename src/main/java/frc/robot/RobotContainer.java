@@ -389,7 +389,7 @@ public class RobotContainer {
 
   private void configureAlgaeRemoverBindings() {
     operatorStick
-        .button(OperatorConstants.startingConfigButton)
+        .button(OperatorConstants.elevatorManualUp)
         .and(armMode)
         .onTrue(
             Commands.sequence(
@@ -400,28 +400,28 @@ public class RobotContainer {
                     elevator.upSpeed(0.075))))
         .onFalse(Commands.runOnce(() -> outtake.stop()));
 
-    // operatorStick
-    //     .button(OperatorConstants.elevatorManualDown)
-    //     .and(armMode)
-    //     .onTrue(
-    //         Commands.sequence(
-    //             elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight),
-    //             Commands.parallel(
-    //                 Commands.runOnce(() -> outtake.fastOuttake()),
-    //                 algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition),
-    //                 elevator.upSpeed(0.075))))
-    //     .onFalse(Commands.runOnce(() -> outtake.stop()));
-
-    operatorStick
-        .button(OperatorConstants.elevatorManualUp)
-        .and(armMode)
-        .whileTrue(algaeRemover.run(() -> algaeRemover.algaeRemoverUp()))
-        .onFalse(algaeRemover.runOnce(() -> algaeRemover.stopAlgaeRemover()));
     operatorStick
         .button(OperatorConstants.elevatorManualDown)
         .and(armMode)
-        .whileTrue(algaeRemover.run(() -> algaeRemover.algaeRemoverDown()))
-        .onFalse(algaeRemover.runOnce(() -> algaeRemover.stopAlgaeRemover()));
+        .onTrue(
+            Commands.sequence(
+                elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight),
+                Commands.parallel(
+                    Commands.runOnce(() -> outtake.fastOuttake()),
+                    algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition),
+                    elevator.upSpeed(0.075))))
+        .onFalse(Commands.runOnce(() -> outtake.stop()));
+
+    // operatorStick
+    //     .button(OperatorConstants.elevatorManualUp)
+    //     .and(armMode)
+    //     .whileTrue(algaeRemover.run(() -> algaeRemover.algaeRemoverUp()))
+    //     .onFalse(algaeRemover.runOnce(() -> algaeRemover.stopAlgaeRemover()));
+    // operatorStick
+    //     .button(OperatorConstants.elevatorManualDown)
+    //     .and(armMode)
+    //     .whileTrue(algaeRemover.run(() -> algaeRemover.algaeRemoverDown()))
+    //     .onFalse(algaeRemover.runOnce(() -> algaeRemover.stopAlgaeRemover()));
 
     operatorStick
         .button(OperatorConstants.algaeIntakeButton)
