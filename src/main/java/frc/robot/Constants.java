@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
@@ -72,14 +73,16 @@ public class Constants {
     public static final AngularAcceleration autoMaxAngularAcceleration =
         autoMaxRotationalSpeed.div(SwerveConstants.rotationZeroToFull);
 
-    public static final PathConstraints pathConstraints =
+    public static final PathConstraints fastPathConstraints =
         new PathConstraints(
             autoMaxTranslationalSpeed.in(MetersPerSecond),
             autoMaxTransationalAcceleration.in(MetersPerSecondPerSecond),
             autoMaxRotationalSpeed.in(RadiansPerSecond),
             autoMaxAngularAcceleration.in(RadiansPerSecondPerSecond));
 
-    public static final PathConstraints slowPathConstraints = new PathConstraints(2, 2, 7, 13);
+    public static final PathConstraints midPathConstraints = new PathConstraints(3.53, 3.53, 7, 13);
+
+    public static final PathConstraints slowPathConstraints = new PathConstraints(1, 2, 7, 13);
   }
 
   public static class VisionConstants {
@@ -89,7 +92,7 @@ public class Constants {
 
     public static final Transform3d arducamLeftTransform =
         new Transform3d(
-            Units.inchesToMeters(-13.110),
+            Units.inchesToMeters(-13.109895),
             Units.inchesToMeters(13.165),
             Units.inchesToMeters(8.079),
             new Rotation3d(
@@ -104,9 +107,9 @@ public class Constants {
 
     public static final Transform3d arducamFrontTransform =
         new Transform3d(
-            Units.inchesToMeters(13.8),
-            Units.inchesToMeters(-0.115166),
-            Units.inchesToMeters(8.09),
+            Units.inchesToMeters(13.778840),
+            Units.inchesToMeters(-0.105402),
+            Units.inchesToMeters(7.800704),
             new Rotation3d(0.0, Units.degreesToRadians(-15), Units.degreesToRadians(0)));
 
     public static final Transform2d arducamFrontTransform2d =
@@ -121,7 +124,7 @@ public class Constants {
   // .890 7.415
   public static class FieldConstants {
     public static final List<Integer> rejectedTAGS = List.of(4, 14, 15, 5);
-    public static final String aprilTagJson = "regalEagle";
+    public static final String aprilTagJson = "2025-official-welded";
     public static final Path aprilTagJsonPath =
         Path.of(Filesystem.getDeployDirectory().getPath(), "apriltags", aprilTagJson + ".json");
 
@@ -146,12 +149,12 @@ public class Constants {
 
     public static final List<Pose2d> redSetupPoses =
         List.of(
-            new Pose2d(15.297, 4.019, Rotation2d.fromDegrees(180)), // 0
-            new Pose2d(14.176, 5.96, Rotation2d.fromDegrees(-120)), // 60
-            new Pose2d(11.934, 5.96, Rotation2d.fromDegrees(-60)), // 120
             new Pose2d(10.813, 4.019, Rotation2d.fromDegrees(0)), // 180
             new Pose2d(11.934, 2.0774, Rotation2d.fromDegrees(60)), // -120
-            new Pose2d(14.176, 2.0774, Rotation2d.fromDegrees(120))); // -60
+            new Pose2d(14.176, 2.0774, Rotation2d.fromDegrees(120)), // -60
+            new Pose2d(15.297, 4.019, Rotation2d.fromDegrees(180)), // 0
+            new Pose2d(14.176, 5.96, Rotation2d.fromDegrees(-120)), // 60
+            new Pose2d(11.934, 5.96, Rotation2d.fromDegrees(-60))); // 120
 
     public static final List<Pose2d> blueSetupPoses =
         List.of(
@@ -207,7 +210,7 @@ public class Constants {
     static {
       left_aprilTagOffsets.put(6, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(7, Units.inchesToMeters(6.488));
-      left_aprilTagOffsets.put(8, Units.inchesToMeters(7.488));
+      left_aprilTagOffsets.put(8, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(9, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(10, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(11, Units.inchesToMeters(6.488));
@@ -313,8 +316,8 @@ public class Constants {
     public static final double groundIntakeMotorSpeed = .9;
     public static final double outtakeSpeed = -.7;
 
-    public static final int indexerCurrentLimit = 30;
-    public static final double indexerShutOffLimit = 45;
+    public static final int indexerCurrentLimit = 35;
+    public static final double indexerShutOffLimit = 60;
 
     public static final int groundIntakeCurrentLimit = 30;
     public static final double groundIntakeShutOffLimit = 45;
@@ -323,8 +326,8 @@ public class Constants {
 
   public static class OuttakeConstants {
     public static final int outtakeMotorID = 18;
-    public static final int outtakeCurrentLimit = 25;
-    public static final int outtakeShutOffLimit = 25;
+    public static final int outtakeCurrentLimit = 45;
+    public static final int outtakeShutOffLimit = 75;
 
     public static final double fastOuttakeSpeed = 0.85;
     public static final double slowOuttakeSpeed = 0.353;
@@ -337,12 +340,15 @@ public class Constants {
 
     public static final double algaeRemoverSpeed = .2;
 
-    public static final double topPosition = 0.0; // Degrees
-    public static final double intakePosition = 0.0;
-    public static final double holdPosition = 0.0;
+    public static final int currentLimit = 35;
+    public static final int shutOffCurrentLimit = 65;
+
+    public static final double topPosition = 244.5; // Degrees
+    public static final double intakePosition = 333.0;
+    public static final double holdPosition = 275; // 275
     public static final double outPosition = 0.0;
-    public static final double HighestPosition = 0.0;
-    public static final double LowestPosition = 0.0;
+    public static final double HighestPosition = 237;
+    public static final double LowestPosition = 50;
 
     public static final double maxVelocity = 30.0; // Degrees per second
     public static final double maxAcceleration = 50.0; // Degrees per second squared
@@ -406,9 +412,12 @@ public class Constants {
         new SoftwareLimitSwitchConfigs()
             .withForwardSoftLimitThreshold(maxHeight)
             .withForwardSoftLimitEnable(true);
+    public static final CurrentLimitsConfigs currentLimitConfigs =
+        new CurrentLimitsConfigs().withStatorCurrentLimit(45).withStatorCurrentLimitEnable(true);
 
     public static final TalonFXConfiguration elevatorConfigs =
         new TalonFXConfiguration()
+            .withCurrentLimits(currentLimitConfigs)
             .withSlot0(slot0Configs)
             .withMotionMagic(motionMagicConfigs)
             .withFeedback(feedbackConfigs)

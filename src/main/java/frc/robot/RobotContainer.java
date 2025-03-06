@@ -70,24 +70,27 @@ public class RobotContainer {
 
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
-
+  private boolean positionMode = false;
   private final PowerDistribution powerDistribution = new PowerDistribution(1, ModuleType.kRev);
 
   private Trigger outtakeLaserBroken = new Trigger(outtake::outtakeLaserBroken);
-
+  private Trigger isPositionMode = new Trigger(() -> positionMode);
   private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
   private Trigger elevatorIsDown = new Trigger(elevator::elevatorIsDown);
   private Trigger armMode = operatorStick.button(OperatorConstants.armModeButton);
 
-  Command outtakePrematch = outtake.buildPrematch();
-  Command algaeRemoverPrematch = algaeRemover.buildPrematch();
-  Command elevatorPrematch = elevator.buildPrematch();
-  Command indexerPrematch = indexer.buildPrematch();
-  Command swervePrematch = drivetrain.buildPrematch();
+  //   Command outtakePrematch = outtake.buildPrematch();
+  //   Command algaeRemoverPrematch = algaeRemover.buildPrematch();
+  //   Command elevatorPrematch = elevator.buildPrematch();
+  //   Command indexerPrematch = indexer.buildPrematch();
+  //   Command swervePrematch = drivetrain.buildPrematch();
 
   public RobotContainer() {
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
     NamedCommands.registerCommand("Stop Indexer", indexer.stop().asProxy());
+    NamedCommands.registerCommand("PathFindToSetup", drivetrain.pathFindToSetup());
+
+    NamedCommands.registerCommand("go to HP", drivetrain.humanPlayerAlign());
     NamedCommands.registerCommand(
         "Elevator: L4",
         elevator
@@ -102,7 +105,7 @@ public class RobotContainer {
             // .onlyIf(outtakeLaserBroken)
             .withTimeout(4)
             .asProxy());
-    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().withTimeout(2).asProxy());
+    NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().asProxy());
     NamedCommands.registerCommand("Outtake", outtake.fastOuttake().withTimeout(1.5).asProxy());
     NamedCommands.registerCommand(
         "Elevator: Bottom",
@@ -127,7 +130,6 @@ public class RobotContainer {
     //     .onFalse(
     //         Commands.race(Commands.waitUntil(outtakeLaserBroken), Commands.waitSeconds(4))
     //             .andThen(indexer::stopIndexer));
-
     new Trigger(outtakeLaserBroken)
         .and(() -> !DriverStation.isAutonomous())
         .onTrue(
@@ -165,10 +167,18 @@ public class RobotContainer {
     //                     new Rotation2d(
     //                         -driverController.getLeftY(), -driverController.getLeftX()))));
 
-    driverController.rightTrigger().whileTrue(drivetrain.humanPlayerAlign());
+    driverController.povUp().onTrue(drivetrain.pathFindToDirection(0));
+    driverController.povUpLeft().onTrue(drivetrain.pathFindToDirection(1));
+    driverController.povDownLeft().onTrue(drivetrain.pathFindToDirection(2));
+    driverController.povDown().onTrue(drivetrain.pathFindToDirection(3));
+    driverController.povDownRight().onTrue(drivetrain.pathFindToDirection(4));
+    driverController.povUpRight().onTrue(drivetrain.pathFindToDirection(5));
 
+    driverController.rightTrigger().whileTrue(drivetrain.humanPlayerAlign());
+    driverController.leftStick().onTrue(Commands.runOnce(() -> positionMode = !positionMode));
     driverController
         .leftBumper()
+        .and(isPositionMode.negate())
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
@@ -177,12 +187,19 @@ public class RobotContainer {
                 drivetrain.reefAlign(true)));
     driverController
         .rightBumper()
+        .and(isPositionMode.negate())
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
                 new TurnToReef(drivetrain),
                 Commands.waitSeconds(.08),
                 drivetrain.reefAlign(false)));
+
+    driverController.leftBumper().and(isPositionMode).whileTrue(drivetrain.reefAlignNoVision(true));
+    driverController
+        .rightBumper()
+        .and(isPositionMode)
+        .whileTrue(drivetrain.reefAlignNoVision(false));
 
     driverController.x().whileTrue(drivetrain.pathFindForAlgaeRemover());
 
@@ -264,7 +281,8 @@ public class RobotContainer {
             new DeferredCommand(
                 () -> {
                   double newTarget =
-                      Units.inchesToMeters(elevator.getPos() + ElevatorConstants.coralInTheWayAdd);
+                      Units.inchesToMeters(
+                          elevator.getPositionInches() + ElevatorConstants.coralInTheWayAdd);
                   return elevator.moveToPosition(newTarget);
                 },
                 Set.of(elevator)));
@@ -423,12 +441,12 @@ public class RobotContainer {
             outtake.reverseOuttake())
         .onFalse(outtake.stopOuttakeMotor());
 
-    operatorStick
-        .button(OperatorConstants.algaeHoldButton)
-        .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition));
-    operatorStick
-        .button(OperatorConstants.algaeTopButton)
-        .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.topPosition));
+    // operatorStick
+    //     .button(1)
+    //     .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition));
+    // operatorStick
+    //     .button(OperatorConstants.algaeTopButton)
+    //     .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.topPosition));
   }
 
   private void configureOperatorBindings() {
@@ -508,10 +526,22 @@ public class RobotContainer {
     batteryChooser.addOption("2024 #5", "Richard");
     batteryChooser.addOption("2025 #1", "Josh");
 
-    if (batteryChooser.getSelectedName() != null && !batteryChooser.getSelectedName().equals("")) {
-      LogUtil.recordMetadata("Battery Number", batteryChooser.getSelectedName());
-      LogUtil.recordMetadata("Battery Nickname", batteryChooser.getSelected());
-    }
+    batteryChooser.initializeFromPreferences();
+
+    Commands.sequence(
+            Commands.waitUntil(DriverStation::isDSAttached),
+            Commands.waitSeconds(5),
+            Commands.runOnce(
+                () -> {
+                  if (batteryChooser.getSelectedName() != null
+                      && !batteryChooser.getSelectedName().equals("")) {
+                    LogUtil.recordMetadata("Battery Number", batteryChooser.getSelectedName());
+                    LogUtil.recordMetadata("Battery Nickname", batteryChooser.getSelected());
+                  }
+                }))
+        .ignoringDisable(true)
+        .withName("Battery Logger")
+        .schedule();
 
     batteryChooser.onChange(
         (nickname) -> {

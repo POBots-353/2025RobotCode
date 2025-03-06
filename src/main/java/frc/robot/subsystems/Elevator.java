@@ -57,8 +57,8 @@ public class Elevator extends ExpandedSubsystem {
 
   private double positionTolerance = Units.inchesToMeters(0.2);
 
-  private StatusSignal<Angle> elevatorMainPosition = elevatorMainMotor.getPosition();
-  private StatusSignal<Angle> elevatorFollowerPosition = elevatorFollowerMotor.getPosition();
+  private StatusSignal<Angle> elevatorMainPosition;
+  private StatusSignal<Angle> elevatorFollowerPosition;
 
   private final SysIdRoutine elevatorSysIdRoutine =
       new SysIdRoutine(
@@ -97,6 +97,9 @@ public class Elevator extends ExpandedSubsystem {
     // follower = new Follower(ElevatorConstants.elevatorMainMotorID, false);
     elevatorMainMotor.getConfigurator().apply(ElevatorConstants.elevatorConfigs);
     elevatorFollowerMotor.getConfigurator().apply(ElevatorConstants.elevatorConfigs);
+
+    elevatorMainPosition = elevatorMainMotor.getPosition();
+    elevatorFollowerPosition = elevatorFollowerMotor.getPosition();
 
     // elevatorFollowerMotor.setControl(follower);
 
@@ -143,7 +146,7 @@ public class Elevator extends ExpandedSubsystem {
   }
 
   public boolean elevatorIsDown() {
-    return Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) < 3.53;
+    return Units.metersToInches(elevatorMainPosition.getValueAsDouble()) < 3.53;
   }
 
   public Command upSpeed(double speed) {
@@ -169,7 +172,7 @@ public class Elevator extends ExpandedSubsystem {
           elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
           elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(height));
         })
-        .until(() -> (atSetPoint(height)))
+        .until(() -> (atSetpoint(height)))
         // .onlyIf(() -> isZeroed)
         .withName("Move to " + height + " meters");
     // .finallyDo(this::holdPosition);
@@ -182,26 +185,22 @@ public class Elevator extends ExpandedSubsystem {
           elevatorFollowerMotor.setControl(
               motionMagicRequest.withPosition(ElevatorConstants.downHeight));
         })
-        .until(() -> (atSetPoint(ElevatorConstants.downHeight)))
+        .until(() -> atSetpoint(ElevatorConstants.downHeight))
         .andThen(downSpeed(.02).until(() -> buttonDebouncer.calculate(buttonPressed())))
         .withName("Down Position");
   }
 
-  public boolean atSetPoint(double targetHeight) {
+  public boolean atSetpoint(double targetHeight) {
     return elevatorDebouncer.calculate(
-        Math.abs(targetHeight - elevatorMainMotor.getPosition().getValueAsDouble())
-            < positionTolerance);
+        Math.abs(targetHeight - elevatorMainPosition.getValueAsDouble()) < positionTolerance);
   }
 
   public Command holdPosition() {
     return startRun(
             () -> {
-              elevatorMainMotor.setControl(
-                  motionMagicRequest.withPosition(
-                      elevatorMainMotor.getPosition().getValueAsDouble()));
-              elevatorFollowerMotor.setControl(
-                  motionMagicRequest.withPosition(
-                      elevatorFollowerMotor.getPosition().getValueAsDouble()));
+              motionMagicRequest.Position = elevatorMainPosition.getValueAsDouble();
+              elevatorMainMotor.setControl(motionMagicRequest);
+              elevatorFollowerMotor.setControl(motionMagicRequest);
             },
             () -> {
               elevatorMainMotor.setControl(motionMagicRequest);
@@ -218,13 +217,13 @@ public class Elevator extends ExpandedSubsystem {
     return elevatorSysIdRoutine.dynamic(direction);
   }
 
-  public double getPos() {
-    return Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble());
+  public double getPositionInches() {
+    return Units.metersToInches(elevatorMainPosition.getValueAsDouble());
   }
 
   @Logged(name = "3D Pose")
   public Pose3d[] getPose3d() {
-    double height = elevatorMainMotor.getPosition().getValueAsDouble();
+    double height = elevatorMainPosition.getValueAsDouble();
 
     return new Pose3d[] {
       new Pose3d(0, 0, height, Rotation3d.kZero), new Pose3d(0, 0, height * 2, Rotation3d.kZero),
@@ -233,19 +232,21 @@ public class Elevator extends ExpandedSubsystem {
 
   @Override
   public void periodic() {
-    getPos();
+    elevatorMainPosition.refresh();
+    elevatorFollowerPosition.refresh();
+
     SmartDashboard.putNumber(
         "Elevator/Main Stage 1 Position",
-        Units.metersToInches(elevatorMainPosition.refresh().getValueAsDouble()));
-    // SmartDashboard.putNumber(
-    //     "Elevator/Main Carriage Position",
-    //     Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) * 2);
+        Units.metersToInches(elevatorMainPosition.getValueAsDouble()));
+    SmartDashboard.putNumber(
+        "Elevator/Main Carriage Position",
+        Units.metersToInches(elevatorMainPosition.getValueAsDouble()) * 2);
     SmartDashboard.putNumber(
         "Elevator/Follower Stage 1 Position",
-        Units.metersToInches(elevatorFollowerPosition.refresh().getValueAsDouble()));
-    // SmartDashboard.putNumber(
-    //     "Elevator/Follower Carriage Position",
-    //     Units.metersToInches(elevatorFollowerMotor.getPosition().getValueAsDouble()) * 2);
+        Units.metersToInches(elevatorFollowerPosition.getValueAsDouble()));
+    SmartDashboard.putNumber(
+        "Elevator/Follower Carriage Position",
+        Units.metersToInches(elevatorFollowerPosition.getValueAsDouble()) * 2);
     SmartDashboard.putBoolean("Elevator/Button Pressed", buttonPressed());
 
     boolean currentButtonState = buttonPressed();
@@ -261,7 +262,7 @@ public class Elevator extends ExpandedSubsystem {
 
     if (isZeroed
         && zeroedDebouncer.calculate(
-            Units.metersToInches(elevatorMainMotor.getPosition().getValueAsDouble()) < 1)
+            Units.metersToInches(elevatorMainPosition.getValueAsDouble()) < 1)
         && !buttonPressed()) {
       isZeroed = false;
     }
@@ -303,11 +304,11 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPos()) <= 1e-4) {
+                      if (Math.abs(getPositionInches()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
-                        if (!atSetPoint(ElevatorConstants.L4Height)) {
+                        if (!atSetpoint(ElevatorConstants.L4Height)) {
                           addError("Elevator Motor is NOT at L4 height");
                           // We just put a fake range for now; we'll update this later on
                         } else {
@@ -321,7 +322,7 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(8),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPos()) <= 1e-4) {
+                      if (Math.abs(getPositionInches()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
@@ -338,11 +339,11 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPos()) <= 1e-4) {
+                      if (Math.abs(getPositionInches()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
-                        if (!atSetPoint(ElevatorConstants.L3Height)) {
+                        if (!atSetpoint(ElevatorConstants.L3Height)) {
                           addError("Elevator Motor is NOT at L3 height");
                           // We just put a fake range for now; we'll update this later on
                         } else {
@@ -356,7 +357,7 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(8),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPos()) <= 1e-4) {
+                      if (Math.abs(getPositionInches()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
@@ -373,11 +374,11 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPos()) <= 1e-4) {
+                      if (Math.abs(getPositionInches()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
-                        if (!atSetPoint(ElevatorConstants.L2Height)) {
+                        if (!atSetpoint(ElevatorConstants.L2Height)) {
                           addError("Elevator Motor is NOT at L2 height");
                           // We just put a fake range for now; we'll update this later on
                         } else {
@@ -391,7 +392,7 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(8),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPos()) <= 1e-4) {
+                      if (Math.abs(getPositionInches()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
@@ -408,11 +409,11 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPos()) <= 1e-4) {
+                      if (Math.abs(getPositionInches()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
-                        if (!atSetPoint(ElevatorConstants.L2Height)) {
+                        if (!atSetpoint(ElevatorConstants.L2Height)) {
                           addError("Elevator Motor is NOT at L2 height");
                           // We just put a fake range for now; we'll update this later on
                         } else {
@@ -426,11 +427,11 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPos()) <= 1e-4) {
+                      if (Math.abs(getPositionInches()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
-                        if (!atSetPoint(ElevatorConstants.L3Height)) {
+                        if (!atSetpoint(ElevatorConstants.L3Height)) {
                           addError("Elevator Motor is NOT at L3 height");
                           // We just put a fake range for now; we'll update this later on
                         } else {
@@ -444,11 +445,11 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPos()) <= 1e-4) {
+                      if (Math.abs(getPositionInches()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");
-                        if (!atSetPoint(ElevatorConstants.L4Height)) {
+                        if (!atSetpoint(ElevatorConstants.L4Height)) {
                           addError("Elevator Motor is NOT at L4 height");
                           // We just put a fake range for now; we'll update this later on
                         } else {
@@ -462,7 +463,7 @@ public class Elevator extends ExpandedSubsystem {
                 Commands.waitSeconds(8),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(getPos()) <= 1e-4) {
+                      if (Math.abs(getPositionInches()) <= 1e-4) {
                         addError("Elevator Motor is not moving");
                       } else {
                         addInfo("Elevator Motor is moving");

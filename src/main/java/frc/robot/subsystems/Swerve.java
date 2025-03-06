@@ -18,6 +18,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -28,8 +29,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -65,6 +65,7 @@ import java.util.function.Supplier;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.ConstrainedSolvepnpParams;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.PhotonUtils;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -149,6 +150,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           FieldConstants.aprilTagLayout,
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
           VisionConstants.arducamFrontTransform);
+
+  private static final Optional<ConstrainedSolvepnpParams> constrainedPnpParams =
+      Optional.of(new ConstrainedSolvepnpParams(false, 1.5));
 
   private List<PhotonPipelineResult> latestArducamLeftResult;
   private List<PhotonPipelineResult> latestArducamRightResult;
@@ -241,6 +245,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       SwerveDrivetrainConstants drivetrainConstants, SwerveModuleConstants<?, ?, ?>... modules) {
     super(drivetrainConstants, modules);
 
+    initVision();
+
     if (Utils.isSimulation()) {
       startSimThread();
       initVisionSim();
@@ -263,6 +269,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       double odometryUpdateFrequency,
       SwerveModuleConstants<?, ?, ?>... modules) {
     super(drivetrainConstants, odometryUpdateFrequency, modules);
+
+    initVision();
 
     if (Utils.isSimulation()) {
       startSimThread();
@@ -298,10 +306,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         visionStandardDeviation,
         modules);
 
+    initVision();
+
     if (Utils.isSimulation()) {
       startSimThread();
       initVisionSim();
     }
+  }
+
+  private void initVision() {
+    arducamRightPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
+    arducamLeftPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
+    arducamFrontPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
   }
 
   private void initVisionSim() {
@@ -309,13 +325,40 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     visionSim.addAprilTags(FieldConstants.aprilTagLayout);
 
-    SimCameraProperties arducamProperties = new SimCameraProperties();
-    arducamProperties.setCalibration(800, 600, Rotation2d.fromDegrees(85.4));
-    arducamProperties.setCalibError(0.21, 0.10);
-    arducamProperties.setFPS(28);
-    arducamProperties.setAvgLatencyMs(36);
-    arducamProperties.setLatencyStdDevMs(15);
-    arducamProperties.setExposureTimeMs(45);
+    Matrix<N3, N3> calibError =
+        new Matrix<>(
+            Nat.N3(),
+            Nat.N3(),
+            new double[] {
+              689.4460449566128,
+              0,
+              441.7426355934763,
+              0,
+              688.5536260717645,
+              292.82342214293885,
+              0,
+              0,
+              1
+            });
+    Vector<N8> distCoefficients =
+        VecBuilder.fill(
+            0.03728225626399143,
+            -0.022115127374557862,
+            0.0001637647682633715,
+            0.0003334141823199474,
+            -0.03915318108680384,
+            -0.0015121698705335032,
+            0.0009546599698249316,
+            0.0016260200999396255);
+
+    SimCameraProperties arducamProperties =
+        new SimCameraProperties()
+            .setCalibration(800, 600, calibError, distCoefficients)
+            .setCalibError(0.21, 0.10)
+            .setFPS(28)
+            .setAvgLatencyMs(36)
+            .setLatencyStdDevMs(15)
+            .setExposureTimeMs(45);
 
     arducamSimLeft = new PhotonCameraSim(arducamLeft, arducamProperties);
     arducamSimRight = new PhotonCameraSim(arducamRight, arducamProperties);
@@ -431,6 +474,26 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 .getTranslation(),
             Rotation2d.fromDegrees(desiredRotation));
 
+    Pose2d estimatedRIGHTPOSE =
+        (FieldConstants.aprilTagLayout.getTagPose(bestTargetID))
+            .map(Pose3d::toPose2d)
+            .orElse(new Pose2d())
+            .transformBy(
+                new Transform2d(
+                        rightAprilTagOffset.getTranslation().rotateBy(Rotation2d.fromDegrees(180)),
+                        Rotation2d.fromDegrees(180))
+                    .inverse());
+
+    Pose2d estimatedLEFTPOSE =
+        (FieldConstants.aprilTagLayout.getTagPose(bestTargetID))
+            .map(Pose3d::toPose2d)
+            .orElse(new Pose2d())
+            .transformBy(
+                new Transform2d(
+                        leftAprilTagOffset.getTranslation().rotateBy(Rotation2d.fromDegrees(180)),
+                        Rotation2d.fromDegrees(180))
+                    .inverse());
+
     Pose2d estimatedRightPose =
         new Pose2d(
             getState()
@@ -453,17 +516,21 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             ? ReefDefinitePoses.redReefDefiniteRightPoses
             : ReefDefinitePoses.blueReefDefiniteRightPoses;
 
-    if (isPoseWithinTolerance(estimatedLeftPose, leftPoses)) {
-      leftPose = estimatedLeftPose;
-    } else {
-      return;
-    }
+    // if (isPoseWithinTolerance(estimatedLEFTPOSE, leftPoses)) {
+    //   leftPose = estimatedLEFTPOSE;
+    // } else {
+    //   return;
+    // }
 
-    if (isPoseWithinTolerance(estimatedRightPose, rightPoses)) {
-      rightPose = estimatedRightPose;
-    } else {
-      return;
-    }
+    // if (isPoseWithinTolerance(estimatedRIGHTPOSE, rightPoses)) {
+    //   // rightPose = estimatedRightPose;
+    //   rightPose = estimatedRIGHTPOSE;
+    // } else {
+    //   return;
+    // }
+
+    leftPose = estimatedLEFTPOSE;
+    rightPose = estimatedRIGHTPOSE;
 
     SmartDashboard.putNumber("Swerve/Goal Rotation", desiredRotation);
     SmartDashboard.putNumber("Swerve/Best Tag ID", bestTargetID);
@@ -476,7 +543,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   private boolean isPoseWithinTolerance(Pose2d estimatedPose, List<Pose2d> definitePoses) {
-    double tolerance = 0.0762 * 4; // 3 inches in meters
+    double tolerance = 0.0762; // 3 inches in meters
     for (Pose2d pose : definitePoses) {
       double distance =
           Math.hypot(estimatedPose.getX() - pose.getX(), estimatedPose.getY() - pose.getY());
@@ -527,28 +594,28 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   //       Set.of(this));
   // }
 
-  // public Command reefAlignNoVision(boolean leftAlign) {
-  //   return new DeferredCommand(
-  //       () -> {
-  //         Pose2d robotPose = getState().Pose;
-  //         Pose2d nearestPose = Pose2d.kZero;
-  //         if (AllianceUtil.isRedAlliance()) {
-  //           if (leftAlign) {
-  //             nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteLeftPoses);
-  //           } else {
-  //             nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteRightPoses);
-  //           }
-  //         } else {
-  //           if (leftAlign) {
-  //             nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteLeftPoses);
-  //           } else {
-  //             nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses);
-  //           }
-  //         }
-  //         return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.slowPathConstraints, 0.0);
-  //       },
-  //       Set.of(this));
-  // }
+  public Command reefAlignNoVision(boolean leftAlign) {
+    return new DeferredCommand(
+        () -> {
+          Pose2d robotPose = getState().Pose;
+          Pose2d nearestPose = Pose2d.kZero;
+          if (AllianceUtil.isRedAlliance()) {
+            if (leftAlign) {
+              nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteLeftPoses);
+            } else {
+              nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteRightPoses);
+            }
+          } else {
+            if (leftAlign) {
+              nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteLeftPoses);
+            } else {
+              nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses);
+            }
+          }
+          return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.midPathConstraints, 0.0);
+        },
+        Set.of(this));
+  }
 
   // public PathPlannerPath getNearestPickupPath() {
   //   Pose2d closestStation;
@@ -616,7 +683,22 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             closestPose = getState().Pose.nearest(blueStationPoses);
           }
 
-          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.pathConstraints);
+          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.fastPathConstraints);
+        },
+        Set.of(this));
+  }
+
+  public Command pathFindToDirection(int direction) {
+    return new DeferredCommand(
+        () -> {
+          List<Pose2d> setupPoses =
+              AllianceUtil.isRedAlliance()
+                  ? FieldConstants.redSetupPoses
+                  : FieldConstants.blueSetupPoses;
+
+          Pose2d targetPose = setupPoses.get(direction);
+
+          return AutoBuilder.pathfindToPose(targetPose, AutoConstants.midPathConstraints);
         },
         Set.of(this));
   }
@@ -636,7 +718,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             closestPose = getState().Pose.nearest(blueSetupPoses);
           }
 
-          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.slowPathConstraints);
+          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.midPathConstraints);
         },
         Set.of(this));
   }
@@ -656,7 +738,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             closestPose = getState().Pose.nearest(blueAlgaeRemoverPoses);
           }
 
-          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.pathConstraints);
+          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.midPathConstraints);
         },
         Set.of(this));
   }
@@ -739,9 +821,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       return false;
     }
 
-    if (DriverStation.isAutonomous()) {
-      return false;
-    }
+    // if (DriverStation.isAutonomous()) {
+    //   return false;
+    // }
 
     if (isOutOfBounds(visionPose)) {
       return false;
@@ -756,9 +838,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       return false;
     }
 
-    if (DriverStation.isAutonomous()) {
-      return false;
-    }
+    // if (DriverStation.isAutonomous()) {
+    //   return false;
+    // }
 
     if (isOutOfBounds(visionPose)) {
       return false;
@@ -805,7 +887,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       // }
       // PhotonPipelineResult filteredResult = new PhotonPipelineResult(filterTargets);
 
-      Optional<EstimatedRobotPose> optionalVisionPose = poseEstimator.update(result);
+      Optional<EstimatedRobotPose> optionalVisionPose =
+          poseEstimator.update(result, Optional.empty(), Optional.empty(), constrainedPnpParams);
       if (optionalVisionPose.isEmpty()) {
         continue;
       }
@@ -845,28 +928,28 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 getVisionStdDevs(
                     tagCount, averageDistance, baseMultiTagStdDev * (1 / cameraWeight))));
       } else {
-        PhotonTrackedTarget target = visionPose.targetsUsed.get(0);
-        Optional<Pose2d> robotPoseAtTime =
-            samplePoseAt(Utils.fpgaToCurrentTime(visionPose.timestampSeconds));
-        Optional<Pose3d> tagOnField =
-            FieldConstants.aprilTagLayout.getTagPose(target.getFiducialId());
+        // PhotonTrackedTarget target = visionPose.targetsUsed.get(0);
+        // Optional<Pose2d> robotPoseAtTime =
+        //     samplePoseAt(Utils.fpgaToCurrentTime(visionPose.timestampSeconds));
+        // Optional<Pose3d> tagOnField =
+        //     FieldConstants.aprilTagLayout.getTagPose(target.getFiducialId());
 
-        if (robotPoseAtTime.isEmpty() || tagOnField.isEmpty()) {
-          continue;
-        }
+        // if (robotPoseAtTime.isEmpty() || tagOnField.isEmpty()) {
+        //   continue;
+        // }
 
-        Pose3d singleTagPose =
-            calculateSingleTagPose(
-                target, tagOnField.get(), robotPoseAtTime.get(), cameraTransform);
+        // Pose3d singleTagPose =
+        //     calculateSingleTagPose(
+        //         target, tagOnField.get(), robotPoseAtTime.get(), cameraTransform);
 
-        if (!isValidSingleTagPose(singleTagPose, averageDistance)) {
-          rejectedPoses.add(singleTagPose);
+        if (!isValidSingleTagPose(visionPose.estimatedPose, averageDistance)) {
+          rejectedPoses.add(visionPose.estimatedPose);
           continue;
         }
 
         poseEstimates.add(
             new PoseEstimate(
-                singleTagPose,
+                visionPose.estimatedPose,
                 visionPose.timestampSeconds,
                 getVisionStdDevs(
                     tagCount, averageDistance, baseSingleTagStdDev * (1 / cameraWeight))));
@@ -897,14 +980,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         VisionConstants.arducamLeftTransform,
         Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5),
-        1.5);
+        0.25);
     updateVisionPoses(
         latestArducamRightResult,
         arducamRightPoseEstimator,
         VisionConstants.arducamRightTransform,
         Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5),
-        1);
+        0.25);
     updateVisionPoses(
         latestArducamFrontResult,
         arducamFrontPoseEstimator,
@@ -1045,10 +1128,21 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return m_sysIdRoutineSteer.dynamic(direction);
   }
 
+  double ctreToFpgaTime(double timestamp) {
+    return (Timer.getFPGATimestamp() - Utils.getCurrentTimeSeconds()) + timestamp;
+  }
+
   @Override
   public void periodic() {
     double startTime = Timer.getFPGATimestamp();
-    field.setRobotPose(getState().Pose);
+    SwerveDriveState state = getState();
+    field.setRobotPose(state.Pose);
+
+    double stateTimestamp = ctreToFpgaTime(state.Timestamp);
+
+    arducamLeftPoseEstimator.addHeadingData(stateTimestamp, state.Pose.getRotation());
+    arducamRightPoseEstimator.addHeadingData(stateTimestamp, state.Pose.getRotation());
+    arducamFrontPoseEstimator.addHeadingData(stateTimestamp, state.Pose.getRotation());
 
     latestArducamLeftResult = arducamLeft.getAllUnreadResults();
     latestArducamRightResult = arducamRight.getAllUnreadResults();

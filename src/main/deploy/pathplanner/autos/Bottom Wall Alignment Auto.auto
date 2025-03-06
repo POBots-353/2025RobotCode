@@ -29,7 +29,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Elevator: L4"
+                  "name": "Elevator: L3"
                 }
               }
             ]
@@ -123,10 +123,16 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Elevator: L4"
+                  "name": "Elevator: L3"
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Auto Outtake"
           }
         },
         {
@@ -211,10 +217,16 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Elevator: L4"
+                  "name": "Elevator: L3"
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Auto Outtake"
           }
         },
         {
@@ -299,10 +311,16 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Elevator: L4"
+                  "name": "Elevator: L3"
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Auto Outtake"
           }
         },
         {

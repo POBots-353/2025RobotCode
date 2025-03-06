@@ -7,31 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "StartR to G"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "G to HP Right"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "HP Right to F"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "F to HP Right"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "HP Right to E"
+            "pathName": "StartRWall to E"
           }
         },
         {

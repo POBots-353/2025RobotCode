@@ -38,17 +38,20 @@ public class AlgaeRemover extends ExpandedSubsystem {
     algaeRemoverPIDController = algaeRemoverMotor.getClosedLoopController();
     SparkMaxConfig algaeRemoverConfig = new SparkMaxConfig();
 
-    algaeRemoverConfig.absoluteEncoder.inverted(false).positionConversionFactor(360).zeroOffset(0);
+    algaeRemoverConfig
+        .absoluteEncoder
+        .inverted(false)
+        .positionConversionFactor(360)
+        .zeroOffset(339 / 360);
 
     algaeRemoverConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 
     algaeRemoverConfig
-        .inverted(false)
+        .inverted(true)
         .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(25)
-        .secondaryCurrentLimit(30);
-
-    algaeRemoverConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(0.5).i(0).d(0);
+        .smartCurrentLimit(AlgaeRemoverConstants.currentLimit)
+        .secondaryCurrentLimit(AlgaeRemoverConstants.shutOffCurrentLimit);
+    algaeRemoverConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(50).i(0).d(0.2);
 
     algaeRemoverConfig
         .closedLoop
@@ -68,7 +71,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
   }
 
   public Command moveToPosition(double targetAngle) {
-    return runOnce(
+    return run(
         () ->
             algaeRemoverPIDController.setReference(
                 targetAngle, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
@@ -79,11 +82,11 @@ public class AlgaeRemover extends ExpandedSubsystem {
   }
 
   public void algaeRemoverUp() {
-    algaeRemoverMotor.set(-.08);
+    algaeRemoverMotor.set(.9);
   }
 
   public void algaeRemoverDown() {
-    algaeRemoverMotor.set(.08);
+    algaeRemoverMotor.set(-.9);
   }
 
   public double getPosition() {

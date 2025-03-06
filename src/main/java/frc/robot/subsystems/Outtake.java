@@ -37,13 +37,13 @@ public class Outtake extends ExpandedSubsystem {
         .smartCurrentLimit(OuttakeConstants.outtakeCurrentLimit)
         .secondaryCurrentLimit(OuttakeConstants.outtakeShutOffLimit);
 
-    outtakeConfig
-        .signals
-        .absoluteEncoderPositionAlwaysOn(false)
-        .absoluteEncoderVelocityAlwaysOn(false)
-        .primaryEncoderPositionAlwaysOn(false)
-        .externalOrAltEncoderPositionAlwaysOn(false)
-        .externalOrAltEncoderVelocityAlwaysOn(false);
+    // outtakeConfig
+    //     .signals
+    //     .absoluteEncoderPositionAlwaysOn(false)
+    //     .absoluteEncoderVelocityAlwaysOn(false)
+    //     .primaryEncoderPositionAlwaysOn(false)
+    //     .externalOrAltEncoderPositionAlwaysOn(false)
+    //     .externalOrAltEncoderVelocityAlwaysOn(false);
 
     outtakemotor.configure(
         outtakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -84,7 +84,7 @@ public class Outtake extends ExpandedSubsystem {
     LaserCan.Measurement measurement = outtakeLaser.getMeasurement();
     if (measurement != null
         && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT
-        && measurement.distance_mm < 80) {
+        && measurement.distance_mm < 75) {
       return true;
     } else {
       return false;
