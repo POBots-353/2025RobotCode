@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -197,7 +196,10 @@ public class RobotContainer {
                 drivetrain.reefAlign(false)));
 
     driverController.leftBumper().and(isPositionMode).whileTrue(drivetrain.reefAlignNoVision(true));
-    driverController.rightBumper().and(isPositionMode).whileTrue(drivetrain.reefAlignNoVision(false));
+    driverController
+        .rightBumper()
+        .and(isPositionMode)
+        .whileTrue(drivetrain.reefAlignNoVision(false));
 
     driverController.x().whileTrue(drivetrain.pathFindForAlgaeRemover());
 
@@ -279,7 +281,8 @@ public class RobotContainer {
             new DeferredCommand(
                 () -> {
                   double newTarget =
-                      Units.inchesToMeters(elevator.getPos() + ElevatorConstants.coralInTheWayAdd);
+                      Units.inchesToMeters(
+                          elevator.getPositionInches() + ElevatorConstants.coralInTheWayAdd);
                   return elevator.moveToPosition(newTarget);
                 },
                 Set.of(elevator)));
