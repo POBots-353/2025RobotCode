@@ -338,6 +338,8 @@ public class Constants {
   public static class AlgaeRemoverConstants {
     public static final int algaeRemoverMotorID = 17;
 
+    public static final int gearRatio = 1 / 125;
+
     public static final double algaeRemoverSpeed = .2;
 
     public static final int currentLimit = 35;
@@ -473,19 +475,19 @@ public class Constants {
     public static final int elevatorManualDown = 9;
     public static final int homeElevatorButon = 2;
     public static final int elevatorOverrideButton = 3;
-    public static final int algaeHighPosition = 6;
-    public static final int algaeLowPosition = 5;
+    public static final int algaeHighPosition = 7;
+    public static final int algaeLowPosition = 8;
 
     public static final int coralInTheWay = 1;
 
     public static final int outtakeButton = 12;
 
-    public static final int algaeIntakeButton = 13;
-    public static final int algaeOutButton = 12;
+    public static final int algaeGroundIntakeButton = 5;
+    public static final int algaeGroundOutButton = 6;
     public static final int algaeHoldButton = 14;
     public static final int algaeTopButton = 15;
 
-    public static final int armModeButton = 16;
+    public static final int algaeModeButton = 16;
 
     public static final int startingConfigButton = 11;
   }

@@ -42,7 +42,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Elevator: L3"
+                  "name": "Elevator: L4"
                 }
               }
             ]
@@ -65,7 +65,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.5
+                        "waitTime": 0.25
                       }
                     },
                     {
@@ -143,7 +143,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Elevator: L3"
+                  "name": "Elevator: L4"
                 }
               }
             ]
@@ -166,7 +166,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.5
+                        "waitTime": 0.25
                       }
                     },
                     {
@@ -235,7 +235,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "AutoAlignRight"
+                        "name": "AutoAlignLeft"
                       }
                     }
                   ]
@@ -244,7 +244,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Elevator: L3"
+                  "name": "Elevator: L4"
                 }
               }
             ]
@@ -267,7 +267,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.5
+                        "waitTime": 0.25
                       }
                     },
                     {
