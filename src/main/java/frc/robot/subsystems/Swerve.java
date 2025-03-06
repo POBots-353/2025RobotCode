@@ -645,6 +645,21 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         Set.of(this));
   }
 
+  public Command pathFindToDirection(int direction) {
+    return new DeferredCommand(
+        () -> {
+          List<Pose2d> setupPoses =
+              AllianceUtil.isRedAlliance()
+                  ? FieldConstants.redSetupPoses
+                  : FieldConstants.blueSetupPoses;
+
+          Pose2d targetPose = setupPoses.get(direction);
+
+          return AutoBuilder.pathfindToPose(targetPose, AutoConstants.midPathConstraints);
+        },
+        Set.of(this));
+  }
+
   public Command pathFindToSetup() {
     return new DeferredCommand(
         () -> {

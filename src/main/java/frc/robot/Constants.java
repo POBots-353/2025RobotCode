@@ -340,6 +340,10 @@ public class Constants {
 
     public static final double algaeRemoverSpeed = .2;
 
+    public static final int currentLimit = 35;
+    public static final int shutOffCurrentLimit = 65;
+
+
     public static final double topPosition = 244.5; // Degrees
     public static final double intakePosition = 333.0;
     public static final double holdPosition = 275; // 275
