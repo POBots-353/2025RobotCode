@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -130,7 +131,6 @@ public class RobotContainer {
     //     .onFalse(
     //         Commands.race(Commands.waitUntil(outtakeLaserBroken), Commands.waitSeconds(4))
     //             .andThen(indexer::stopIndexer));
-
     new Trigger(outtakeLaserBroken)
         .and(() -> !DriverStation.isAutonomous())
         .onTrue(
@@ -168,8 +168,15 @@ public class RobotContainer {
     //                     new Rotation2d(
     //                         -driverController.getLeftY(), -driverController.getLeftX()))));
 
+    driverController.povUp().onTrue(drivetrain.pathFindToDirection(0));
+    driverController.povUpLeft().onTrue(drivetrain.pathFindToDirection(1));
+    driverController.povDownLeft().onTrue(drivetrain.pathFindToDirection(2));
+    driverController.povDown().onTrue(drivetrain.pathFindToDirection(3));
+    driverController.povDownRight().onTrue(drivetrain.pathFindToDirection(4));
+    driverController.povUpRight().onTrue(drivetrain.pathFindToDirection(5));
+
     driverController.rightTrigger().whileTrue(drivetrain.humanPlayerAlign());
-    driverController.povUp().onTrue(Commands.runOnce(() -> positionMode = !positionMode));
+    driverController.leftStick().onTrue(Commands.runOnce(() -> positionMode = !positionMode));
     driverController
         .leftBumper()
         .and(isPositionMode.negate())
@@ -190,10 +197,7 @@ public class RobotContainer {
                 drivetrain.reefAlign(false)));
 
     driverController.leftBumper().and(isPositionMode).whileTrue(drivetrain.reefAlignNoVision(true));
-    driverController
-        .rightBumper()
-        .and(isPositionMode)
-        .whileTrue(drivetrain.reefAlignNoVision(false));
+    driverController.rightBumper().and(isPositionMode).whileTrue(drivetrain.reefAlignNoVision(false));
 
     driverController.x().whileTrue(drivetrain.pathFindForAlgaeRemover());
 

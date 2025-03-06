@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
@@ -148,12 +149,12 @@ public class Constants {
 
     public static final List<Pose2d> redSetupPoses =
         List.of(
-            new Pose2d(15.297, 4.019, Rotation2d.fromDegrees(180)), // 0
-            new Pose2d(14.176, 5.96, Rotation2d.fromDegrees(-120)), // 60
-            new Pose2d(11.934, 5.96, Rotation2d.fromDegrees(-60)), // 120
             new Pose2d(10.813, 4.019, Rotation2d.fromDegrees(0)), // 180
             new Pose2d(11.934, 2.0774, Rotation2d.fromDegrees(60)), // -120
-            new Pose2d(14.176, 2.0774, Rotation2d.fromDegrees(120))); // -60
+            new Pose2d(14.176, 2.0774, Rotation2d.fromDegrees(120)), // -60
+            new Pose2d(15.297, 4.019, Rotation2d.fromDegrees(180)), // 0
+            new Pose2d(14.176, 5.96, Rotation2d.fromDegrees(-120)), // 60
+            new Pose2d(11.934, 5.96, Rotation2d.fromDegrees(-60))); // 120
 
     public static final List<Pose2d> blueSetupPoses =
         List.of(
@@ -315,8 +316,8 @@ public class Constants {
     public static final double groundIntakeMotorSpeed = .9;
     public static final double outtakeSpeed = -.7;
 
-    public static final int indexerCurrentLimit = 30;
-    public static final double indexerShutOffLimit = 45;
+    public static final int indexerCurrentLimit = 35;
+    public static final double indexerShutOffLimit = 60;
 
     public static final int groundIntakeCurrentLimit = 30;
     public static final double groundIntakeShutOffLimit = 45;
@@ -325,8 +326,8 @@ public class Constants {
 
   public static class OuttakeConstants {
     public static final int outtakeMotorID = 18;
-    public static final int outtakeCurrentLimit = 25;
-    public static final int outtakeShutOffLimit = 25;
+    public static final int outtakeCurrentLimit = 45;
+    public static final int outtakeShutOffLimit = 75;
 
     public static final double fastOuttakeSpeed = 0.85;
     public static final double slowOuttakeSpeed = 0.353;
@@ -338,6 +339,10 @@ public class Constants {
     public static final int algaeRemoverMotorID = 17;
 
     public static final double algaeRemoverSpeed = .2;
+
+    public static final int currentLimit = 35;
+    public static final int shutOffCurrentLimit = 65;
+
 
     public static final double topPosition = 244.5; // Degrees
     public static final double intakePosition = 333.0;
@@ -408,9 +413,12 @@ public class Constants {
         new SoftwareLimitSwitchConfigs()
             .withForwardSoftLimitThreshold(maxHeight)
             .withForwardSoftLimitEnable(true);
+    public static final CurrentLimitsConfigs currentLimitConfigs =
+        new CurrentLimitsConfigs().withStatorCurrentLimit(45).withStatorCurrentLimitEnable(true);
 
     public static final TalonFXConfiguration elevatorConfigs =
         new TalonFXConfiguration()
+        .withCurrentLimits(currentLimitConfigs)
             .withSlot0(slot0Configs)
             .withMotionMagic(motionMagicConfigs)
             .withFeedback(feedbackConfigs)

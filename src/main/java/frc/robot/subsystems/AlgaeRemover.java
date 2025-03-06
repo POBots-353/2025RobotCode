@@ -47,11 +47,10 @@ public class AlgaeRemover extends ExpandedSubsystem {
     algaeRemoverConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 
     algaeRemoverConfig
-        .inverted(false)
+        .inverted(true)
         .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(25)
-        .secondaryCurrentLimit(30);
-    algaeRemoverConfig.closedLoop.positionWrappingEnabled(true);
+        .smartCurrentLimit(AlgaeRemoverConstants.currentLimit)
+        .secondaryCurrentLimit(AlgaeRemoverConstants.shutOffCurrentLimit);
     algaeRemoverConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(50).i(0).d(0.2);
 
     algaeRemoverConfig
@@ -83,11 +82,11 @@ public class AlgaeRemover extends ExpandedSubsystem {
   }
 
   public void algaeRemoverUp() {
-    algaeRemoverMotor.set(-1);
+    algaeRemoverMotor.set(.9);
   }
 
   public void algaeRemoverDown() {
-    algaeRemoverMotor.set(1);
+    algaeRemoverMotor.set(-.9);
   }
 
   public double getPosition() {
