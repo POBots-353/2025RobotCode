@@ -408,22 +408,24 @@ public class RobotContainer {
   private void configureAlgaeRemoverBindings() {
     operatorStick
         .button(OperatorConstants.startingConfigButton)
-        .and(algaeMode)
+        // .and(algaeMode)
         .whileTrue(
             elevator
                 .moveToPosition(ElevatorConstants.AlgaeHighHeight)
-                .alongWith(algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition))
-                .alongWith(outtake.fastOuttake()))
+                // .andThen(algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition)))
+                .andThen(algaeRemover.run(() -> algaeRemover.algaeRemoverDown()).withTimeout(2.1)))
         .onFalse(
             elevator
-                .upSpeed(2)
-                .withTimeout(1)
-                .alongWith(algaeRemover.run(() -> algaeRemover.algaeRemoverUp()).withTimeout(1))
+                .downPosition()
+                .withTimeout(3)
+                // .alongWith(algaeRemover.run(() -> algaeRemover.algaeRemoverUp()).withTimeout(1))
                 .andThen(
                     elevator
                         .runOnce(elevator::stopElevator)
                         .alongWith(
-                            algaeRemover.moveToPosition(AlgaeRemoverConstants.topPosition))));
+                            algaeRemover
+                                .run(() -> algaeRemover.algaeRemoverUp())
+                                .withTimeout(.5))));
 
     //         Commands.parallel(
     //             Commands.runOnce(() -> outtake.fastOuttake()),
@@ -453,28 +455,21 @@ public class RobotContainer {
         .whileTrue(algaeRemover.run(() -> algaeRemover.algaeRemoverDown()))
         .onFalse(algaeRemover.runOnce(() -> algaeRemover.stopAlgaeRemover()));
 
-    operatorStick
-        .button(OperatorConstants.algaeGroundIntakeButton)
-        .and(algaeMode)
-        .onTrue(
-            algaeRemover
-                .moveToPosition(AlgaeRemoverConstants.intakePosition)
-                .alongWith(outtake.fastOuttake()))
-        .onFalse(
-            outtake
-                .stopOuttakeMotor()
-                .alongWith(algaeRemover.runOnce(() -> algaeRemover.stopAlgaeRemover())));
-
-    operatorStick
-        .button(OperatorConstants.algaeGroundOutButton)
-        .and(algaeMode)
-        .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.topPosition));
+    // operatorStick
+    //     .button(OperatorConstants.algaeGroundIntakeButton)
+    //     .and(algaeMode)
+    //     .onTrue(
+    //         algaeRemover
+    //             .moveToPosition(AlgaeRemoverConstants.intakePosition)
+    //             .alongWith(outtake.fastOuttake()))
+    //     .onFalse(
+    //         outtake
+    //             .stopOuttakeMotor()
+    //             .alongWith(algaeRemover.runOnce(() -> algaeRemover.stopAlgaeRemover())));
 
     // operatorStick
-    //     .button(1)
-    //     .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition));
-    // operatorStick
-    //     .button(OperatorConstants.algaeTopButton)
+    //     .button(OperatorConstants.algaeGroundOutButton)
+    //     .and(algaeMode)
     //     .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.topPosition));
   }
 
