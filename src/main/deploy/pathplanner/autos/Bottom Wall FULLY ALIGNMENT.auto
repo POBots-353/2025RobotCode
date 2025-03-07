@@ -7,13 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Start Alignment auto"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "PathFindToSetup"
+            "pathName": "Bottom Start Alignment auto"
           }
         },
         {
@@ -38,14 +32,14 @@
                     }
                   ]
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: L4"
-                }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Elevator: L4"
           }
         },
         {
@@ -139,14 +133,14 @@
                     }
                   ]
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: L4"
-                }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Elevator: L4"
           }
         },
         {
@@ -248,6 +242,12 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
           }
         },
         {

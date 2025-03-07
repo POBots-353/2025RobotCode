@@ -83,6 +83,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
     NamedCommands.registerCommand("Stop Indexer", indexer.stop().asProxy());
     NamedCommands.registerCommand("PathFindToSetup", drivetrain.pathFindToSetup());
+    NamedCommands.registerCommand("Wait for target", drivetrain.waitForTarget());
 
     NamedCommands.registerCommand("go to HP", drivetrain.humanPlayerAlign());
     NamedCommands.registerCommand(
@@ -90,7 +91,7 @@ public class RobotContainer {
         elevator
             .moveToPosition(ElevatorConstants.L4Height)
             // .onlyIf(outtakeLaserBroken)
-            .withTimeout(4)
+            .withTimeout(2.5)
             .asProxy());
     NamedCommands.registerCommand(
         "Elevator: L3",
@@ -105,7 +106,7 @@ public class RobotContainer {
         "Elevator: Bottom",
         elevator.downPosition().until(buttonTrigger).withTimeout(3.0).asProxy());
     NamedCommands.registerCommand(
-        "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(3).asProxy());
+        "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(2.4).asProxy());
     NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(3));
     NamedCommands.registerCommand("AutoAlignRight", drivetrain.reefAlign(false).withTimeout(3));
 
@@ -371,6 +372,12 @@ public class RobotContainer {
   // }
 
   private void configureOuttakeBindings() {
+    operatorStick
+        .button(OperatorConstants.indexerButton)
+        .and(algaeMode)
+        .onTrue(outtake.reverseOuttake())
+        .onFalse(outtake.stopOuttakeMotor());
+
     operatorStick
         .button(OperatorConstants.outtakeButton)
         .and(algaeMode.negate())

@@ -69,7 +69,9 @@ public class Constants {
     public static final AngularVelocity autoMaxRotationalSpeed = RotationsPerSecond.of(1.0);
 
     public static final LinearAcceleration autoMaxTransationalAcceleration =
-        autoMaxTranslationalSpeed.div(SwerveConstants.translationZeroToFull);
+        // autoMaxTranslationalSpeed.div(SwerveConstants.translationZeroToFull);
+        autoMaxTranslationalSpeed.div(Seconds.of(.3));
+
     public static final AngularAcceleration autoMaxAngularAcceleration =
         autoMaxRotationalSpeed.div(SwerveConstants.rotationZeroToFull);
 
@@ -80,9 +82,9 @@ public class Constants {
             autoMaxRotationalSpeed.in(RadiansPerSecond),
             autoMaxAngularAcceleration.in(RadiansPerSecondPerSecond));
 
-    public static final PathConstraints midPathConstraints = new PathConstraints(3.53, 3.53, 7, 13);
+    public static final PathConstraints midPathConstraints = new PathConstraints(3.53, 6.5, 7, 13);
 
-    public static final PathConstraints slowPathConstraints = new PathConstraints(1, 2, 7, 13);
+    public static final PathConstraints slowPathConstraints = new PathConstraints(2.5, 3, 7, 13);
   }
 
   public static class VisionConstants {
@@ -138,14 +140,23 @@ public class Constants {
       }
     }
 
+    // public static final Pose2d redStationLeft =
+    //     new Pose2d(15.980, 0.686, Rotation2d.fromDegrees(126.87));
+    // public static final Pose2d redStationRight =
+    //     new Pose2d(15.980, 7.400, Rotation2d.fromDegrees(-126.87));
+    // public static final Pose2d blueStationLeft =
+    //     new Pose2d(1.58, 7.400, Rotation2d.fromDegrees(-53.130));
+    // public static final Pose2d blueStationRight =
+    //     new Pose2d(1.58, 0.686, Rotation2d.fromDegrees(53.130));
+
     public static final Pose2d redStationLeft =
-        new Pose2d(15.980, 0.686, Rotation2d.fromDegrees(126.87));
+        new Pose2d(16.198558807373047, 0.7958781719207764, Rotation2d.fromDegrees(126.87));
     public static final Pose2d redStationRight =
-        new Pose2d(15.980, 7.400, Rotation2d.fromDegrees(-126.87));
+        new Pose2d(16.133712768554688, 7.315741539001465, Rotation2d.fromDegrees(-126.87));
     public static final Pose2d blueStationLeft =
-        new Pose2d(1.58, 7.400, Rotation2d.fromDegrees(-53.130));
+        new Pose2d(1.4599770307540894, 7.323948860168457, Rotation2d.fromDegrees(-53.130));
     public static final Pose2d blueStationRight =
-        new Pose2d(1.58, 0.686, Rotation2d.fromDegrees(53.130));
+        new Pose2d(1.3461934328079224, 0.7910314798355103, Rotation2d.fromDegrees(53.130));
 
     public static final List<Pose2d> redSetupPoses =
         List.of(
@@ -329,8 +340,8 @@ public class Constants {
     public static final int outtakeCurrentLimit = 45;
     public static final int outtakeShutOffLimit = 75;
 
-    public static final double fastOuttakeSpeed = 0.85;
-    public static final double slowOuttakeSpeed = 0.353;
+    public static final double fastOuttakeSpeed = 0.60;
+    public static final double slowOuttakeSpeed = 0.353; // .353 0.2
 
     public static final int outtakeLaserCanID = 19;
   }
@@ -345,12 +356,12 @@ public class Constants {
     public static final int currentLimit = 35;
     public static final int shutOffCurrentLimit = 65;
 
-    public static final double topPosition = 244.5; // Degrees
-    public static final double intakePosition = 333.0;
-    public static final double holdPosition = 275; // 275
+    public static final double topPosition = 0.0; // Degrees
+    public static final double intakePosition = 275.0;
+    public static final double holdPosition = 0; // 275
     public static final double outPosition = 0.0;
-    public static final double HighestPosition = 237;
-    public static final double LowestPosition = 50;
+    public static final double HighestPosition = 0;
+    public static final double LowestPosition = 0;
 
     public static final double maxVelocity = 30.0; // Degrees per second
     public static final double maxAcceleration = 50.0; // Degrees per second squared
@@ -367,9 +378,9 @@ public class Constants {
     public static final double maxHeight = Units.inchesToMeters(28.09);
     public static final double minHeight = 0.0;
 
-    public static final double L4Height = Units.inchesToMeters(27.11); // 28.09
-    public static final double L3Height = Units.inchesToMeters(15.5);
-    public static final double L2Height = Units.inchesToMeters(7.3);
+    public static final double L4Height = Units.inchesToMeters(27.8); // 28.09
+    public static final double L3Height = Units.inchesToMeters(15.5 + .7);
+    public static final double L2Height = Units.inchesToMeters(7.3 + .55);
     public static final double downHeight = Units.inchesToMeters(0);
     public static final double coralInTheWayAdd = 2.74;
 
@@ -396,9 +407,9 @@ public class Constants {
             .withKV(4.75) // 4.14
             .withKA(0.03) // .03
             .withKG(0.36) // .31
-            .withKP(26)
+            .withKP(27)
             .withKI(0.0)
-            .withKD(0.25) // 1
+            .withKD(0.15) // 1
             .withGravityType(GravityTypeValue.Elevator_Static)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseVelocitySign);
 

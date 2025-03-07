@@ -38,9 +38,11 @@ public class AlgaeRemover extends ExpandedSubsystem {
     algaeRemoverPIDController = algaeRemoverMotor.getClosedLoopController();
     SparkMaxConfig algaeRemoverConfig = new SparkMaxConfig();
 
-    algaeRemoverConfig.absoluteEncoder.inverted(false);
-    // .positionConversionFactor(360 * AlgaeRemoverConstants.gearRatio)
-    // .zeroOffset(0 / 360);
+    algaeRemoverConfig
+        .absoluteEncoder
+        .inverted(true)
+        .positionConversionFactor(360) // * AlgaeRemoverConstants.gearRatio
+        .zeroOffset(.886); // .113922
 
     algaeRemoverConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 

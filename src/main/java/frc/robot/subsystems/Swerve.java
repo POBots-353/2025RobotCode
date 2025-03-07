@@ -743,6 +743,29 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         Set.of(this));
   }
 
+  public boolean seesTarget() {
+    List<PhotonPipelineResult> latestResult = latestArducamFrontResult;
+
+    if (latestResult == null || latestResult.isEmpty()) {
+      return false;
+    }
+
+    for (PhotonPipelineResult result : latestResult) {
+      if (!result.hasTargets()) continue;
+      else {
+        if (result.getBestTarget().getBestCameraToTarget().getTranslation().getNorm() < 3) {
+          return true;
+        }
+        ;
+      }
+    }
+    return false;
+  }
+
+  public Command waitForTarget() {
+    return Commands.waitUntil(() -> seesTarget());
+  }
+
   /**
    * Returns a command that applies the specified control request to this swerve drivetrain.
    *
