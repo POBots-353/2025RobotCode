@@ -47,7 +47,7 @@ public class Outtake extends ExpandedSubsystem {
 
     outtakemotor.configure(
         outtakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-  } // Java is worse than Python in all ways - Kurt Roth 4:34 PM 3/3/2025
+  }
 
   public Command fastOuttake() {
     return run(() -> outtakemotor.set(OuttakeConstants.fastOuttakeSpeed));
