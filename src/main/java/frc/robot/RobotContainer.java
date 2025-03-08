@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -36,6 +37,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeRemover;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.LED;
 import frc.robot.subsystems.Outtake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.util.LogUtil;
@@ -58,6 +60,8 @@ public class RobotContainer {
 
   @Logged(name = "Algae Remover")
   private final AlgaeRemover algaeRemover = new AlgaeRemover();
+
+  private final LED led = new LED();
 
   private final Telemetry logger =
       new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
@@ -91,7 +95,7 @@ public class RobotContainer {
         elevator
             .moveToPosition(ElevatorConstants.L4Height)
             // .onlyIf(outtakeLaserBroken)
-            .withTimeout(2.5)
+            .withTimeout(2.30)
             .asProxy());
     NamedCommands.registerCommand(
         "Elevator: L3",
@@ -106,7 +110,8 @@ public class RobotContainer {
         "Elevator: Bottom",
         elevator.downPosition().until(buttonTrigger).withTimeout(3.0).asProxy());
     NamedCommands.registerCommand(
-        "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(2.4).asProxy());
+        "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().asProxy());
+    NamedCommands.registerCommand("Turn to reef", new TurnToReef(drivetrain).withTimeout(2));
     NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(3));
     NamedCommands.registerCommand("AutoAlignRight", drivetrain.reefAlign(false).withTimeout(3));
 
@@ -135,6 +140,10 @@ public class RobotContainer {
                 Commands.waitSeconds(2),
                 Commands.runOnce(
                     () -> driverController.getHID().setRumble(RumbleType.kBothRumble, 0.0))));
+
+    new Trigger(outtakeLaserBroken).onTrue(led.run(() -> led.setColor(Color.kGreen)));
+    // led.setDefaultCommand(led.runOnce(()-> led.setColor(Color.kBlack)));
+    // led.setDefaultCommand(led.run(() -> led.elevatorLEDS(elevator.getPositionInches())));
   }
 
   private void configurePrematch() {
@@ -285,6 +294,16 @@ public class RobotContainer {
         .onTrue(elevator.homeElevator());
 
     operatorStick
+        .button(OperatorConstants.elevatorDownButton)
+        .and(algaeMode)
+        .onTrue(elevator.moveToPosition(ElevatorConstants.AlgaeLowHeight));
+
+    operatorStick
+        .button(OperatorConstants.L2HeightButton)
+        .and(algaeMode)
+        .onTrue(elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight));
+
+    operatorStick
         .button(OperatorConstants.coralInTheWay)
         .and(algaeMode.negate())
         .onTrue(
@@ -406,43 +425,25 @@ public class RobotContainer {
   }
 
   private void configureAlgaeRemoverBindings() {
-    operatorStick
-        .button(OperatorConstants.startingConfigButton)
-        // .and(algaeMode)
-        .whileTrue(
-            elevator
-                .moveToPosition(ElevatorConstants.AlgaeHighHeight)
-                // .andThen(algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition)))
-                .andThen(algaeRemover.run(() -> algaeRemover.algaeRemoverDown()).withTimeout(2.1)))
-        .onFalse(
-            elevator
-                .downPosition()
-                .withTimeout(3)
-                // .alongWith(algaeRemover.run(() -> algaeRemover.algaeRemoverUp()).withTimeout(1))
-                .andThen(
-                    elevator
-                        .runOnce(elevator::stopElevator)
-                        .alongWith(
-                            algaeRemover
-                                .run(() -> algaeRemover.algaeRemoverUp())
-                                .withTimeout(.5))));
-
-    //         Commands.parallel(
-    //             Commands.runOnce(() -> outtake.fastOuttake()),
-    //             elevator.upSpeed(0.075))))
-    // .onFalse(Commands.runOnce(() -> outtake.stop()));
-
     // operatorStick
-    //     .button(OperatorConstants.elevatorManualDown)
-    //     .and(algaeMode)
-    //     .onTrue(
-    //         Commands.sequence(
-    //             elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight),
-    //             Commands.parallel(
-    //                 Commands.runOnce(() -> outtake.fastOuttake()),
-    //                 algaeRemogit ver.moveToPosition(AlgaeRemoverConstants.intakePosition),
-    //                 elevator.upSpeed(0.075))))
-    //     .onFalse(Commands.runOnce(() -> outtake.stop()));
+    //     .button(OperatorConstants.startingConfigButton)
+    //     // .and(algaeMode)
+    //     .whileTrue(
+    //         elevator
+    //             .moveToPosition(ElevatorConstants.AlgaeHighHeight).withTimeout(2.5)
+    //             .andThen(algaeRemover.run(() ->
+    // algaeRemover.algaeRemoverDown()).withTimeout(2.1)))
+    //     .onFalse(
+    //         elevator
+    //             .downPosition()
+    //             .withTimeout(3)
+    //             .andThen(
+    //                 elevator
+    //                     .runOnce(elevator::stopElevator)
+    //                     .alongWith(
+    //                         algaeRemover
+    //                             .run(() -> algaeRemover.algaeRemoverUp())
+    //                             .withTimeout(.5))));
 
     operatorStick
         .button(OperatorConstants.elevatorManualUp)

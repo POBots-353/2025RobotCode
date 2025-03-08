@@ -229,7 +229,7 @@ public class Constants {
       left_aprilTagOffsets.put(18, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(19, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(20, Units.inchesToMeters(6.488));
-      left_aprilTagOffsets.put(21, Units.inchesToMeters(6.488));
+      left_aprilTagOffsets.put(21, Units.inchesToMeters(7.988));
       left_aprilTagOffsets.put(22, Units.inchesToMeters(6.488));
     }
 
@@ -322,6 +322,7 @@ public class Constants {
   public static class IntakeConstants {
     public static final int groundIntakeMotorID = 14;
     public static final int indexerMotorID = 16;
+    public static final int indexerFollowerMotorID = 40;
 
     public static final double indexerMotorSpeed = .85;
     public static final double groundIntakeMotorSpeed = .9;
@@ -384,8 +385,8 @@ public class Constants {
     public static final double downHeight = Units.inchesToMeters(0);
     public static final double coralInTheWayAdd = 2.74;
 
-    public static final double AlgaeHighHeight = Units.inchesToMeters(8.66);
-    public static final double AlgaeLowHeight = Units.inchesToMeters(1.845);
+    public static final double AlgaeHighHeight = Units.inchesToMeters(8.6 + .3);
+    public static final double AlgaeLowHeight = Units.inchesToMeters(1.5);
 
     public static final double sensorToMechanismRatio =
         elevatorGearRatio / (sprocketDiameter * Math.PI);

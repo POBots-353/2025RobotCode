@@ -26,17 +26,27 @@ import java.util.List;
 @Logged(strategy = Strategy.OPT_IN)
 public class Indexer extends ExpandedSubsystem {
   private SparkMax indexerMotor;
+  private SparkMax followerMotor;
 
   public List<Alert> indexerPrematchAlerts = new ArrayList<Alert>();
 
   /** Creates a new Indexer. */
   public Indexer() {
     indexerMotor = new SparkMax(IntakeConstants.indexerMotorID, MotorType.kBrushless);
+    followerMotor = new SparkMax(IntakeConstants.indexerFollowerMotorID, MotorType.kBrushless);
 
     SparkMaxConfig indexerConfig = new SparkMaxConfig();
 
     indexerConfig
         .inverted(false)
+        .idleMode(IdleMode.kCoast)
+        .smartCurrentLimit(IntakeConstants.indexerCurrentLimit)
+        .secondaryCurrentLimit(IntakeConstants.indexerShutOffLimit);
+
+    SparkMaxConfig followerConfig = new SparkMaxConfig();
+
+    followerConfig
+        .inverted(true)
         .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(IntakeConstants.indexerCurrentLimit)
         .secondaryCurrentLimit(IntakeConstants.indexerShutOffLimit);
@@ -54,6 +64,8 @@ public class Indexer extends ExpandedSubsystem {
 
     indexerMotor.configure(
         indexerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    followerMotor.configure(
+        followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public double getSpeed() {
@@ -74,14 +86,17 @@ public class Indexer extends ExpandedSubsystem {
 
   public void reverse() {
     indexerMotor.set(-IntakeConstants.indexerMotorSpeed);
+    followerMotor.set(-IntakeConstants.indexerMotorSpeed);
   }
 
   public void index() {
     indexerMotor.set(IntakeConstants.indexerMotorSpeed);
+    followerMotor.set(IntakeConstants.indexerMotorSpeed);
   }
 
   public void stopIndexer() {
     indexerMotor.set(0);
+    followerMotor.set(0);
   }
 
   @Override
