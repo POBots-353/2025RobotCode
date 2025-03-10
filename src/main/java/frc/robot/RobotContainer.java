@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -37,7 +36,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeRemover;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Indexer;
-import frc.robot.subsystems.LED;
+// import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.Outtake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.util.LogUtil;
@@ -61,7 +60,7 @@ public class RobotContainer {
   @Logged(name = "Algae Remover")
   private final AlgaeRemover algaeRemover = new AlgaeRemover();
 
-  private final LED led = new LED();
+  //   private final LEDs led = new LEDs();
 
   private final Telemetry logger =
       new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
@@ -95,7 +94,7 @@ public class RobotContainer {
         elevator
             .moveToPosition(ElevatorConstants.L4Height)
             // .onlyIf(outtakeLaserBroken)
-            .withTimeout(2.30)
+            .withTimeout(2.15)
             .asProxy());
     NamedCommands.registerCommand(
         "Elevator: L3",
@@ -114,6 +113,8 @@ public class RobotContainer {
     NamedCommands.registerCommand("Turn to reef", new TurnToReef(drivetrain).withTimeout(2));
     NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(3));
     NamedCommands.registerCommand("AutoAlignRight", drivetrain.reefAlign(false).withTimeout(3));
+    // NamedCommands.registerCommand(
+    //     "Wait to shoot", Commands.waitSeconds(14.5).andThen(outtake.autoOuttake()).asProxy());
 
     SmartDashboard.putData("Power Distribution", powerDistribution);
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
@@ -131,7 +132,7 @@ public class RobotContainer {
     //     .onFalse(
     //         Commands.race(Commands.waitUntil(outtakeLaserBroken), Commands.waitSeconds(4))
     //             .andThen(indexer::stopIndexer));
-    new Trigger(outtakeLaserBroken)
+    outtakeLaserBroken
         .and(() -> !DriverStation.isAutonomous())
         .onTrue(
             Commands.sequence(
@@ -140,9 +141,19 @@ public class RobotContainer {
                 Commands.waitSeconds(2),
                 Commands.runOnce(
                     () -> driverController.getHID().setRumble(RumbleType.kBothRumble, 0.0))));
+    // new Trigger(
+    //         () ->
+    //             DriverStation.isAutonomous()
+    //                 && DriverStation.isEnabled()
+    //                 && (DriverStation.getMatchTime() <= 1)
+    //                 && DriverStation.getMatchTime() > 0)
+    //     .onTrue(Commands.sequence(Commands.waitSeconds(0.50), outtake.fastOuttake()));
 
-    new Trigger(outtakeLaserBroken).onTrue(led.run(() -> led.setColor(Color.kGreen)));
-    // led.setDefaultCommand(led.runOnce(()-> led.setColor(Color.kBlack)));
+    // outtakeLaserBroken.whileTrue(led.run(() ->
+    // led.setColor(Color.kGreen)).ignoringDisable(true));
+    // outtakeLaserBroken.onTrue(
+    //     led.run(() -> led.blinkyBlink(Color.kGreen)).withTimeout(1.5).ignoringDisable(true));
+    // led.setDefaultCommand(led.runOnce(() -> led.setColor(Color.kBlack)).ignoringDisable(true));
     // led.setDefaultCommand(led.run(() -> led.elevatorLEDS(elevator.getPositionInches())));
   }
 

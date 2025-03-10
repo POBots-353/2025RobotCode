@@ -11,6 +11,36 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Turn to reef"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.1
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoAlignLeft"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Elevator: L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Auto Outtake"
+          }
+        },
+        {
           "type": "deadline",
           "data": {
             "commands": [
@@ -21,16 +51,85 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.2
+                        "waitTime": 0.25
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "AutoAlignRight"
+                        "name": "go to HP"
                       }
                     }
                   ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: Bottom"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.0
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Start Indexer"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "OuttakeUntilBeamBreak"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PathFindToSetup"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.1
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "AutoAlignLeft"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop Indexer"
                 }
               }
             ]
@@ -129,107 +228,6 @@
                       "type": "named",
                       "data": {
                         "name": "AutoAlignLeft"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Elevator: L4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Auto Outtake"
-          }
-        },
-        {
-          "type": "deadline",
-          "data": {
-            "commands": [
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.25
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "go to HP"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: Bottom"
-                }
-              },
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.0
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Start Indexer"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "OuttakeUntilBeamBreak"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "PathFindToSetup"
-          }
-        },
-        {
-          "type": "deadline",
-          "data": {
-            "commands": [
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.2
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "AutoAlignRight"
                       }
                     }
                   ]

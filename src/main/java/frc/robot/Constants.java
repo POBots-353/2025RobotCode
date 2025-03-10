@@ -338,10 +338,10 @@ public class Constants {
 
   public static class OuttakeConstants {
     public static final int outtakeMotorID = 18;
-    public static final int outtakeCurrentLimit = 45;
+    public static final int outtakeCurrentLimit = 60;
     public static final int outtakeShutOffLimit = 75;
 
-    public static final double fastOuttakeSpeed = 0.60;
+    public static final double fastOuttakeSpeed = 0.50;
     public static final double slowOuttakeSpeed = 0.353; // .353 0.2
 
     public static final int outtakeLaserCanID = 19;
@@ -407,10 +407,10 @@ public class Constants {
             .withKS(0.01) // .01
             .withKV(4.75) // 4.14
             .withKA(0.03) // .03
-            .withKG(0.36) // .31
-            .withKP(27)
+            .withKG(0.37) // .31
+            .withKP(27.5)
             .withKI(0.0)
-            .withKD(0.15) // 1
+            .withKD(0.13) // 1
             .withGravityType(GravityTypeValue.Elevator_Static)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseVelocitySign);
 
