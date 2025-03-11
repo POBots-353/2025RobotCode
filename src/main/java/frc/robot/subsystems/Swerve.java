@@ -136,6 +136,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           FieldConstants.aprilTagLayout,
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
           VisionConstants.arducamLeftTransform);
+  private Optional<Matrix<N3, N3>> arducamLeftMatrix = Optional.empty();
+  private Optional<Matrix<N8, N1>> arducamLeftDistCoeffs = Optional.empty();
 
   private PhotonCamera arducamRight = new PhotonCamera(VisionConstants.arducamRightName);
   private PhotonPoseEstimator arducamRightPoseEstimator =
@@ -143,6 +145,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           FieldConstants.aprilTagLayout,
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
           VisionConstants.arducamRightTransform);
+  private Optional<Matrix<N3, N3>> arducamRightMatrix = Optional.empty();
+  private Optional<Matrix<N8, N1>> arducamRightDistCoeffs = Optional.empty();
 
   private PhotonCamera arducamFront = new PhotonCamera(VisionConstants.arducamFrontName);
   private PhotonPoseEstimator arducamFrontPoseEstimator =
@@ -150,6 +154,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           FieldConstants.aprilTagLayout,
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
           VisionConstants.arducamFrontTransform);
+  private Optional<Matrix<N3, N3>> arducamFrontMatrix = Optional.empty();
+  private Optional<Matrix<N8, N1>> arducamFrontDistCoeffs = Optional.empty();
 
   private static final Optional<ConstrainedSolvepnpParams> constrainedPnpParams =
       Optional.of(new ConstrainedSolvepnpParams(false, 1.5));
@@ -173,6 +179,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   private List<Pose3d> rejectedPoses = new ArrayList<>();
 
   private List<PoseEstimate> poseEstimates = new ArrayList<>();
+
+  private SwerveDriveState stateCache = getState();
 
   // Never called, only used to allow logging the poses being used
   @Logged(name = "Accepted Poses")
@@ -379,9 +387,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     try {
       RobotConfig config = RobotConfig.fromGUISettings();
       AutoBuilder.configure(
-          () -> getState().Pose,
+          () -> stateCache.Pose,
           this::resetPose,
-          () -> getState().Speeds,
+          () -> stateCache.Speeds,
           (speeds, feedforwards) ->
               setControl(
                   pathApplyRobotSpeeds
@@ -455,22 +463,22 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         new Transform2d(
             -SwerveConstants.centerToBumber,
             FieldConstants.left_aprilTagOffsets.getOrDefault(bestTargetID, 0.0),
-            new Rotation2d(0));
+            Rotation2d.kZero);
     Transform2d rightAprilTagOffset =
         new Transform2d(
             -SwerveConstants.centerToBumber,
             FieldConstants.right_aprilTagOffsets.getOrDefault(bestTargetID, 0.0),
-            new Rotation2d(0));
+            Rotation2d.kZero);
 
     Pose2d estimatedLeftPose =
         new Pose2d(
-            getState()
+            stateCache
                 .Pose
                 .transformBy(VisionConstants.arducamFrontTransform2d)
                 .transformBy(
                     new Transform2d(
                         bestTransform.getTranslation().plus(leftAprilTagOffset.getTranslation()),
-                        Rotation2d.fromDegrees(0)))
+                        Rotation2d.kZero))
                 .getTranslation(),
             Rotation2d.fromDegrees(desiredRotation));
 
@@ -481,7 +489,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             .transformBy(
                 new Transform2d(
                         rightAprilTagOffset.getTranslation().rotateBy(Rotation2d.fromDegrees(180)),
-                        Rotation2d.fromDegrees(180))
+                        Rotation2d.k180deg)
                     .inverse());
 
     Pose2d estimatedLEFTPOSE =
@@ -490,19 +498,19 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             .orElse(new Pose2d())
             .transformBy(
                 new Transform2d(
-                        leftAprilTagOffset.getTranslation().rotateBy(Rotation2d.fromDegrees(180)),
-                        Rotation2d.fromDegrees(180))
+                        leftAprilTagOffset.getTranslation().rotateBy(Rotation2d.k180deg),
+                        Rotation2d.k180deg)
                     .inverse());
 
     Pose2d estimatedRightPose =
         new Pose2d(
-            getState()
+            stateCache
                 .Pose
                 .transformBy(VisionConstants.arducamFrontTransform2d)
                 .transformBy(
                     new Transform2d(
                         bestTransform.getTranslation().plus(rightAprilTagOffset.getTranslation()),
-                        Rotation2d.fromDegrees(0)))
+                        Rotation2d.kZero))
                 .getTranslation(),
             Rotation2d.fromDegrees(desiredRotation));
 
@@ -516,25 +524,25 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             ? ReefDefinitePoses.redReefDefiniteRightPoses
             : ReefDefinitePoses.blueReefDefiniteRightPoses;
 
-    // if (isPoseWithinTolerance(estimatedLEFTPOSE, leftPoses)) {
-    //   leftPose = estimatedLEFTPOSE;
-    // } else {
-    //   return;
-    // }
+    if (isPoseWithinTolerance(estimatedLEFTPOSE, leftPoses)) {
+      leftPose = estimatedLEFTPOSE;
+    } else {
+      return;
+    }
 
-    // if (isPoseWithinTolerance(estimatedRIGHTPOSE, rightPoses)) {
-    //   // rightPose = estimatedRightPose;
-    //   rightPose = estimatedRIGHTPOSE;
-    // } else {
-    //   return;
-    // }
+    if (isPoseWithinTolerance(estimatedRIGHTPOSE, rightPoses)) {
+      // rightPose = estimatedRightPose;
+      rightPose = estimatedRIGHTPOSE;
+    } else {
+      return;
+    }
 
     leftPose = estimatedLEFTPOSE;
     rightPose = estimatedRIGHTPOSE;
 
     SmartDashboard.putNumber("Swerve/Goal Rotation", desiredRotation);
     SmartDashboard.putNumber("Swerve/Best Tag ID", bestTargetID);
-    SmartDashboard.putNumber("Swerve/Current Rotation", getState().Pose.getRotation().getDegrees());
+    SmartDashboard.putNumber("Swerve/Current Rotation", stateCache.Pose.getRotation().getDegrees());
 
     SmartDashboard.putNumber("Swerve/Right X Pose", rightPose.getX());
     SmartDashboard.putNumber("Swerve/Right Y Pose", rightPose.getY());
@@ -544,14 +552,22 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   private boolean isPoseWithinTolerance(Pose2d estimatedPose, List<Pose2d> definitePoses) {
     double tolerance = 0.0762; // 3 inches in meters
-    for (Pose2d pose : definitePoses) {
-      double distance =
-          Math.hypot(estimatedPose.getX() - pose.getX(), estimatedPose.getY() - pose.getY());
-      if (distance <= tolerance) {
-        return true;
-      }
-    }
-    return false;
+    Pose2d nearest = estimatedPose.nearest(definitePoses);
+    return nearest.getTranslation().getDistance(estimatedPose.getTranslation()) <= tolerance;
+  }
+
+  public boolean atValidReefPose() {
+    List<Pose2d> leftPoses =
+        AllianceUtil.isRedAlliance()
+            ? ReefDefinitePoses.redReefDefiniteLeftPoses
+            : ReefDefinitePoses.blueReefDefiniteLeftPoses;
+
+    List<Pose2d> rightPoses =
+        AllianceUtil.isRedAlliance()
+            ? ReefDefinitePoses.redReefDefiniteRightPoses
+            : ReefDefinitePoses.blueReefDefiniteRightPoses;
+    return isPoseWithinTolerance(stateCache.Pose, rightPoses)
+        || isPoseWithinTolerance(stateCache.Pose, leftPoses);
   }
 
   public Command reefAlign(boolean leftAlign) {
@@ -572,7 +588,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   // public Command reefAlignNoPathPlanner(boolean leftAlign) {
   //   return new DeferredCommand(
   //       () -> {
-  //         Pose2d robotPose = getState().Pose;
+  //         Pose2d robotPose = stateCache.Pose;
   //         AtomicReference<Pose2d> nearestPose = new AtomicReference<>(Pose2d.kZero);
   //         if (AllianceUtil.isRedAlliance()) {
   //           if (leftAlign) {
@@ -597,7 +613,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   public Command reefAlignNoVision(boolean leftAlign) {
     return new DeferredCommand(
         () -> {
-          Pose2d robotPose = getState().Pose;
+          Pose2d robotPose = stateCache.Pose;
           Pose2d nearestPose = Pose2d.kZero;
           if (AllianceUtil.isRedAlliance()) {
             if (leftAlign) {
@@ -628,14 +644,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   //   try {
   //     if (AllianceUtil.isRedAlliance()) {
-  //       closestStation = getState().Pose.nearest(redStations);
+  //       closestStation = stateCache.Pose.nearest(redStations);
   //       if (redStations.indexOf(closestStation) == 0) {
   //         path = PathPlannerPath.fromPathFile("Human Player Pickup Left");
   //       } else {
   //         path = PathPlannerPath.fromPathFile("Human Player Pickup Right");
   //       }
   //     } else {
-  //       closestStation = getState().Pose.nearest(blueStations);
+  //       closestStation = stateCache.Pose.nearest(blueStations);
   //       if (blueStations.indexOf(closestStation) == 0) {
   //         path = PathPlannerPath.fromPathFile("Human Player Pickup Left");
   //       } else {
@@ -677,10 +693,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
               List.of(FieldConstants.blueStationLeft, FieldConstants.blueStationRight);
 
           if (AllianceUtil.isRedAlliance()) {
-            closestPose = getState().Pose.nearest(redStationPoses);
+            closestPose = stateCache.Pose.nearest(redStationPoses);
 
           } else {
-            closestPose = getState().Pose.nearest(blueStationPoses);
+            closestPose = stateCache.Pose.nearest(blueStationPoses);
           }
 
           return AutoBuilder.pathfindToPose(closestPose, AutoConstants.fastPathConstraints);
@@ -712,10 +728,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           List<Pose2d> blueSetupPoses = FieldConstants.blueSetupPoses;
 
           if (AllianceUtil.isRedAlliance()) {
-            closestPose = getState().Pose.nearest(redSetupPoses);
+            closestPose = stateCache.Pose.nearest(redSetupPoses);
 
           } else {
-            closestPose = getState().Pose.nearest(blueSetupPoses);
+            closestPose = stateCache.Pose.nearest(blueSetupPoses);
           }
 
           return AutoBuilder.pathfindToPose(closestPose, AutoConstants.midPathConstraints);
@@ -732,10 +748,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
           List<Pose2d> blueAlgaeRemoverPoses = FieldConstants.blueAlgaeRemoverPoses;
 
           if (AllianceUtil.isRedAlliance()) {
-            closestPose = getState().Pose.nearest(redAlgaeRemoverPoses);
+            closestPose = stateCache.Pose.nearest(redAlgaeRemoverPoses);
 
           } else {
-            closestPose = getState().Pose.nearest(blueAlgaeRemoverPoses);
+            closestPose = stateCache.Pose.nearest(blueAlgaeRemoverPoses);
           }
 
           return AutoBuilder.pathfindToPose(closestPose, AutoConstants.midPathConstraints);
@@ -756,7 +772,6 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         if (result.getBestTarget().getBestCameraToTarget().getTranslation().getNorm() < 3) {
           return true;
         }
-        ;
       }
     }
     return false;
@@ -777,15 +792,15 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   public Pose3d getArducamLeftPose() {
-    return new Pose3d(getState().Pose).plus(VisionConstants.arducamLeftTransform);
+    return new Pose3d(stateCache.Pose).plus(VisionConstants.arducamLeftTransform);
   }
 
   public Pose3d getArducamRightPose() {
-    return new Pose3d(getState().Pose).plus(VisionConstants.arducamRightTransform);
+    return new Pose3d(stateCache.Pose).plus(VisionConstants.arducamRightTransform);
   }
 
   public Pose3d getarducamFrontPose() {
-    return new Pose3d(getState().Pose).plus(VisionConstants.arducamFrontTransform);
+    return new Pose3d(stateCache.Pose).plus(VisionConstants.arducamFrontTransform);
   }
 
   private Pose3d calculateSingleTagPose(
@@ -891,6 +906,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   private void updateVisionPoses(
       List<PhotonPipelineResult> latestResults,
       PhotonPoseEstimator poseEstimator,
+      Optional<Matrix<N3, N3>> cameraMatrix,
+      Optional<Matrix<N8, N1>> distCoeffs,
       Transform3d cameraTransform,
       double baseSingleTagStdDev,
       double baseMultiTagStdDev,
@@ -899,7 +916,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       return;
     }
 
-    poseEstimator.setReferencePose(getState().Pose);
+    poseEstimator.setReferencePose(stateCache.Pose);
 
     for (PhotonPipelineResult result : latestResults) {
 
@@ -911,7 +928,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       // PhotonPipelineResult filteredResult = new PhotonPipelineResult(filterTargets);
 
       Optional<EstimatedRobotPose> optionalVisionPose =
-          poseEstimator.update(result, Optional.empty(), Optional.empty(), constrainedPnpParams);
+          poseEstimator.update(result, cameraMatrix, distCoeffs, constrainedPnpParams);
       if (optionalVisionPose.isEmpty()) {
         continue;
       }
@@ -933,17 +950,15 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
       double averageDistance = totalDistance / tagCount;
 
-      if (tagCount > 1
-          && !isValidMultitagPose(
-              visionPose.estimatedPose,
-              averageDistance,
-              visionPose.targetsUsed.size(),
-              visionPose.timestampSeconds)) {
-        rejectedPoses.add(visionPose.estimatedPose);
-        return;
-      }
-
-      if (tagCount > 1) {
+      if (tagCount > 1 && visionPose.strategy == poseEstimator.getPrimaryStrategy()) {
+        if (!isValidMultitagPose(
+            visionPose.estimatedPose,
+            averageDistance,
+            visionPose.targetsUsed.size(),
+            visionPose.timestampSeconds)) {
+          rejectedPoses.add(visionPose.estimatedPose);
+          continue;
+        }
         poseEstimates.add(
             new PoseEstimate(
                 visionPose.estimatedPose,
@@ -1000,6 +1015,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     updateVisionPoses(
         latestArducamLeftResult,
         arducamLeftPoseEstimator,
+        arducamLeftMatrix,
+        arducamLeftDistCoeffs,
         VisionConstants.arducamLeftTransform,
         Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5),
@@ -1007,6 +1024,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     updateVisionPoses(
         latestArducamRightResult,
         arducamRightPoseEstimator,
+        arducamRightMatrix,
+        arducamRightDistCoeffs,
         VisionConstants.arducamRightTransform,
         Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5),
@@ -1014,6 +1033,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     updateVisionPoses(
         latestArducamFrontResult,
         arducamFrontPoseEstimator,
+        arducamFrontMatrix,
+        arducamFrontDistCoeffs,
         VisionConstants.arducamFrontTransform,
         Units.inchesToMeters(3.0),
         Units.inchesToMeters(2.5),
@@ -1158,14 +1179,35 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   @Override
   public void periodic() {
     double startTime = Timer.getFPGATimestamp();
-    SwerveDriveState state = getState();
-    field.setRobotPose(state.Pose);
+    stateCache = getState();
+    field.setRobotPose(stateCache.Pose);
 
-    double stateTimestamp = ctreToFpgaTime(state.Timestamp);
+    double stateTimestamp = ctreToFpgaTime(stateCache.Timestamp);
 
-    arducamLeftPoseEstimator.addHeadingData(stateTimestamp, state.Pose.getRotation());
-    arducamRightPoseEstimator.addHeadingData(stateTimestamp, state.Pose.getRotation());
-    arducamFrontPoseEstimator.addHeadingData(stateTimestamp, state.Pose.getRotation());
+    arducamLeftPoseEstimator.addHeadingData(stateTimestamp, stateCache.Pose.getRotation());
+    arducamRightPoseEstimator.addHeadingData(stateTimestamp, stateCache.Pose.getRotation());
+    arducamFrontPoseEstimator.addHeadingData(stateTimestamp, stateCache.Pose.getRotation());
+
+    if (arducamFrontMatrix.isEmpty()) {
+      arducamFrontMatrix = arducamFront.getCameraMatrix();
+    }
+    if (arducamFrontDistCoeffs.isEmpty()) {
+      arducamFrontDistCoeffs = arducamFront.getDistCoeffs();
+    }
+
+    if (arducamLeftMatrix.isEmpty()) {
+      arducamLeftMatrix = arducamLeft.getCameraMatrix();
+    }
+    if (arducamLeftDistCoeffs.isEmpty()) {
+      arducamLeftDistCoeffs = arducamLeft.getDistCoeffs();
+    }
+
+    if (arducamRightMatrix.isEmpty()) {
+      arducamRightMatrix = arducamRight.getCameraMatrix();
+    }
+    if (arducamRightDistCoeffs.isEmpty()) {
+      arducamRightDistCoeffs = arducamRight.getDistCoeffs();
+    }
 
     latestArducamLeftResult = arducamLeft.getAllUnreadResults();
     latestArducamRightResult = arducamRight.getAllUnreadResults();
@@ -1200,7 +1242,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   @Override
   public void simulationPeriodic() {
     // Update camera simulation
-    Pose2d robotPose = getState().Pose;
+    Pose2d robotPose = stateCache.Pose;
 
     field.getObject("EstimatedRobot").setPose(robotPose);
 
@@ -1239,11 +1281,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      double forwardSpeed = getState().Speeds.vxMetersPerSecond;
+                      double forwardSpeed = stateCache.Speeds.vxMetersPerSecond;
                       if (Math.abs(forwardSpeed - Units.feetToMeters(15))
                           > preMatchTranslationalTolerance) {
                         addError("Forward Speed is too slow");
-                      } else if (Math.abs(getState().Speeds.vyMetersPerSecond)
+                      } else if (Math.abs(stateCache.Speeds.vyMetersPerSecond)
                           > preMatchTranslationalTolerance) {
                         addError("Strafe Speed is too high");
                       } else {
@@ -1253,8 +1295,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         Commands.waitSeconds(2),
         Commands.runOnce(
             () -> {
-              if ((Math.abs(getState().Speeds.vxMetersPerSecond) > preMatchTranslationalTolerance)
-                  || (Math.abs(getState().Speeds.vyMetersPerSecond)
+              if ((Math.abs(stateCache.Speeds.vxMetersPerSecond) > preMatchTranslationalTolerance)
+                  || (Math.abs(stateCache.Speeds.vyMetersPerSecond)
                       > preMatchTranslationalTolerance)) {
                 addError("Translational Speeds are too high");
               } else {
@@ -1273,11 +1315,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      double backwardSpeed = getState().Speeds.vxMetersPerSecond;
+                      double backwardSpeed = stateCache.Speeds.vxMetersPerSecond;
                       if (Math.abs(backwardSpeed - Units.feetToMeters(15))
                           > preMatchTranslationalTolerance) {
                         addError("Forward Speed is too slow");
-                      } else if (Math.abs(getState().Speeds.vyMetersPerSecond)
+                      } else if (Math.abs(stateCache.Speeds.vyMetersPerSecond)
                           > preMatchTranslationalTolerance) {
                         addError("Strafe Speed is too high");
                       } else {
@@ -1297,11 +1339,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      double strafeSpeed = getState().Speeds.vyMetersPerSecond;
+                      double strafeSpeed = stateCache.Speeds.vyMetersPerSecond;
                       if (Math.abs(strafeSpeed - Units.feetToMeters(15))
                           > preMatchTranslationalTolerance) {
                         addError("Left Speed is too slow");
-                      } else if (Math.abs(getState().Speeds.vxMetersPerSecond)
+                      } else if (Math.abs(stateCache.Speeds.vxMetersPerSecond)
                           > preMatchTranslationalTolerance) {
                         addError("Forward/Backward Speed is too high");
                       } else {
@@ -1321,11 +1363,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      double strafeSpeed = getState().Speeds.vyMetersPerSecond;
+                      double strafeSpeed = stateCache.Speeds.vyMetersPerSecond;
                       if (Math.abs(strafeSpeed - Units.feetToMeters(15))
                           > preMatchTranslationalTolerance) {
                         addError("Right Speed is too slow");
-                      } else if (Math.abs(getState().Speeds.vxMetersPerSecond)
+                      } else if (Math.abs(stateCache.Speeds.vxMetersPerSecond)
                           > preMatchTranslationalTolerance) {
                         addError("Forward/Backward Speed is too high");
                       } else {
@@ -1345,7 +1387,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (getState().Speeds.omegaRadiansPerSecond > Units.degreesToRadians(-160)) {
+                      if (stateCache.Speeds.omegaRadiansPerSecond > Units.degreesToRadians(-160)) {
                         addError("CW Speed is too slow");
                       } else {
                         addInfo("CW Speed is good!");
@@ -1364,7 +1406,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (getState().Speeds.omegaRadiansPerSecond < Units.degreesToRadians(160)) {
+                      if (stateCache.Speeds.omegaRadiansPerSecond < Units.degreesToRadians(160)) {
                         addError("CCW Speed is too slow");
                       } else {
                         addInfo("CCW Speed is good!");

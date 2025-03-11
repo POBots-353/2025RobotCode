@@ -25,6 +25,7 @@ import frc.robot.Constants.OuttakeConstants;
 import frc.robot.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
+import org.littletonrobotics.urcl.URCL;
 
 // import org.littletonrobotics.urcl.URCL;
 
@@ -90,7 +91,7 @@ public class Robot extends TimedRobot {
     motorAliases.put(IntakeConstants.indexerMotorID, "Indexer");
     motorAliases.put(OuttakeConstants.outtakeMotorID, "Outtake");
 
-    // URCL.start(motorAliases);
+    URCL.start(motorAliases);
 
     m_robotContainer = new RobotContainer();
 

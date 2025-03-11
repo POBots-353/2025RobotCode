@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -18,6 +19,7 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -36,7 +38,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeRemover;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Indexer;
-// import frc.robot.subsystems.LEDs;
+import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.Outtake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.util.LogUtil;
@@ -60,7 +62,7 @@ public class RobotContainer {
   @Logged(name = "Algae Remover")
   private final AlgaeRemover algaeRemover = new AlgaeRemover();
 
-  //   private final LEDs led = new LEDs();
+  private final LEDs led = new LEDs();
 
   private final Telemetry logger =
       new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
@@ -81,6 +83,8 @@ public class RobotContainer {
   private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
   private Trigger elevatorIsDown = new Trigger(elevator::elevatorIsDown);
   private Trigger algaeMode = operatorStick.button(OperatorConstants.algaeModeButton);
+  private Trigger atValidReefPose = new Trigger(drivetrain::atValidReefPose);
+  private Trigger atElevatorHeight = new Trigger(elevator::atSetHeight);
 
   public RobotContainer() {
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
@@ -151,10 +155,19 @@ public class RobotContainer {
 
     // outtakeLaserBroken.whileTrue(led.run(() ->
     // led.setColor(Color.kGreen)).ignoringDisable(true));
-    // outtakeLaserBroken.onTrue(
-    //     led.run(() -> led.blinkyBlink(Color.kGreen)).withTimeout(1.5).ignoringDisable(true));
-    // led.setDefaultCommand(led.runOnce(() -> led.setColor(Color.kBlack)).ignoringDisable(true));
-    // led.setDefaultCommand(led.run(() -> led.elevatorLEDS(elevator.getPositionInches())));
+    outtakeLaserBroken.whileTrue(
+        led.blink(Color.kGreen)
+            .withTimeout(Seconds.of(2))
+            .andThen(led.solidColor(Color.kGreen))
+            .ignoringDisable(true)
+            .withName("LED Laser CAN Blink"));
+    // led.setDefaultCommand(led.rainbowScroll().ignoringDisable(true).withName("LED Rainbow
+    // Scroll"));
+    // led.setDefaultCommand(led.solidColor(Color.kBlack).ignoringDisable(true));
+    led.setDefaultCommand(
+        led.elevatorProgress(elevator::getPositionMeters)
+            .ignoringDisable(true)
+            .withName("Elevator Progress LED"));
   }
 
   private void configurePrematch() {
@@ -205,6 +218,20 @@ public class RobotContainer {
     driverController.povUpRight().onTrue(drivetrain.pathFindToDirection(5));
 
     driverController.rightTrigger().whileTrue(drivetrain.humanPlayerAlign());
+
+    Command outtakeAfterAlign =
+        Commands.run(
+                () -> {
+                  if (atValidReefPose.getAsBoolean()
+                      && atElevatorHeight.getAsBoolean()
+                      && !elevatorIsDown.getAsBoolean()
+                      && outtake.outtakeLaserBroken()) {
+                    Commands.sequence(Commands.waitTime(Seconds.of(0.1)), outtake.autoOuttake())
+                        .schedule();
+                  }
+                })
+            .until(atValidReefPose.and(atElevatorHeight).and(elevatorIsDown.negate()));
+
     driverController.leftStick().onTrue(Commands.runOnce(() -> positionMode = !positionMode));
     driverController
         .leftBumper()
@@ -213,8 +240,8 @@ public class RobotContainer {
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
                 new TurnToReef(drivetrain),
-                Commands.waitSeconds(.08),
-                drivetrain.reefAlign(true)));
+                drivetrain.reefAlign(true),
+                outtakeAfterAlign.asProxy()));
     driverController
         .rightBumper()
         .and(isPositionMode.negate())
@@ -222,8 +249,8 @@ public class RobotContainer {
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
                 new TurnToReef(drivetrain),
-                Commands.waitSeconds(.08),
-                drivetrain.reefAlign(false)));
+                drivetrain.reefAlign(false),
+                outtakeAfterAlign.asProxy()));
 
     driverController.leftBumper().and(isPositionMode).whileTrue(drivetrain.reefAlignNoVision(true));
     driverController

@@ -80,7 +80,7 @@ public class Outtake extends ExpandedSubsystem {
     return runOnce(this::stop);
   }
 
-  public Boolean outtakeLaserBroken() {
+  public boolean outtakeLaserBroken() {
     LaserCan.Measurement measurement = outtakeLaser.getMeasurement();
     if (measurement != null
         && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT

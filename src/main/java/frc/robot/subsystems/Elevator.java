@@ -195,6 +195,11 @@ public class Elevator extends ExpandedSubsystem {
         Math.abs(targetHeight - elevatorMainPosition.getValueAsDouble()) < positionTolerance);
   }
 
+  public boolean atSetHeight() {
+    return Math.abs(elevatorMainPosition.getValueAsDouble() - motionMagicRequest.Position)
+        < positionTolerance;
+  }
+
   public Command holdPosition() {
     return startRun(
             () -> {
@@ -215,6 +220,10 @@ public class Elevator extends ExpandedSubsystem {
 
   public Command sysIdDynamicElevator(SysIdRoutine.Direction direction) {
     return elevatorSysIdRoutine.dynamic(direction);
+  }
+
+  public double getPositionMeters() {
+    return elevatorMainPosition.getValueAsDouble();
   }
 
   public double getPositionInches() {
