@@ -150,18 +150,21 @@ public class Constants {
     //     new Pose2d(1.58, 0.686, Rotation2d.fromDegrees(53.130));
 
     public static final Pose2d redStationLeft =
-        new Pose2d(16.198558807373047, 0.7958781719207764, Rotation2d.fromDegrees(126.87));
+        new Pose2d(16.110023, 0.67606, Rotation2d.fromDegrees(126.87));
     public static final Pose2d redStationRight =
-        new Pose2d(16.133712768554688, 7.315741539001465, Rotation2d.fromDegrees(-126.87));
+        new Pose2d(16.110023, 7.323948860168457, Rotation2d.fromDegrees(-126.87));
     public static final Pose2d blueStationLeft =
         new Pose2d(1.4599770307540894, 7.323948860168457, Rotation2d.fromDegrees(-53.130));
     public static final Pose2d blueStationRight =
-        new Pose2d(1.3461934328079224, 0.7910314798355103, Rotation2d.fromDegrees(53.130));
+        new Pose2d(1.4599770307540894, 0.67606, Rotation2d.fromDegrees(53.130));
 
     public static final Pose2d blueBargePose =
         new Pose2d(7.702337741851807, 6.292977809906006, Rotation2d.kZero);
     public static final Pose2d redBargePose =
         new Pose2d(9.866271018981934, 2.00632905960083, Rotation2d.k180deg);
+
+    public static final Pose2d blueProcessorPose = new Pose2d(6.011, 1.0, Rotation2d.kCW_90deg);
+    public static final Pose2d redProcessorPose = new Pose2d(11.524, 7.0, Rotation2d.kCCW_90deg);
 
     public static final List<Pose2d> redSetupPoses =
         List.of(
@@ -354,10 +357,12 @@ public class Constants {
 
   public static class AlgaeRemoverConstants {
     public static final int algaeRemoverMotorID = 17;
+    public static final int algaeIntakeMotorID = 20;
 
     public static final int gearRatio = 1 / 125;
 
     public static final double algaeRemoverSpeed = .2;
+    public static final double algaeIntakeSpeed = .2;
 
     public static final int currentLimit = 35;
     public static final int shutOffCurrentLimit = 65;

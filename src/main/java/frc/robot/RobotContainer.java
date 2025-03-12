@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.AlgaeRemoverConstants;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
@@ -121,8 +122,8 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(1).asProxy());
     NamedCommands.registerCommand("Turn to reef", new TurnToReef(drivetrain).withTimeout(2));
-    NamedCommands.registerCommand("AutoAlignLeft", drivetrain.autoReefAlign(true).withTimeout(3));
-    NamedCommands.registerCommand("AutoAlignRight", drivetrain.autoReefAlign(false).withTimeout(3));
+    NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(3));
+    NamedCommands.registerCommand("AutoAlignRight", drivetrain.reefAlign(false).withTimeout(3));
     // NamedCommands.registerCommand(
     //     "Wait to shoot", Commands.waitSeconds(14.5).andThen(outtake.autoOuttake()).asProxy());
 
@@ -230,6 +231,18 @@ public class RobotContainer {
                         () -> 0.0,
                         () -> SwerveConstants.slowModeMaxTranslationalSpeed,
                         drivetrain)));
+    driverController
+        .rightStick()
+        .whileTrue(
+            drivetrain
+                .pathFindToProcessor()
+                .andThen(
+                    new TeleopSwerve(
+                        () -> 0.0,
+                        driverController::getLeftX,
+                        () -> 0.0,
+                        () -> SwerveConstants.slowModeMaxTranslationalSpeed,
+                        drivetrain)));
 
     // driverController.square().whileTrue(drivetrain.applyRequest(() -> brake));
     // driverController
@@ -265,7 +278,7 @@ public class RobotContainer {
                 })
             .until(atValidReefPose.and(atElevatorHeight).and(elevatorIsDown.negate()));
 
-    driverController.rightStick().onTrue(Commands.runOnce(() -> positionMode = !positionMode));
+    // driverController.R3().onTrue(Commands.runOnce(() -> positionMode = !positionMode));
     driverController
         .leftBumper()
         .and(isPositionMode.negate())
@@ -295,8 +308,8 @@ public class RobotContainer {
 
     // reset the field-centric heading on left bumper press
     driverController
-        .back()
-        .and(driverController.start())
+        .start()
+        .and(driverController.back())
         .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
 
     drivetrain.registerTelemetry(logger::telemeterize);
@@ -362,8 +375,6 @@ public class RobotContainer {
     // elevator manual up
     operatorController
         .povUp()
-        .and(outtakeLaserBroken)
-        .or(operatorController.povUpLeft())
         .whileTrue(elevator.upSpeed(0.1))
         .onFalse(elevator.runOnce(() -> elevator.stopElevator()));
 
@@ -421,10 +432,32 @@ public class RobotContainer {
     // algaeRemover.setDefaultCommand(algaeRemover.moveToPosition(AlgaeRemoverConstants.topPosition));
 
     // algae high sequence
-    operatorController.leftBumper().whileTrue(Commands.sequence()).onFalse(Commands.sequence());
+    operatorController
+        .leftBumper()
+        .whileTrue(
+            Commands.sequence(
+                elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight),
+                algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition),
+                algaeRemover.intake()))
+        .onFalse(
+            Commands.sequence(
+                algaeRemover.stop(),
+                algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition),
+                elevator.downPosition()));
 
     // algae low sequence
-    operatorController.leftTrigger().whileTrue(new InstantCommand());
+    operatorController
+    .leftTrigger()
+    .whileTrue(
+        Commands.sequence(
+            elevator.moveToPosition(ElevatorConstants.AlgaeLowHeight),
+            algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition),
+            algaeRemover.intake()))
+    .onFalse(
+        Commands.sequence(
+            algaeRemover.stop(),
+            algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition),
+            elevator.downPosition()));
 
     // barge score sequence
     operatorController.leftStick().onTrue(new InstantCommand());

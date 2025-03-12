@@ -745,6 +745,20 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         .withName("Barge Align");
   }
 
+  public Command pathFindToProcessor() {
+    return new DeferredCommand(
+            () -> {
+              Pose2d closestPose =
+                  AllianceUtil.isRedAlliance()
+                      ? FieldConstants.redProcessorPose
+                      : FieldConstants.blueProcessorPose;
+
+              return AutoBuilder.pathfindToPose(closestPose, AutoConstants.fastPathConstraints);
+            },
+            Set.of(this))
+        .withName("Processor Align");
+  }
+
   public Command pathFindToDirection(int direction) {
     return new DeferredCommand(
             () -> {
@@ -797,7 +811,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 closestPose = stateCache.Pose.nearest(blueAlgaeRemoverPoses);
               }
 
-              return AutoBuilder.pathfindToPose(closestPose, AutoConstants.midPathConstraints);
+              return AutoBuilder.pathfindToPose(closestPose, AutoConstants.slowPathConstraints);
             },
             Set.of(this))
         .withName("Pathfind for Algae Remover");
