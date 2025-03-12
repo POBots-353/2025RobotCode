@@ -7,7 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "One Piece Auto Bottom Wall"
+            "pathName": "Top Start Alignment.0"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoAlignRight"
           }
         }
       ]

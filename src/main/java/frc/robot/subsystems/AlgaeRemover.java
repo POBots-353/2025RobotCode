@@ -28,6 +28,8 @@ import frc.robot.util.ExpandedSubsystem;
 @Logged(strategy = Strategy.OPT_IN)
 public class AlgaeRemover extends ExpandedSubsystem {
   private SparkMax algaeRemoverMotor;
+  private SparkMax algaeIntakeMotor;
+
   private SparkClosedLoopController algaeRemoverPIDController;
   private SparkAbsoluteEncoder algaeRemoverAbsoluteEncoder;
 
@@ -37,6 +39,8 @@ public class AlgaeRemover extends ExpandedSubsystem {
     algaeRemoverAbsoluteEncoder = algaeRemoverMotor.getAbsoluteEncoder();
     algaeRemoverPIDController = algaeRemoverMotor.getClosedLoopController();
     SparkMaxConfig algaeRemoverConfig = new SparkMaxConfig();
+
+    algaeIntakeMotor = new SparkMax(AlgaeRemoverConstants.algaeIntakeMotorID, MotorType.kBrushless);
 
     algaeRemoverConfig.absoluteEncoder.inverted(false);
     // .positionConversionFactor(360 * (18.0 / 32.0))
@@ -64,8 +68,19 @@ public class AlgaeRemover extends ExpandedSubsystem {
     //     .reverseSoftLimit(AlgaeRemoverConstants.LowestPosition)
     //     .reverseSoftLimitEnabled(true);
 
+    SparkMaxConfig algaeIntakeConfig = new SparkMaxConfig();
+
+    algaeIntakeConfig
+        .inverted(true)
+        .idleMode(IdleMode.kBrake)
+        .smartCurrentLimit(AlgaeRemoverConstants.currentLimit)
+        .secondaryCurrentLimit(AlgaeRemoverConstants.shutOffCurrentLimit);
+
     algaeRemoverMotor.configure(
         algaeRemoverConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    algaeIntakeMotor.configure(
+        algaeIntakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public Command moveToPosition(double targetAngle) {
@@ -80,15 +95,29 @@ public class AlgaeRemover extends ExpandedSubsystem {
   }
 
   public void algaeRemoverUp() {
-    algaeRemoverMotor.set(-.9);
+    algaeRemoverMotor.set(AlgaeRemoverConstants.algaeRemoverSpeed);
   }
 
   public void algaeRemoverDown() {
-    algaeRemoverMotor.set(.9);
+    algaeRemoverMotor.set(-AlgaeRemoverConstants.algaeRemoverSpeed);
   }
 
   public double getPosition() {
     return algaeRemoverAbsoluteEncoder.getPosition(); // in degrees
+  }
+
+  public Command intake() {
+    return run(() -> algaeIntakeMotor.set(AlgaeRemoverConstants.algaeIntakeSpeed))
+        .withName("Run Algae Intake");
+  }
+
+  public Command outtake() {
+    return run(() -> algaeIntakeMotor.set(-AlgaeRemoverConstants.algaeIntakeSpeed))
+        .withName("Reverse Algae Intake");
+  }
+
+  public Command stop() {
+    return runOnce(() -> algaeIntakeMotor.set(0)).withName("Stop Algae Intake");
   }
 
   @Override
