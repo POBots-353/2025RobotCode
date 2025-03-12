@@ -23,7 +23,10 @@ import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.OuttakeConstants;
 import frc.robot.util.LogUtil;
+import java.lang.management.GarbageCollectorMXBean;
+import java.lang.management.ManagementFactory;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.littletonrobotics.urcl.URCL;
 
@@ -34,6 +37,8 @@ public class Robot extends TimedRobot {
 
   @Logged(name = "Robot")
   private final RobotContainer m_robotContainer;
+
+  private final GcStatsCollector gcStatsCollector = new GcStatsCollector();
 
   public Robot() {
     double startTime = Timer.getFPGATimestamp();
@@ -88,18 +93,19 @@ public class Robot extends TimedRobot {
     motorAliases.put(AlgaeRemoverConstants.algaeRemoverMotorID, "Algae Remover");
     motorAliases.put(ArmConstants.armMotorID, "Arm");
     motorAliases.put(IntakeConstants.groundIntakeMotorID, "Ground Intake");
-    motorAliases.put(IntakeConstants.indexerMotorID, "Indexer");
+    motorAliases.put(IntakeConstants.indexerMotorID, "Indexer Main");
+    motorAliases.put(IntakeConstants.indexerFollowerMotorID, "Indexer Follower");
     motorAliases.put(OuttakeConstants.outtakeMotorID, "Outtake");
 
     URCL.start(motorAliases);
 
     m_robotContainer = new RobotContainer();
 
-    addPeriodic(() -> m_robotContainer.stopIfBeamBroken(), .005, .005);
+    addPeriodic(() -> m_robotContainer.stopIfBeamBroken(), 0.005, 0.005);
 
     double startupTimeSeconds = Timer.getFPGATimestamp() - startTime;
     DataLogManager.log("Startup Time (ms): " + startupTimeSeconds * 1000.0);
-    PathfindingCommand.warmupCommand().schedule();
+    PathfindingCommand.warmupCommand().withName("Pathfinding Warmup").schedule();
   }
 
   @Override
@@ -107,6 +113,8 @@ public class Robot extends TimedRobot {
     double startTime = Timer.getFPGATimestamp();
 
     CommandScheduler.getInstance().run();
+
+    gcStatsCollector.update();
 
     // CANBusStatus canStatus = frc.robot.generated.TunerConstants.kCANBus.getStatus();
     // CANStatus rioCanStatus = RobotController.getCANStatus();
@@ -189,4 +197,27 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationPeriodic() {}
+
+  private static final class GcStatsCollector {
+    private List<GarbageCollectorMXBean> gcBeans = ManagementFactory.getGarbageCollectorMXBeans();
+    private final long[] lastTimes = new long[gcBeans.size()];
+    private final long[] lastCounts = new long[gcBeans.size()];
+
+    public void update() {
+      long accumTime = 0;
+      long accumCounts = 0;
+      for (int i = 0; i < gcBeans.size(); i++) {
+        long gcTime = gcBeans.get(i).getCollectionTime();
+        long gcCount = gcBeans.get(i).getCollectionCount();
+        accumTime += gcTime - lastTimes[i];
+        accumCounts += gcCount - lastCounts[i];
+
+        lastTimes[i] = gcTime;
+        lastCounts[i] = gcCount;
+      }
+
+      SmartDashboard.putNumber("GC Stats/GC Time MS", (double) accumTime);
+      SmartDashboard.putNumber("GC Stats/GC Counts", (double) accumCounts);
+    }
+  }
 }

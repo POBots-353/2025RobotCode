@@ -158,6 +158,11 @@ public class Constants {
     public static final Pose2d blueStationRight =
         new Pose2d(1.3461934328079224, 0.7910314798355103, Rotation2d.fromDegrees(53.130));
 
+    public static final Pose2d blueBargePose =
+        new Pose2d(7.702337741851807, 6.292977809906006, Rotation2d.kZero);
+    public static final Pose2d redBargePose =
+        new Pose2d(9.866271018981934, 2.00632905960083, Rotation2d.k180deg);
+
     public static final List<Pose2d> redSetupPoses =
         List.of(
             new Pose2d(10.813, 4.019, Rotation2d.fromDegrees(0)), // 180
@@ -341,8 +346,8 @@ public class Constants {
     public static final int outtakeCurrentLimit = 60;
     public static final int outtakeShutOffLimit = 75;
 
-    public static final double fastOuttakeSpeed = 0.50;
-    public static final double slowOuttakeSpeed = 0.353; // .353 0.2
+    public static final double fastOuttakeSpeed = 0.353;
+    public static final double slowOuttakeSpeed = 0.24; // .353 0.2
 
     public static final int outtakeLaserCanID = 19;
   }

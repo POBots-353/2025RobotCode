@@ -73,15 +73,15 @@ public class Indexer extends ExpandedSubsystem {
   }
 
   public Command runIndexer() {
-    return run(this::index);
+    return run(this::index).withName("Run Indexer");
   }
 
   public Command reverseIndexer() {
-    return run(this::reverse);
+    return run(this::reverse).withName("Reverse Indexer");
   }
 
   public Command stop() {
-    return runOnce(this::stopIndexer);
+    return runOnce(this::stopIndexer).withName("Stop Indexer");
   }
 
   public void reverse() {

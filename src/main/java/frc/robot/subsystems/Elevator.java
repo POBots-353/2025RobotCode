@@ -150,11 +150,11 @@ public class Elevator extends ExpandedSubsystem {
   }
 
   public Command upSpeed(double speed) {
-    return run(
-        () -> {
+    return run(() -> {
           elevatorMainMotor.set(speed);
           elevatorFollowerMotor.set(speed);
-        });
+        })
+        .withName("Elevator Manual Up");
   }
 
   public Command downSpeed(double speed) {
@@ -163,7 +163,8 @@ public class Elevator extends ExpandedSubsystem {
           elevatorFollowerMotor.set(-speed);
         })
         .until(() -> buttonDebouncer.calculate(buttonPressed()))
-        .unless(() -> buttonDebouncer.calculate(buttonPressed()));
+        .unless(() -> buttonDebouncer.calculate(buttonPressed()))
+        .withName("Elevator Manual Down");
   }
 
   public Command moveToPosition(double height) {

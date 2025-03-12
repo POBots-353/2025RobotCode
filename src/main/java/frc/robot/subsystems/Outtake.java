@@ -50,26 +50,32 @@ public class Outtake extends ExpandedSubsystem {
   }
 
   public Command fastOuttake() {
-    return run(() -> outtakemotor.set(OuttakeConstants.fastOuttakeSpeed));
+    return run(() -> outtakemotor.set(OuttakeConstants.fastOuttakeSpeed)).withName("Fast Outtake");
   }
 
   public Command slowOuttake() {
-    return run(() -> outtakemotor.set(OuttakeConstants.slowOuttakeSpeed));
+    return run(() -> outtakemotor.set(OuttakeConstants.slowOuttakeSpeed)).withName("Slow Outtake");
   }
 
   public Command reverseOuttake() {
-    return run(() -> outtakemotor.set(-OuttakeConstants.fastOuttakeSpeed));
+    return run(() -> outtakemotor.set(-OuttakeConstants.fastOuttakeSpeed))
+        .withName("Reverse Outtake");
   }
 
   public Command outtakeUntilBeamBreak() {
     return slowOuttake()
         .unless(this::outtakeLaserBroken)
         .until(this::outtakeLaserBroken)
-        .finallyDo(this::stop); // ()-> Commands.waitSeconds(.05).andThen(this::stop));
+        .finallyDo(this::stop)
+        .withName(
+            "Outtake Until Beam Break"); // ()-> Commands.waitSeconds(.05).andThen(this::stop));
   }
 
   public Command autoOuttake() {
-    return fastOuttake().until(() -> !outtakeLaserBroken()).finallyDo(this::stop);
+    return fastOuttake()
+        .until(() -> !outtakeLaserBroken())
+        .finallyDo(this::stop)
+        .withName("Auto Outtake");
   }
 
   public void stop() {
@@ -77,7 +83,7 @@ public class Outtake extends ExpandedSubsystem {
   }
 
   public Command stopOuttakeMotor() {
-    return runOnce(this::stop);
+    return runOnce(this::stop).withName("Stop Outtake");
   }
 
   public boolean outtakeLaserBroken() {

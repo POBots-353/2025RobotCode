@@ -69,10 +69,10 @@ public class AlgaeRemover extends ExpandedSubsystem {
   }
 
   public Command moveToPosition(double targetAngle) {
-    return run(
-        () ->
+    return run(() ->
             algaeRemoverPIDController.setReference(
-                targetAngle, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0));
+                targetAngle, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0))
+        .withName("Algae Remover move to " + targetAngle);
   }
 
   public void stopAlgaeRemover() {

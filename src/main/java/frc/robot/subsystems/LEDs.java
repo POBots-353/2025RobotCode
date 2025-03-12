@@ -44,13 +44,12 @@ public class LEDs extends SubsystemBase {
     LEDPattern base =
         LEDPattern.gradient(
             GradientType.kDiscontinuous, Color.kLightBlue, Color.kBlue, Color.kDarkBlue);
+    LEDPattern pattern =
+        LEDPattern.progressMaskLayer(() -> (height.getAsDouble() / ElevatorConstants.maxHeight));
+    LEDPattern combination = base.mask(pattern);
 
     return run(
         () -> {
-          LEDPattern pattern =
-              LEDPattern.progressMaskLayer(
-                  () -> (height.getAsDouble() / ElevatorConstants.maxHeight));
-          LEDPattern combination = base.mask(pattern);
           combination.applyTo(buffer);
         });
   }

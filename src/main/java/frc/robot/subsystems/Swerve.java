@@ -28,7 +28,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
@@ -410,11 +409,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
           if (poses.isEmpty()) {
             field.getObject("Target Pose").setPoses();
-            setControl(
-                pathApplyRobotSpeeds
-                    .withSpeeds(new ChassisSpeeds())
-                    .withWheelForceFeedforwardsX(new double[] {})
-                    .withWheelForceFeedforwardsY(new double[] {}));
+            // setControl(
+            //     pathApplyRobotSpeeds
+            //         .withSpeeds(new ChassisSpeeds())
+            //         .withWheelForceFeedforwardsX(new double[] {})
+            //         .withWheelForceFeedforwardsY(new double[] {}));
           }
         });
     PathPlannerLogging.setLogTargetPoseCallback(
@@ -485,17 +484,17 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     Pose2d estimatedRIGHTPOSE =
         (FieldConstants.aprilTagLayout.getTagPose(bestTargetID))
             .map(Pose3d::toPose2d)
-            .orElse(new Pose2d())
+            .orElse(Pose2d.kZero)
             .transformBy(
                 new Transform2d(
-                        rightAprilTagOffset.getTranslation().rotateBy(Rotation2d.fromDegrees(180)),
+                        rightAprilTagOffset.getTranslation().rotateBy(Rotation2d.k180deg),
                         Rotation2d.k180deg)
                     .inverse());
 
     Pose2d estimatedLEFTPOSE =
         (FieldConstants.aprilTagLayout.getTagPose(bestTargetID))
             .map(Pose3d::toPose2d)
-            .orElse(new Pose2d())
+            .orElse(Pose2d.kZero)
             .transformBy(
                 new Transform2d(
                         leftAprilTagOffset.getTranslation().rotateBy(Rotation2d.k180deg),
@@ -551,7 +550,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   private boolean isPoseWithinTolerance(Pose2d estimatedPose, List<Pose2d> definitePoses) {
-    double tolerance = 0.0762; // 3 inches in meters
+    double tolerance = Units.inchesToMeters(3);
     Pose2d nearest = estimatedPose.nearest(definitePoses);
     return nearest.getTranslation().getDistance(estimatedPose.getTranslation()) <= tolerance;
   }
@@ -572,17 +571,43 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   public Command reefAlign(boolean leftAlign) {
     return new DeferredCommand(
-        () -> {
-          if (leftPose == null || rightPose == null) {
-            return new InstantCommand();
-          }
-          Pose2d goalPose = leftAlign ? leftPose : rightPose;
-          SmartDashboard.putNumber("Swerve/Attempted Pose X", goalPose.getX());
-          SmartDashboard.putNumber("Swerve/Attempted Pose Y", goalPose.getY());
-          // return new InstantCommand();
-          return AutoBuilder.pathfindToPose(goalPose, AutoConstants.slowPathConstraints, 0.0);
-        },
-        Set.of(this));
+            () -> {
+              if (leftPose == null || rightPose == null) {
+                return new InstantCommand();
+              }
+              Pose2d goalPose = leftAlign ? leftPose : rightPose;
+              SmartDashboard.putNumber("Swerve/Attempted Pose X", goalPose.getX());
+              SmartDashboard.putNumber("Swerve/Attempted Pose Y", goalPose.getY());
+              // return new InstantCommand();
+              return AutoBuilder.pathfindToPose(goalPose, AutoConstants.slowPathConstraints, 0.0);
+            },
+            Set.of(this))
+        .withName("Reef Align");
+  }
+
+  public Command autoReefAlign(boolean leftAlign) {
+    return new DeferredCommand(
+            () -> {
+              List<Pose2d> leftPoses =
+                  AllianceUtil.isRedAlliance()
+                      ? ReefDefinitePoses.redReefDefiniteLeftPoses
+                      : ReefDefinitePoses.blueReefDefiniteLeftPoses;
+
+              List<Pose2d> rightPoses =
+                  AllianceUtil.isRedAlliance()
+                      ? ReefDefinitePoses.redReefDefiniteRightPoses
+                      : ReefDefinitePoses.blueReefDefiniteRightPoses;
+              Pose2d autoLeftPose = stateCache.Pose.nearest(leftPoses);
+              Pose2d autoRightPose = stateCache.Pose.nearest(rightPoses);
+
+              if (autoLeftPose == null || autoRightPose == null) {
+                return new InstantCommand();
+              }
+              Pose2d goalPose = leftAlign ? autoLeftPose : autoRightPose;
+              return AutoBuilder.pathfindToPose(goalPose, AutoConstants.slowPathConstraints, 0.0);
+            },
+            Set.of(this))
+        .withName("Auto Reef Align");
   }
 
   // public Command reefAlignNoPathPlanner(boolean leftAlign) {
@@ -612,25 +637,26 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   public Command reefAlignNoVision(boolean leftAlign) {
     return new DeferredCommand(
-        () -> {
-          Pose2d robotPose = stateCache.Pose;
-          Pose2d nearestPose = Pose2d.kZero;
-          if (AllianceUtil.isRedAlliance()) {
-            if (leftAlign) {
-              nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteLeftPoses);
-            } else {
-              nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteRightPoses);
-            }
-          } else {
-            if (leftAlign) {
-              nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteLeftPoses);
-            } else {
-              nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses);
-            }
-          }
-          return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.midPathConstraints, 0.0);
-        },
-        Set.of(this));
+            () -> {
+              Pose2d robotPose = stateCache.Pose;
+              Pose2d nearestPose = Pose2d.kZero;
+              if (AllianceUtil.isRedAlliance()) {
+                if (leftAlign) {
+                  nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteLeftPoses);
+                } else {
+                  nearestPose = robotPose.nearest(ReefDefinitePoses.redReefDefiniteRightPoses);
+                }
+              } else {
+                if (leftAlign) {
+                  nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteLeftPoses);
+                } else {
+                  nearestPose = robotPose.nearest(ReefDefinitePoses.blueReefDefiniteRightPoses);
+                }
+              }
+              return AutoBuilder.pathfindToPose(nearestPose, AutoConstants.midPathConstraints, 0.0);
+            },
+            Set.of(this))
+        .withName("Reef Align No Vision");
   }
 
   // public PathPlannerPath getNearestPickupPath() {
@@ -684,79 +710,97 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   public Command humanPlayerAlign() {
     return new DeferredCommand(
-        () -> {
-          Pose2d closestPose;
+            () -> {
+              Pose2d closestPose;
 
-          List<Pose2d> redStationPoses =
-              List.of(FieldConstants.redStationLeft, FieldConstants.redStationRight);
-          List<Pose2d> blueStationPoses =
-              List.of(FieldConstants.blueStationLeft, FieldConstants.blueStationRight);
+              List<Pose2d> redStationPoses =
+                  List.of(FieldConstants.redStationLeft, FieldConstants.redStationRight);
+              List<Pose2d> blueStationPoses =
+                  List.of(FieldConstants.blueStationLeft, FieldConstants.blueStationRight);
 
-          if (AllianceUtil.isRedAlliance()) {
-            closestPose = stateCache.Pose.nearest(redStationPoses);
+              if (AllianceUtil.isRedAlliance()) {
+                closestPose = stateCache.Pose.nearest(redStationPoses);
 
-          } else {
-            closestPose = stateCache.Pose.nearest(blueStationPoses);
-          }
+              } else {
+                closestPose = stateCache.Pose.nearest(blueStationPoses);
+              }
 
-          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.fastPathConstraints);
-        },
-        Set.of(this));
+              return AutoBuilder.pathfindToPose(closestPose, AutoConstants.fastPathConstraints);
+            },
+            Set.of(this))
+        .withName("Human Player Align");
+  }
+
+  public Command pathFindToBarge() {
+    return new DeferredCommand(
+            () -> {
+              Pose2d closestPose =
+                  AllianceUtil.isRedAlliance()
+                      ? FieldConstants.redBargePose
+                      : FieldConstants.blueBargePose;
+
+              return AutoBuilder.pathfindToPose(closestPose, AutoConstants.fastPathConstraints);
+            },
+            Set.of(this))
+        .withName("Barge Align");
   }
 
   public Command pathFindToDirection(int direction) {
     return new DeferredCommand(
-        () -> {
-          List<Pose2d> setupPoses =
-              AllianceUtil.isRedAlliance()
-                  ? FieldConstants.redSetupPoses
-                  : FieldConstants.blueSetupPoses;
+            () -> {
+              List<Pose2d> setupPoses =
+                  AllianceUtil.isRedAlliance()
+                      ? FieldConstants.redSetupPoses
+                      : FieldConstants.blueSetupPoses;
 
-          Pose2d targetPose = setupPoses.get(direction);
+              Pose2d targetPose = setupPoses.get(direction);
 
-          return AutoBuilder.pathfindToPose(targetPose, AutoConstants.midPathConstraints);
-        },
-        Set.of(this));
+              return AutoBuilder.pathfindToPose(targetPose, AutoConstants.midPathConstraints);
+            },
+            Set.of(this))
+        .withName("Pathfind to Direction " + direction);
   }
 
   public Command pathFindToSetup() {
     return new DeferredCommand(
-        () -> {
-          Pose2d closestPose;
+            () -> {
+              Pose2d closestPose;
 
-          List<Pose2d> redSetupPoses = FieldConstants.redSetupPoses;
-          List<Pose2d> blueSetupPoses = FieldConstants.blueSetupPoses;
+              List<Pose2d> redSetupPoses = FieldConstants.redSetupPoses;
+              List<Pose2d> blueSetupPoses = FieldConstants.blueSetupPoses;
 
-          if (AllianceUtil.isRedAlliance()) {
-            closestPose = stateCache.Pose.nearest(redSetupPoses);
+              if (AllianceUtil.isRedAlliance()) {
+                closestPose = stateCache.Pose.nearest(redSetupPoses);
 
-          } else {
-            closestPose = stateCache.Pose.nearest(blueSetupPoses);
-          }
+              } else {
+                closestPose = stateCache.Pose.nearest(blueSetupPoses);
+              }
 
-          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.midPathConstraints);
-        },
-        Set.of(this));
+              return AutoBuilder.pathfindToPose(closestPose, AutoConstants.midPathConstraints, 0);
+            },
+            Set.of(this))
+        .withName("Pathfind to Setup");
   }
 
   public Command pathFindForAlgaeRemover() {
     return new DeferredCommand(
-        () -> {
-          Pose2d closestPose;
+            () -> {
+              Pose2d closestPose;
 
-          List<Pose2d> redAlgaeRemoverPoses = FieldConstants.redAlgaeRemoverPoses;
-          List<Pose2d> blueAlgaeRemoverPoses = FieldConstants.blueAlgaeRemoverPoses;
+              List<Pose2d> redAlgaeRemoverPoses = FieldConstants.redAlgaeRemoverPoses;
+              List<Pose2d> blueAlgaeRemoverPoses = FieldConstants.blueAlgaeRemoverPoses;
 
-          if (AllianceUtil.isRedAlliance()) {
-            closestPose = stateCache.Pose.nearest(redAlgaeRemoverPoses);
+              if (AllianceUtil.isRedAlliance()) {
+                closestPose = stateCache.Pose.nearest(redAlgaeRemoverPoses);
 
-          } else {
-            closestPose = stateCache.Pose.nearest(blueAlgaeRemoverPoses);
-          }
+              } else {
+                closestPose = stateCache.Pose.nearest(blueAlgaeRemoverPoses);
+              }
 
-          return AutoBuilder.pathfindToPose(closestPose, AutoConstants.midPathConstraints);
-        },
-        Set.of(this));
+              return AutoBuilder.pathfindToPose(closestPose, AutoConstants.midPathConstraints);
+            },
+            Set.of(this))
+        .withName("Pathfind for Algae Remover");
   }
 
   public boolean seesTarget() {
@@ -778,7 +822,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   public Command waitForTarget() {
-    return Commands.waitUntil(() -> seesTarget());
+    return Commands.waitUntil(() -> seesTarget()).withName("Wait for Target");
   }
 
   /**
@@ -799,7 +843,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return new Pose3d(stateCache.Pose).plus(VisionConstants.arducamRightTransform);
   }
 
-  public Pose3d getarducamFrontPose() {
+  public Pose3d getArducamFrontPose() {
     return new Pose3d(stateCache.Pose).plus(VisionConstants.arducamFrontTransform);
   }
 
