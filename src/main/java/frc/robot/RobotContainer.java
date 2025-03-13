@@ -187,7 +187,7 @@ public class RobotContainer {
                 .ignoringDisable(true)
                 .withName("Elevator Progress LED"),
             // If disconnected
-            led.startupLoad(Color.kRed, 5, Seconds.of(1.5))
+            led.loadingAnimation(Color.kRed, 5, Seconds.of(1.5))
                 .ignoringDisable(true)
                 .withName("Disconnected Loading"),
             DriverStation::isDSAttached));

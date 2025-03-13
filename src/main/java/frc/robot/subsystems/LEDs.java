@@ -34,7 +34,7 @@ public class LEDs extends SubsystemBase {
     leds.start();
   }
 
-  private LEDPattern loadingAnimation(LEDPattern base, int length, Time period) {
+  private LEDPattern loadingPattern(LEDPattern base, int length, Time period) {
     final double periodMicros = period.in(Microseconds);
 
     return base.mapIndex(
@@ -58,7 +58,7 @@ public class LEDs extends SubsystemBase {
         });
   }
 
-  public Command startupLoad(Color color, int length, Time period) {
+  public Command loadingAnimation(Color color, int length, Time period) {
     LEDPattern base =
         (reader, writer) -> {
           int bufLen = reader.getLength();
@@ -70,7 +70,7 @@ public class LEDs extends SubsystemBase {
             }
           }
         };
-    LEDPattern pattern = loadingAnimation(base, length, period);
+    LEDPattern pattern = loadingPattern(base, length, period);
 
     return run(
         () -> {
@@ -102,10 +102,6 @@ public class LEDs extends SubsystemBase {
           pattern.applyTo(buffer);
         });
   }
-
-  // public LEDPattern loadingAnimation(Color color, Frequency velocity) {
-
-  // }
 
   public Command breathe(Color color, Time period) {
     LEDPattern base = LEDPattern.solid(color);
