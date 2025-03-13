@@ -1,5 +1,6 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
@@ -29,6 +30,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
@@ -359,7 +361,12 @@ public class Constants {
     public static final int algaeRemoverMotorID = 17;
     public static final int algaeIntakeMotorID = 20;
 
-    public static final int gearRatio = 1 / 125;
+    public static final double planetaryGearRatio = 1.0 / 125.0;
+    public static final double outputGearRatio = 18.0 / 32.0;
+
+    public static final double absoluteEncoderConversion = 2 * Math.PI * outputGearRatio;
+    public static final double internalEncoderConversion =
+        2 * Math.PI * planetaryGearRatio * outputGearRatio;
 
     public static final double algaeRemoverSpeed = .2;
     public static final double algaeIntakeSpeed = .2;
@@ -367,15 +374,16 @@ public class Constants {
     public static final int currentLimit = 35;
     public static final int shutOffCurrentLimit = 65;
 
-    public static final double topPosition = 0.0; // Degrees
-    public static final double intakePosition = 275.0;
-    public static final double holdPosition = 0; // 275
-    public static final double outPosition = 0.0;
-    public static final double HighestPosition = 0;
-    public static final double LowestPosition = 0;
+    public static final Angle topPosition = Degrees.of(0.0); // Degrees
+    public static final Angle intakePosition = Degrees.of(275.0);
+    public static final Angle holdPosition = Degrees.of(0); // 275
+    public static final Angle outPosition = Degrees.of(0.0);
+    public static final Angle HighestPosition = Degrees.of(0);
+    public static final Angle LowestPosition = Degrees.of(0);
 
-    public static final double maxVelocity = 30.0; // Degrees per second
-    public static final double maxAcceleration = 50.0; // Degrees per second squared
+    public static final double maxVelocity = Units.degreesToRadians(30.0); // Degrees per second
+    public static final double maxAcceleration =
+        Units.degreesToRadians(50.0); // Degrees per second squared
   }
 
   public static class ElevatorConstants {

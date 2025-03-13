@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.Percent;
 import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.LEDPattern;
@@ -65,6 +66,20 @@ public class LEDs extends SubsystemBase {
         });
   }
 
+  // public LEDPattern loadingAnimation(Color color, Frequency velocity) {
+
+  // }
+
+  public Command breathe(Color color, Time period) {
+    LEDPattern base = LEDPattern.solid(color);
+    LEDPattern pattern = base.breathe(period);
+
+    return run(
+        () -> {
+          pattern.applyTo(buffer);
+        });
+  }
+
   public Command rainbowScroll() {
     LEDPattern rainbow = LEDPattern.rainbow(255, 255).scrollAtRelativeSpeed(Hertz.of(0.5));
 
@@ -73,6 +88,10 @@ public class LEDs extends SubsystemBase {
           rainbow.applyTo(buffer);
         });
   }
+
+  // public Command rainbowBreathe(){
+
+  // }
 
   @Override
   public void periodic() {
