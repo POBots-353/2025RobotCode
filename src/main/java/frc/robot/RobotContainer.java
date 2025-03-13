@@ -167,11 +167,6 @@ public class RobotContainer {
 
     // outtakeLaserBroken.whileTrue(led.run(() ->
     // led.setColor(Color.kGreen)).ignoringDisable(true));
-    new Trigger(() -> !DriverStation.isDSAttached())
-        .whileTrue(
-            led.breathe(Color.kRed, Seconds.of(2))
-                .ignoringDisable(true)
-                .withName("Disconnect Breathe"));
     outtakeLaserBroken.whileTrue(
         led.blink(Color.kGreen)
             .withTimeout(Seconds.of(2))
@@ -181,10 +176,21 @@ public class RobotContainer {
     // led.setDefaultCommand(led.rainbowScroll().ignoringDisable(true).withName("LED Rainbow
     // Scroll"));
     // led.setDefaultCommand(led.solidColor(Color.kBlack).ignoringDisable(true));
+
+    // Hacky way to get the default LED command to switch
+    new Trigger(DriverStation::isDSAttached).onChange(led.runOnce(() -> {}).ignoringDisable(true));
+
     led.setDefaultCommand(
-        led.elevatorProgress(elevator::getPositionMeters)
-            .ignoringDisable(true)
-            .withName("Elevator Progress LED"));
+        Commands.either(
+            // If connected
+            led.elevatorProgress(elevator::getPositionMeters)
+                .ignoringDisable(true)
+                .withName("Elevator Progress LED"),
+            // If disconnected
+            led.startupLoad(Color.kRed, 5, Seconds.of(1.5))
+                .ignoringDisable(true)
+                .withName("Disconnected Loading"),
+            DriverStation::isDSAttached));
   }
 
   private void configurePrematch() {

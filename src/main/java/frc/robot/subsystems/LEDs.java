@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Hertz;
+import static edu.wpi.first.units.Units.Microseconds;
 import static edu.wpi.first.units.Units.Percent;
 import static edu.wpi.first.units.Units.Seconds;
 
@@ -13,6 +14,7 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.LEDPattern.GradientType;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -32,12 +34,47 @@ public class LEDs extends SubsystemBase {
     leds.start();
   }
 
+  private LEDPattern loadingAnimation(LEDPattern base, int length, Time period) {
+    final double periodMicros = period.in(Microseconds);
+
+    return base.mapIndex(
+        (bufLen, index) -> {
+          final int margin = bufLen - length;
+
+          double t = 2 * (RobotController.getTime() % periodMicros) / periodMicros;
+
+          int start = (int) Math.round(Math.abs(margin * t - margin));
+
+          return Math.floorMod(index + start, bufLen);
+        });
+  }
+
   public Command solidColor(Color c) {
     LEDPattern color = LEDPattern.solid(c);
 
     return run(
         () -> {
           color.applyTo(buffer);
+        });
+  }
+
+  public Command startupLoad(Color color, int length, Time period) {
+    LEDPattern base =
+        (reader, writer) -> {
+          int bufLen = reader.getLength();
+          for (int i = 0; i < bufLen; i++) {
+            if (i < length) {
+              writer.setLED(i, color);
+            } else {
+              writer.setLED(i, Color.kBlack);
+            }
+          }
+        };
+    LEDPattern pattern = loadingAnimation(base, length, period);
+
+    return run(
+        () -> {
+          pattern.applyTo(buffer);
         });
   }
 
@@ -88,10 +125,6 @@ public class LEDs extends SubsystemBase {
           rainbow.applyTo(buffer);
         });
   }
-
-  // public Command rainbowBreathe(){
-
-  // }
 
   @Override
   public void periodic() {
