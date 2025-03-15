@@ -455,6 +455,7 @@ public class RobotContainer {
     operatorController
         .rightTrigger()
         .and(elevatorIsDown)
+        .and(operatorController.leftBumper().negate())
         .whileTrue(indexer.runIndexer().alongWith(outtake.outtakeUntilBeamBreak()))
         .onFalse(indexer.stop().alongWith(outtake.stopOuttakeMotor()));
 
@@ -467,6 +468,18 @@ public class RobotContainer {
     //algaeintake to stow position
     operatorController.back().and(operatorController.start()).onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.stowPosition));
 
+       // algaeRemover manual down
+    operatorController
+       .povDown()
+       .and(operatorController.leftBumper())
+       .whileTrue(algaeRemover.run(algaeRemover::algaeRemoverDown))
+        .onFalse(algaeRemover.runOnce(algaeRemover::stopAlgaeRemover));
+   // algaeRemover manual up
+   operatorController
+       .povUp()
+       .and(operatorController.leftBumper())
+       .whileTrue(algaeRemover.run(algaeRemover::algaeRemoverUp))
+        .onFalse(algaeRemover.runOnce(algaeRemover::stopAlgaeRemover));
 
     // algae intake sequence
     operatorController
@@ -526,6 +539,13 @@ public class RobotContainer {
           .and(operatorController.leftBumper())
            .whileTrue(algaeRemover.outtake())
            .onFalse(algaeRemover.stop());
+
+//manually intake algae
+operatorController
+.rightTrigger()
+.and(operatorController.leftBumper())
+ .whileTrue(algaeRemover.intake())
+ .onFalse(algaeRemover.stop());
 
     // score algae + coral MODE
     // operatorController
@@ -771,7 +791,7 @@ public class RobotContainer {
   //   }
 
   private void configureOperatorBindings() {
-    temporaryAlgaeRemoverBindings();
+    configureAlgaeRemoverBindings();
     configureElevatorBindings();
     configureIndexerBindings();
     configureOuttakeBindings();
