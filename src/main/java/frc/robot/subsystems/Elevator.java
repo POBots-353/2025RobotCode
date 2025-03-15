@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.MiscellaneousConstants;
 import frc.robot.util.ExpandedSubsystem;
+import java.util.function.DoubleSupplier;
 
 @Logged(strategy = Strategy.OPT_IN)
 public class Elevator extends ExpandedSubsystem {
@@ -52,10 +53,10 @@ public class Elevator extends ExpandedSubsystem {
   private Alert elevatorAlert;
   private boolean lastButtonState = false;
   private Debouncer buttonDebouncer = new Debouncer(0.28);
-  private Debouncer elevatorDebouncer = new Debouncer(0.6);
+  private Debouncer elevatorDebouncer = new Debouncer(0.353);
   private Debouncer zeroedDebouncer = new Debouncer(2.5);
 
-  private double positionTolerance = Units.inchesToMeters(0.2);
+  private double positionTolerance = Units.inchesToMeters(0.353);
 
   private StatusSignal<Angle> elevatorMainPosition;
   private StatusSignal<Angle> elevatorFollowerPosition;
@@ -176,6 +177,18 @@ public class Elevator extends ExpandedSubsystem {
         .until(() -> (atSetpoint(height)))
         // .onlyIf(() -> isZeroed)
         .withName("Move to " + height + " meters");
+    // .finallyDo(this::holdPosition);
+  }
+
+  public Command moveToAlgaePosition(DoubleSupplier h) {
+    return run(() -> {
+          double height = h.getAsDouble();
+          elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
+          elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(height));
+        })
+        .until(() -> (atSetpoint(h.getAsDouble())))
+        // .onlyIf(() -> isZeroed)
+        .withName("Move to Algae Height");
     // .finallyDo(this::holdPosition);
   }
 

@@ -46,6 +46,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.AutoConstants;
+import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.FieldConstants.ReefDefinitePoses;
 import frc.robot.Constants.MiscellaneousConstants;
@@ -839,6 +840,22 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return Commands.waitUntil(() -> seesTarget()).withName("Wait for Target");
   }
 
+  public boolean isAlgaeHighAtCurrentPosition() {
+
+    Pose2d closestPose =
+        AllianceUtil.isRedAlliance()
+            ? stateCache.Pose.nearest(FieldConstants.redAlgaeRemoverPoses)
+            : stateCache.Pose.nearest(FieldConstants.blueAlgaeRemoverPoses);
+
+    return FieldConstants.algaeHeightPositions.getOrDefault(closestPose, false);
+  }
+
+  public double getAlgaeHeight() {
+    return isAlgaeHighAtCurrentPosition()
+        ? ElevatorConstants.AlgaeHighHeight
+        : ElevatorConstants.AlgaeLowHeight;
+  }
+
   /**
    * Returns a command that applies the specified control request to this swerve drivetrain.
    *
@@ -1273,6 +1290,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     updateVisionPoseEstimates();
     updateBestAlignmentPose();
+    SmartDashboard.putBoolean("Algae Height High?", isAlgaeHighAtCurrentPosition());
 
     /*
      * Periodically try to apply the operator perspective.
