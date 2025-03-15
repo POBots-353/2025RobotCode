@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorConstants;
-
 import java.util.Map;
 import java.util.function.DoubleSupplier;
 
@@ -74,10 +73,12 @@ public class LEDs extends SubsystemBase {
           }
         };
     LEDPattern pattern = loadingPattern(base, length, period);
+    LEDPattern rainbow = LEDPattern.rainbow(255, 255);
+    LEDPattern combination = rainbow.mask(pattern);
 
     return run(
         () -> {
-          pattern.applyTo(buffer);
+          combination.applyTo(buffer);
         });
   }
 
@@ -97,8 +98,8 @@ public class LEDs extends SubsystemBase {
 
   public Command blink(Color c) {
     LEDPattern base = LEDPattern.solid(c);
-
-    LEDPattern pattern = base.blink(Seconds.of(0.15)).atBrightness(Percent.of(75));
+    LEDPattern pattern =
+        base.blink(Seconds.of(0.15)).atBrightness(Percent.of(75)).atBrightness(Percent.of(50));
 
     return run(
         () -> {
@@ -126,17 +127,16 @@ public class LEDs extends SubsystemBase {
   }
 
   public Command scrolling(Color c1, Color c2) {
-    Map<Double, Color> maskSteps = Map.of(0.0, Color.kWhite, 0.8, Color.kBlack);
+    Map<Double, Color> maskSteps = Map.of(0.0, Color.kWhite, 0.4, Color.kBlack);
     LEDPattern base = LEDPattern.gradient(GradientType.kContinuous, c1, c2);
-    LEDPattern mask =
-       LEDPattern.steps(maskSteps).scrollAtRelativeSpeed(Percent.per(Second).of(0.353));
-    
-    LEDPattern pattern = base.mask(mask);
-    
-   return run(()-> {
-    pattern.applyTo(buffer);
-   });
+    LEDPattern mask = LEDPattern.steps(maskSteps).scrollAtRelativeSpeed(Percent.per(Second).of(30));
 
+    LEDPattern pattern = base.mask(mask);
+
+    return run(
+        () -> {
+          pattern.applyTo(buffer);
+        });
   }
 
   @Override

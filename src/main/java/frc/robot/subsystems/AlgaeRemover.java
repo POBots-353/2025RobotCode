@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
@@ -30,7 +31,7 @@ import frc.robot.util.ExpandedSubsystem;
 @Logged(strategy = Strategy.OPT_IN)
 public class AlgaeRemover extends ExpandedSubsystem {
   private SparkMax algaeRemoverMotor;
-  private SparkMax algaeIntakeMotor;
+  private TalonFX algaeIntakeMotor;
 
   private SparkClosedLoopController algaeRemoverPIDController;
   private SparkAbsoluteEncoder algaeRemoverAbsoluteEncoder;
@@ -44,12 +45,13 @@ public class AlgaeRemover extends ExpandedSubsystem {
     algaeRemoverPIDController = algaeRemoverMotor.getClosedLoopController();
     SparkMaxConfig algaeRemoverConfig = new SparkMaxConfig();
 
-    algaeIntakeMotor = new SparkMax(AlgaeRemoverConstants.algaeIntakeMotorID, MotorType.kBrushless);
+    algaeIntakeMotor = new TalonFX(AlgaeRemoverConstants.algaeIntakeMotorID);
 
     algaeRemoverConfig
         .absoluteEncoder
         .inverted(true)
-        .positionConversionFactor(AlgaeRemoverConstants.absoluteEncoderConversion);
+        .positionConversionFactor(AlgaeRemoverConstants.absoluteEncoderConversion)
+        .zeroCentered(true);
 
     algaeRemoverConfig
         .encoder
@@ -64,7 +66,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
         .idleMode(IdleMode.kBrake)
         .smartCurrentLimit(AlgaeRemoverConstants.currentLimit)
         .secondaryCurrentLimit(AlgaeRemoverConstants.shutOffCurrentLimit);
-    algaeRemoverConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(1).i(0.0).d(0.0);
+    algaeRemoverConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(2).i(0.0).d(0.0);
 
     algaeRemoverConfig
         .closedLoop
@@ -74,24 +76,17 @@ public class AlgaeRemover extends ExpandedSubsystem {
 
     // algaeRemoverConfig
     //     .softLimit
-    //     .forwardSoftLimit(AlgaeRemoverConstants.HighestPosition)
+    //     .forwardSoftLimit(AlgaeRemoverConstants.maxPosition.in(Degrees))
     //     .forwardSoftLimitEnabled(true)
-    //     .reverseSoftLimit(AlgaeRemoverConstants.LowestPosition)
+    //     .reverseSoftLimit(AlgaeRemoverConstants.minPosition.in(Degrees))
     //     .reverseSoftLimitEnabled(true);
 
     SparkMaxConfig algaeIntakeConfig = new SparkMaxConfig();
 
-    algaeIntakeConfig
-        .inverted(true)
-        .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(AlgaeRemoverConstants.currentLimit)
-        .secondaryCurrentLimit(AlgaeRemoverConstants.shutOffCurrentLimit);
-
     algaeRemoverMotor.configure(
         algaeRemoverConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    algaeIntakeMotor.configure(
-        algaeIntakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    algaeIntakeMotor.getConfigurator().apply(AlgaeRemoverConstants.algaeIntakeConfigs);
 
     algaeRemoverEncoder.setPosition(getAbsolutePosition().in(Radians));
   }
@@ -99,9 +94,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
   public Command moveToPosition(Angle targetAngle) {
     return run(() ->
             algaeRemoverPIDController.setReference(
-                targetAngle.in(Radians),
-                ControlType.kMAXMotionPositionControl,
-                ClosedLoopSlot.kSlot0))
+                targetAngle.in(Radians), ControlType.kPosition, ClosedLoopSlot.kSlot0))
         .withName("Algae Remover move to " + targetAngle.in(Degrees) + " degrees");
   }
 
@@ -129,6 +122,11 @@ public class AlgaeRemover extends ExpandedSubsystem {
 
   public Command intake() {
     return run(() -> algaeIntakeMotor.set(AlgaeRemoverConstants.algaeIntakeSpeed))
+        .withName("Run Algae Intake");
+  }
+
+  public Command slowIntake() {
+    return run(() -> algaeIntakeMotor.set(AlgaeRemoverConstants.slowAlgaeIntakeSpeed))
         .withName("Run Algae Intake");
   }
 

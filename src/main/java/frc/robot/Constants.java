@@ -388,21 +388,38 @@ public class Constants {
     public static final double internalEncoderConversion =
         2 * Math.PI * planetaryGearRatio * outputGearRatio;
 
-    public static final double algaeRemoverSpeed = .2;
-    public static final double algaeIntakeSpeed = .2;
+    public static final double algaeRemoverSpeed = .5;
+    public static final double algaeIntakeSpeed = .8;
+    public static final double slowAlgaeIntakeSpeed = .1;
 
-    public static final int currentLimit = 35;
-    public static final int shutOffCurrentLimit = 65;
+    public static final int currentLimit = 50;
+    public static final int shutOffCurrentLimit = 80;
 
-    public static final Angle intakePosition = Degrees.of(0.0);
+    public static final Angle intakePosition = Degrees.of(-82.0);
     public static final Angle stowPosition = Degrees.of(0.0);
-    public static final Angle bargePosition = Degrees.of(0.0);
-    public static final Angle processorPosition = Degrees.of(0.0);
-    public static final Angle floorAlgaePosition = Degrees.of(0.0);
+    public static final Angle bargePosition = Degrees.of(-31.0);
+    public static final Angle processorPosition = Degrees.of(-172.0);
+    public static final Angle floorAlgaePosition = Degrees.of(-172.0);
+
+    public static final Angle maxPosition = Degrees.of(0);
+    public static final Angle minPosition = Degrees.of(-184);
 
     public static final double maxVelocity = Units.degreesToRadians(30.0); // Degrees per second
     public static final double maxAcceleration =
         Units.degreesToRadians(50.0); // Degrees per second squared
+
+    public static final MotorOutputConfigs motorOutputConfigs =
+        new MotorOutputConfigs()
+            .withInverted(InvertedValue.CounterClockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Brake);
+
+    public static final CurrentLimitsConfigs currentLimitConfigs =
+        new CurrentLimitsConfigs().withSupplyCurrentLimit(40).withSupplyCurrentLimitEnable(true);
+
+    public static final TalonFXConfiguration algaeIntakeConfigs =
+        new TalonFXConfiguration()
+            .withCurrentLimits(currentLimitConfigs)
+            .withMotorOutput(motorOutputConfigs);
   }
 
   public static class ElevatorConstants {
@@ -423,7 +440,6 @@ public class Constants {
     public static final double bargeHeight = Units.inchesToMeters(20);
     public static final double processorHeight = Units.inchesToMeters(2);
     public static final double floorAlgaeHeight = Units.inchesToMeters(5);
-
 
     public static final double coralInTheWayAdd = 2.74;
 
