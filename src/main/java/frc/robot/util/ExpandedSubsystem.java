@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.Elastic.Notification.NotificationLevel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,12 +18,13 @@ public abstract class ExpandedSubsystem extends SubsystemBase {
   protected String systemStatus = "Pre-Match not ran";
 
   public final void cancelCurrentCommand() {
-    Command currentCommand = getCurrentCommand();
-    Command defaultCommand = getDefaultCommand();
+    // Command currentCommand = getCurrentCommand();
+    // Command defaultCommand = getDefaultCommand();
 
-    if (currentCommand != null && !(defaultCommand != null && currentCommand == defaultCommand)) {
-      currentCommand.cancel();
-    }
+    // if (currentCommand != null && !(defaultCommand != null && currentCommand == defaultCommand))
+    // {
+    //   currentCommand.cancel();
+    // }
   }
 
   public final String getAlertGroup() {
@@ -48,11 +50,23 @@ public abstract class ExpandedSubsystem extends SubsystemBase {
 
   public final void addWarning(String message) {
     addAlert(new Alert(getAlertGroup(), message, AlertType.kWarning));
+    Elastic.sendNotification(
+        new Elastic.Notification()
+            .withLevel(NotificationLevel.WARNING)
+            .withTitle(getName() + " Pre-Match Warning")
+            .withDescription(message)
+            .withDisplaySeconds(5));
   }
 
   public final void addError(String message) {
     addAlert(new Alert(getAlertGroup(), message, AlertType.kError));
     setSystemStatus("Pre-Match failed with reason: \"" + message + "\"");
+    Elastic.sendNotification(
+        new Elastic.Notification()
+            .withLevel(NotificationLevel.ERROR)
+            .withTitle(getName() + " Pre-Match Failed")
+            .withDescription(message)
+            .withDisplaySeconds(5));
   }
 
   public final void setSystemStatus(String status) {
@@ -95,6 +109,13 @@ public abstract class ExpandedSubsystem extends SubsystemBase {
                 addError("Pre-Match Interrpted");
               } else if (!interrupted && !containsErrors()) {
                 setSystemStatus("Pre-Match Successful!");
+                Elastic.sendNotification(
+                    new Elastic.Notification()
+                        .withLevel(NotificationLevel.INFO)
+                        .withTitle(getName() + " Pre-Match Successful")
+                        .withDescription(
+                            getName() + " Pre-Match was successful, good luck in the next match!")
+                        .withDisplaySeconds(3.5));
               }
             });
   }

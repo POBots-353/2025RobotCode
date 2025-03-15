@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.REVLibError;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -18,7 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.IntakeConstants;
-import frc.robot.Constants.MiscellaneousConstants;
+import frc.robot.Constants.PreMatchConstants;
 import frc.robot.util.ExpandedSubsystem;
 import java.util.ArrayList;
 import java.util.List;
@@ -106,6 +107,7 @@ public class Indexer extends ExpandedSubsystem {
 
   @Override
   public Command getPrematchCheckCommand() {
+    RelativeEncoder indexerEncoder = indexerMotor.getEncoder();
     return Commands.sequence(
         // Check for hardware errors
         Commands.runOnce(
@@ -118,22 +120,18 @@ public class Indexer extends ExpandedSubsystem {
               }
             }),
         // Checks Indexer Motor
-        Commands.parallel(
-            Commands.runOnce(
-                () -> {
-                  index();
-                }),
+        Commands.race(
+            Commands.run(() -> index()),
             Commands.sequence(
-                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.waitTime(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(indexerMotor.get()) <= 1e-4) {
+                      if (Math.abs(indexerEncoder.getVelocity()) <= 1e-4) {
                         addError("Indexer Motor is not moving");
                       } else {
                         addInfo("Indexer Motor is moving");
-                        if (Math.abs(IntakeConstants.indexerMotorSpeed - indexerMotor.get())
-                            > 0.1) {
-                          addError("Indexer Motor is not at desired velocity");
+                        if (indexerEncoder.getVelocity() < 0) {
+                          addError("Indexer Motor is moving in the wrong direction");
                           // We just put a fake range for now; we'll update this later on
                         } else {
                           addInfo("Indexer Motor is at the desired velocity");
@@ -141,13 +139,13 @@ public class Indexer extends ExpandedSubsystem {
                       }
                     }))),
         Commands.runOnce(() -> stopIndexer()),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+        Commands.waitTime(PreMatchConstants.prematchDelay),
         Commands.runOnce(
             () -> {
-              if (Math.abs(indexerMotor.get()) > 0.1) {
+              if (Math.abs(indexerEncoder.getVelocity()) > 0.1) {
                 addError("Indexer Motor isn't stopping");
               } else {
-                addInfo("Indexer Motor did stop");
+                addInfo("Indexer Motor successfully stopped");
               }
             }));
   }

@@ -47,10 +47,8 @@ public class Constants {
   public static class SwerveConstants {
 
     public static final LinearVelocity maxTranslationalSpeed = FeetPerSecond.of(15);
-    public static final LinearVelocity maxTranslationalSpeedNegative = FeetPerSecond.of(-15);
     public static final LinearVelocity slowModeMaxTranslationalSpeed = FeetPerSecond.of(5);
     public static final AngularVelocity maxRotationalSpeed = RotationsPerSecond.of(1.5);
-    public static final AngularVelocity maxRotationalSpeedNegative = RotationsPerSecond.of(-1.5);
 
     public static final Time translationZeroToFull = Seconds.of(0.6);
     public static final Time rotationZeroToFull = Seconds.of(0.25);
@@ -86,7 +84,8 @@ public class Constants {
 
     public static final PathConstraints midPathConstraints = new PathConstraints(3.53, 6.5, 7, 13);
 
-    public static final PathConstraints slowPathConstraints = new PathConstraints(2.5, 3, 7, 13);
+    public static final PathConstraints slowPathConstraints =
+        new PathConstraints(2.5, 2.5, Units.degreesToRadians(180), Units.degreesToRadians(360));
   }
 
   public static class VisionConstants {
@@ -406,7 +405,6 @@ public class Constants {
 
     public static final Time reefIntakeTimingOffset = Seconds.of(2);
 
-
     public static final double maxVelocity = Units.degreesToRadians(30.0); // Degrees per second
     public static final double maxAcceleration =
         Units.degreesToRadians(50.0); // Degrees per second squared
@@ -565,7 +563,8 @@ public class Constants {
     public static final int startingConfigButton = 11;
   }
 
-  public static class MiscellaneousConstants {
-    public static final double prematchDelay = 2.5;
+  public static class PreMatchConstants {
+    public static final Time prematchDelay = Seconds.of(2.5);
+    public static final Time prematchDelayBetweenSteps = Seconds.of(0.5);
   }
 }

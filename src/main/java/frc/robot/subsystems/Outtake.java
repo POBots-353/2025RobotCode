@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import au.grapplerobotics.LaserCan;
 import com.revrobotics.REVLibError;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -17,17 +18,17 @@ import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Constants.MiscellaneousConstants;
 import frc.robot.Constants.OuttakeConstants;
+import frc.robot.Constants.PreMatchConstants;
 import frc.robot.util.ExpandedSubsystem;
 
 @Logged(strategy = Strategy.OPT_IN)
 public class Outtake extends ExpandedSubsystem {
-  private SparkMax outtakemotor;
+  private SparkMax outtakeMotor;
   private LaserCan outtakeLaser;
 
   public Outtake() {
-    outtakemotor = new SparkMax(OuttakeConstants.outtakeMotorID, MotorType.kBrushless);
+    outtakeMotor = new SparkMax(OuttakeConstants.outtakeMotorID, MotorType.kBrushless);
     outtakeLaser = new LaserCan(OuttakeConstants.outtakeLaserCanID);
 
     SparkMaxConfig outtakeConfig = new SparkMaxConfig();
@@ -46,20 +47,20 @@ public class Outtake extends ExpandedSubsystem {
     //     .externalOrAltEncoderPositionAlwaysOn(false)
     //     .externalOrAltEncoderVelocityAlwaysOn(false);
 
-    outtakemotor.configure(
+    outtakeMotor.configure(
         outtakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public Command fastOuttake() {
-    return run(() -> outtakemotor.set(OuttakeConstants.fastOuttakeSpeed)).withName("Fast Outtake");
+    return run(() -> outtakeMotor.set(OuttakeConstants.fastOuttakeSpeed)).withName("Fast Outtake");
   }
 
   public Command slowOuttake() {
-    return run(() -> outtakemotor.set(OuttakeConstants.slowOuttakeSpeed)).withName("Slow Outtake");
+    return run(() -> outtakeMotor.set(OuttakeConstants.slowOuttakeSpeed)).withName("Slow Outtake");
   }
 
   public Command reverseOuttake() {
-    return run(() -> outtakemotor.set(-OuttakeConstants.fastOuttakeSpeed))
+    return run(() -> outtakeMotor.set(-OuttakeConstants.fastOuttakeSpeed))
         .withName("Reverse Outtake");
   }
 
@@ -80,7 +81,7 @@ public class Outtake extends ExpandedSubsystem {
   }
 
   public void stop() {
-    outtakemotor.set(0.00);
+    outtakeMotor.set(0.00);
   }
 
   public Command stopOuttakeMotor() {
@@ -105,11 +106,12 @@ public class Outtake extends ExpandedSubsystem {
 
   @Override
   public Command getPrematchCheckCommand() {
+    RelativeEncoder outtakeEncoder = outtakeMotor.getEncoder();
     return Commands.sequence(
         // Check for hardware errors
         Commands.runOnce(
             () -> {
-              REVLibError error = outtakemotor.getLastError();
+              REVLibError error = outtakeMotor.getLastError();
               if (error != REVLibError.kOk) {
                 addError("Intake motor error: " + error.name());
               } else {
@@ -120,16 +122,15 @@ public class Outtake extends ExpandedSubsystem {
         Commands.parallel(
             fastOuttake(),
             Commands.sequence(
-                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(outtakemotor.get()) <= 1e-4) {
+                      if (Math.abs(outtakeEncoder.getVelocity()) <= 1e-4) {
                         addError("Outtake Motor is not moving");
                       } else {
                         addInfo("Outtake Motor is moving");
-                        if (Math.abs(OuttakeConstants.fastOuttakeSpeed - outtakemotor.get())
-                            > 0.1) {
-                          addError("Outtake Motor is not at fast velocity");
+                        if (outtakeEncoder.getVelocity() < 0) {
+                          addError("Outtake Motor is moving in the wrong direction");
                           // We just put a fake range for now; we'll update this later on
                         } else {
                           addInfo("Outtake Motor is at the fast velocity");
@@ -139,16 +140,15 @@ public class Outtake extends ExpandedSubsystem {
         Commands.parallel(
             slowOuttake(),
             Commands.sequence(
-                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
                 Commands.runOnce(
                     () -> {
-                      if (Math.abs(outtakemotor.get()) <= 1e-4) {
+                      if (Math.abs(outtakeEncoder.getVelocity()) <= 1e-4) {
                         addError("Outtake Motor is not moving");
                       } else {
                         addInfo("Outtake Motor is moving");
-                        if (Math.abs(OuttakeConstants.slowOuttakeSpeed - outtakemotor.get())
-                            > 0.1) {
-                          addError("Outtake Motor is not at slow velocity");
+                        if (outtakeEncoder.getVelocity() < 0) {
+                          addError("Outtake Motor is moving in the wrong direction");
                           // We just put a fake range for now; we'll update this later on
                         } else {
                           addInfo("Outtake Motor is at the slow velocity");
@@ -156,10 +156,10 @@ public class Outtake extends ExpandedSubsystem {
                       }
                     }))),
         Commands.runOnce(() -> stop()),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+        Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
         Commands.runOnce(
             () -> {
-              if (Math.abs(outtakemotor.get()) > 0.1) {
+              if (Math.abs(outtakeEncoder.getVelocity()) > 0.1) {
                 addError("Outtake Motor isn't stopping");
               } else {
                 addInfo("Outtake Motor did stop");
