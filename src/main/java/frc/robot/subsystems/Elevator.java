@@ -180,7 +180,7 @@ public class Elevator extends ExpandedSubsystem {
     // .finallyDo(this::holdPosition);
   }
 
-  public Command moveToAlgaePosition(DoubleSupplier h) {
+  public Command moveToSuppliedPosition(DoubleSupplier h) {
     return run(() -> {
           double height = h.getAsDouble();
           elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
@@ -188,7 +188,7 @@ public class Elevator extends ExpandedSubsystem {
         })
         .until(() -> (atSetpoint(h.getAsDouble())))
         // .onlyIf(() -> isZeroed)
-        .withName("Move to Algae Height");
+        .withName("Move to Supplied Height");
     // .finallyDo(this::holdPosition);
   }
 
