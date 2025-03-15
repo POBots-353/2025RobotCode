@@ -151,8 +151,9 @@ public class RobotContainer {
             Commands.sequence(
                     Commands.runOnce(
                         () -> {
-                          driverController.getHID().setRumble(RumbleType.kBothRumble, 1);
                           operatorController.getHID().setRumble(RumbleType.kBothRumble, 1);
+                          driverController.getHID().setRumble(RumbleType.kBothRumble, 1);
+
                         }),
                     Commands.waitSeconds(2),
                     Commands.runOnce(
@@ -309,18 +310,18 @@ public class RobotContainer {
 
     // driverController.leftStick().whileTrue(drivetrain.pathFindToBarge());
 
-    Command outtakeAfterAlign =
-        Commands.run(
-                () -> {
-                  if (atValidReefPose.getAsBoolean()
-                      && atElevatorHeight.getAsBoolean()
-                      && !elevatorIsDown.getAsBoolean()
-                      && outtake.outtakeLaserBroken()) {
-                    Commands.sequence(Commands.waitTime(Seconds.of(0.1)), outtake.autoOuttake())
-                        .schedule();
-                  }
-                })
-            .until(atValidReefPose.and(atElevatorHeight).and(elevatorIsDown.negate()));
+    // Command outtakeAfterAlign =
+    //     Commands.run(
+    //             () -> {
+    //               if (atValidReefPose.getAsBoolean()
+    //                   && atElevatorHeight.getAsBoolean()
+    //                   && !elevatorIsDown.getAsBoolean()
+    //                   && outtake.outtakeLaserBroken()) {
+    //                 Commands.sequence(Commands.waitTime(Seconds.of(0.1)), outtake.autoOuttake())
+    //                     .schedule();
+    //               }
+    //             })
+    //         .until(atValidReefPose.and(atElevatorHeight).and(elevatorIsDown.negate())); outtakeAfterAlign.asProxy
 
     // driverController.R3().onTrue(Commands.runOnce(() -> positionMode = !positionMode));
     driverController
@@ -329,18 +330,27 @@ public class RobotContainer {
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
-                new TurnToReef(drivetrain),
+                // new TurnToReef(drivetrain),
                 drivetrain.reefAlign(true),
-                outtakeAfterAlign.asProxy()));
-    driverController
+                Commands.waitUntil(
+                    atValidReefPose.and(atElevatorHeight).and(elevatorIsDown.negate()).and(outtakeLaserBroken)
+                ),
+                outtake.autoOuttake()
+                ));
+
+   driverController
         .rightBumper()
         .and(isPositionMode.negate())
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
-                new TurnToReef(drivetrain),
+                // new TurnToReef(drivetrain),
                 drivetrain.reefAlign(false),
-                outtakeAfterAlign.asProxy()));
+                Commands.waitUntil(
+                    atValidReefPose.and(atElevatorHeight).and(elevatorIsDown.negate()).and(outtakeLaserBroken)
+                ),
+                outtake.autoOuttake()
+                ));
 
     driverController.leftBumper().and(isPositionMode).whileTrue(drivetrain.reefAlignNoVision(true));
     driverController
