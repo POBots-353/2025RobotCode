@@ -396,13 +396,16 @@ public class Constants {
     public static final int shutOffCurrentLimit = 80;
 
     public static final Angle intakePosition = Degrees.of(-82.0);
-    public static final Angle stowPosition = Degrees.of(0.0);
+    public static final Angle stowPosition = Degrees.of(3.0);
     public static final Angle bargePosition = Degrees.of(-31.0);
     public static final Angle processorPosition = Degrees.of(-172.0);
     public static final Angle floorAlgaePosition = Degrees.of(-172.0);
 
     public static final Angle maxPosition = Degrees.of(0);
     public static final Angle minPosition = Degrees.of(-184);
+
+    public static final Time reefIntakeTimingOffset = Seconds.of(2);
+
 
     public static final double maxVelocity = Units.degreesToRadians(30.0); // Degrees per second
     public static final double maxAcceleration =

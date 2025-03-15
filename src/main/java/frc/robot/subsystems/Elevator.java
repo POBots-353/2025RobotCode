@@ -53,7 +53,7 @@ public class Elevator extends ExpandedSubsystem {
   private Alert elevatorAlert;
   private boolean lastButtonState = false;
   private Debouncer buttonDebouncer = new Debouncer(0.28);
-  private Debouncer elevatorDebouncer = new Debouncer(0.353);
+  // private Debouncer elevatorDebouncer = new Debouncer(0.353);
   private Debouncer zeroedDebouncer = new Debouncer(2.5);
 
   private double positionTolerance = Units.inchesToMeters(0.353);
@@ -205,8 +205,8 @@ public class Elevator extends ExpandedSubsystem {
   }
 
   public boolean atSetpoint(double targetHeight) {
-    return elevatorDebouncer.calculate(
-        Math.abs(targetHeight - elevatorMainPosition.getValueAsDouble()) < positionTolerance);
+    return
+        Math.abs(targetHeight - elevatorMainPosition.getValueAsDouble()) < positionTolerance;
   }
 
   public boolean atSetHeight() {

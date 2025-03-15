@@ -131,7 +131,7 @@ public class LEDs extends SubsystemBase {
     LEDPattern base = LEDPattern.gradient(GradientType.kContinuous, c1, c2);
     LEDPattern mask = LEDPattern.steps(maskSteps).scrollAtRelativeSpeed(Percent.per(Second).of(30));
 
-    LEDPattern pattern = base.mask(mask);
+    LEDPattern pattern = base.mask(mask).atBrightness(Percent.of(50));
 
     return run(
         () -> {
