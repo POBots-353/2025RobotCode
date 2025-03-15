@@ -398,7 +398,7 @@ public class Constants {
     public static final Angle stowPosition = Degrees.of(0.0);
     public static final Angle bargePosition = Degrees.of(0.0);
     public static final Angle processorPosition = Degrees.of(0.0);
-    public static final Angle floorPosition = Degrees.of(0.0);
+    public static final Angle floorAlgaePosition = Degrees.of(0.0);
 
     public static final double maxVelocity = Units.degreesToRadians(30.0); // Degrees per second
     public static final double maxAcceleration =
@@ -422,6 +422,8 @@ public class Constants {
     public static final double downHeight = Units.inchesToMeters(0);
     public static final double bargeHeight = Units.inchesToMeters(20);
     public static final double processorHeight = Units.inchesToMeters(2);
+    public static final double floorAlgaeHeight = Units.inchesToMeters(5);
+
 
     public static final double coralInTheWayAdd = 2.74;
 
