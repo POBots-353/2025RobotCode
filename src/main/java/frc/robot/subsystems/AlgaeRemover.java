@@ -18,6 +18,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Strategy;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -36,6 +37,8 @@ public class AlgaeRemover extends ExpandedSubsystem {
   private SparkClosedLoopController algaeRemoverPIDController;
   private SparkAbsoluteEncoder algaeRemoverAbsoluteEncoder;
   private RelativeEncoder algaeRemoverEncoder;
+
+  private double positionTolerance = Units.degreesToRadians(3.53);
 
   public AlgaeRemover() {
     algaeRemoverMotor =
@@ -57,7 +60,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
         .encoder
         .positionConversionFactor(AlgaeRemoverConstants.internalEncoderConversion)
         .velocityConversionFactor(AlgaeRemoverConstants.internalEncoderConversion);
-    // .zeroOffset(.113922); // .113922
+    // .zeroOffset(.113922);
 
     algaeRemoverConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
 
@@ -66,22 +69,21 @@ public class AlgaeRemover extends ExpandedSubsystem {
         .idleMode(IdleMode.kBrake)
         .smartCurrentLimit(AlgaeRemoverConstants.currentLimit)
         .secondaryCurrentLimit(AlgaeRemoverConstants.shutOffCurrentLimit);
-    algaeRemoverConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(2).i(0.0).d(0.0);
-
-    algaeRemoverConfig
-        .closedLoop
-        .maxMotion
-        .maxVelocity(AlgaeRemoverConstants.maxVelocity)
-        .maxAcceleration(AlgaeRemoverConstants.maxAcceleration);
+        
+    algaeRemoverConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(2.5).i(0.0).d(0.0);
 
     // algaeRemoverConfig
-    //     .softLimit
-    //     .forwardSoftLimit(AlgaeRemoverConstants.maxPosition.in(Degrees))
-    //     .forwardSoftLimitEnabled(true)
-    //     .reverseSoftLimit(AlgaeRemoverConstants.minPosition.in(Degrees))
-    //     .reverseSoftLimitEnabled(true);
+    //     .closedLoop
+    //     .maxMotion
+    //     .maxVelocity(AlgaeRemoverConstants.maxVelocity)
+    //     .maxAcceleration(AlgaeRemoverConstants.maxAcceleration);
 
-    SparkMaxConfig algaeIntakeConfig = new SparkMaxConfig();
+    algaeRemoverConfig
+        .softLimit
+        .forwardSoftLimit(AlgaeRemoverConstants.minPosition.in(Degrees))
+        .forwardSoftLimitEnabled(true)
+        .reverseSoftLimit(AlgaeRemoverConstants.maxPosition.in(Degrees))
+        .reverseSoftLimitEnabled(true);
 
     algaeRemoverMotor.configure(
         algaeRemoverConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -94,8 +96,12 @@ public class AlgaeRemover extends ExpandedSubsystem {
   public Command moveToPosition(Angle targetAngle) {
     return run(() ->
             algaeRemoverPIDController.setReference(
-                targetAngle.in(Radians), ControlType.kPosition, ClosedLoopSlot.kSlot0))
+                targetAngle.in(Radians), ControlType.kPosition, ClosedLoopSlot.kSlot0)).until(()-> atSetpoint(targetAngle))
         .withName("Algae Remover move to " + targetAngle.in(Degrees) + " degrees");
+  }
+
+  public boolean atSetpoint(Angle targetAngle) {
+    return Math.abs(targetAngle.in(Radians) - algaeRemoverEncoder.getPosition()) < positionTolerance;
   }
 
   public void stopAlgaeRemover() {
