@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Alignment Test Path (1)"
+            "pathName": "Bottom Start Alignment (1)"
           }
         },
         {
@@ -101,7 +101,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Alignment Test Path (2)"
+            "pathName": "HP Right to D Setup"
           }
         },
         {
@@ -195,7 +195,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Alignment Test Path (3)"
+            "pathName": "HP Right to C Setup"
           }
         },
         {
@@ -284,49 +284,6 @@
           "type": "named",
           "data": {
             "name": "OuttakeUntilBeamBreak"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Alignment Test Path (4)"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.2
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "AutoAlignRight"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: L3"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Auto Outtake"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Elevator: Bottom"
           }
         }
       ]

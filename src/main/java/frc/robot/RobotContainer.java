@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.AlgaeRemoverConstants;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
@@ -41,6 +42,7 @@ import frc.robot.subsystems.Swerve;
 import frc.robot.util.LogUtil;
 import frc.robot.util.PersistentSendableChooser;
 import java.util.Set;
+import java.util.function.DoubleSupplier;
 
 @Logged(strategy = Strategy.OPT_IN)
 public class RobotContainer {
@@ -67,13 +69,15 @@ public class RobotContainer {
   private PersistentSendableChooser<String> batteryChooser;
   private SendableChooser<Command> autoChooser;
 
-  private final CommandXboxController driverController = new CommandXboxController(0);
+  private final CommandXboxController driverController = new CommandXboxController(1);
   //   private final CommandJoystick operatorStick = new CommandJoystick(1);
-  private final CommandXboxController operatorController = new CommandXboxController(1);
+  private final CommandXboxController operatorController = new CommandXboxController(0);
 
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   private boolean positionMode = false;
+  private boolean doubleScoreActive = false;
+  private DoubleSupplier selectedHeight = ()-> 0.0;
   private final PowerDistribution powerDistribution = new PowerDistribution(1, ModuleType.kRev);
 
   private Trigger outtakeLaserBroken = new Trigger(outtake::outtakeLaserBroken);
@@ -83,6 +87,8 @@ public class RobotContainer {
   //   private Trigger algaeMode = operatorStick.button(OperatorConstants.algaeModeButton);
   private Trigger atValidReefPose = new Trigger(drivetrain::atValidReefPose);
   private Trigger atElevatorHeight = new Trigger(elevator::atSetHeight);
+  private Trigger doubleScoreMode = operatorController.leftBumper();
+
 
   public RobotContainer() {
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
@@ -129,7 +135,6 @@ public class RobotContainer {
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
 
     drivetrain.configureAutoBuilder();
-
     configureDriverBindings();
     configureOperatorBindings();
     configureAutoChooser();
@@ -169,7 +174,7 @@ public class RobotContainer {
     // led.setColor(Color.kGreen)).ignoringDisable(true));
     new Trigger(() -> !DriverStation.isDSAttached())
         .whileTrue(
-            led.breathe(Color.kRed, Seconds.of(2))
+            led.breathe(Color.kRed, Seconds.of(1.5))
                 .ignoringDisable(true)
                 .withName("Disconnect Breathe"));
     outtakeLaserBroken.whileTrue(
@@ -178,14 +183,37 @@ public class RobotContainer {
             .andThen(led.solidColor(Color.kGreen))
             .ignoringDisable(true)
             .withName("LED Laser CAN Blink"));
+
+    doubleScoreMode.whileTrue(led.blink(Color.kRed).withName("DoubleScore Mode LEDS"));
+    doubleScoreMode.onTrue(Commands.runOnce(() -> doubleScoreActive = true));
     // led.setDefaultCommand(led.rainbowScroll().ignoringDisable(true).withName("LED Rainbow
     // Scroll"));
     // led.setDefaultCommand(led.solidColor(Color.kBlack).ignoringDisable(true));
-    led.setDefaultCommand(
-        led.elevatorProgress(elevator::getPositionMeters)
-            .ignoringDisable(true)
-            .withName("Elevator Progress LED"));
+    // led.setDefaultCommand(
+    //     led.elevatorProgress(elevator::getPositionMeters)
+    //         .ignoringDisable(true)
+    //         .withName("Elevator Progress LED")); 
+
+    led.setDefaultCommand(led.scrolling(Color.kPurple, Color.kBlue).ignoringDisable(true).withName("Scrolling LEDS"));
   }
+
+  private Command startDoubleScoreCommand() {
+    return Commands.sequence(
+        elevator.moveToSuppliedPosition(() -> drivetrain.getAlgaeHeight()),  
+        algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition),
+        algaeRemover.intake()
+    );
+}
+
+private Command finishDoubleScoreCommand(DoubleSupplier targetHeight) {
+    return Commands.sequence(
+        algaeRemover.stop(),
+        algaeRemover.moveToPosition(AlgaeRemoverConstants.stowPosition),
+        elevator.moveToSuppliedPosition(targetHeight),
+        outtake.autoOuttake(),
+        elevator.downPosition()
+    );
+}
 
   private void configurePrematch() {
     Command outtakePrematch = outtake.buildPrematch();
@@ -281,6 +309,7 @@ public class RobotContainer {
                 })
             .until(atValidReefPose.and(atElevatorHeight).and(elevatorIsDown.negate()));
 
+
     // driverController.R3().onTrue(Commands.runOnce(() -> positionMode = !positionMode));
     driverController
         .leftBumper()
@@ -350,14 +379,6 @@ public class RobotContainer {
     // home elevator
     operatorController.start().and(operatorController.back()).onTrue(elevator.homeElevator());
 
-    // operatorController
-    //     .button(OperatorConstants.elevatorDownButton)
-    //     .onTrue(elevator.moveToPosition(ElevatorConstants.AlgaeLowHeight));
-
-    // operatorController
-    //     .button(OperatorConstants.L2HeightButton)
-    //     .onTrue(elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight));
-
     // coral in the way add
     operatorController
         .povRight()
@@ -411,62 +432,139 @@ public class RobotContainer {
     operatorController
         .rightTrigger()
         .and(elevatorIsDown)
-        .whileTrue(indexer.runIndexer())
-        .onFalse(indexer.stop());
-
-    operatorController
-        .rightTrigger()
-        .whileTrue(outtake.outtakeUntilBeamBreak())
-        .onFalse(outtake.stopOuttakeMotor());
+        .whileTrue(indexer.runIndexer().alongWith(outtake.outtakeUntilBeamBreak()))
+        .onFalse(indexer.stop().alongWith(outtake.stopOuttakeMotor()));
 
     operatorController.rightBumper().whileTrue(indexer.reverseIndexer()).onFalse(indexer.stop());
   }
 
   private void configureAlgaeRemoverBindings() {
-    operatorController
-        .leftBumper()
-        .whileTrue(algaeRemover.run(() -> algaeRemover.algaeRemoverUp()))
-        .onFalse(algaeRemover.runOnce(() -> algaeRemover.stopAlgaeRemover()));
+algaeRemover.setDefaultCommand(algaeRemover.moveToPosition(AlgaeRemoverConstants.stowPosition));
+
+// algae intake sequence
     operatorController
         .leftTrigger()
-        .whileTrue(algaeRemover.run(() -> algaeRemover.algaeRemoverDown()))
-        .onFalse(algaeRemover.runOnce(() -> algaeRemover.stopAlgaeRemover()));
+        .whileTrue(
+    Commands.sequence(
+        elevator.moveToSuppliedPosition(()-> drivetrain.getAlgaeHeight()),
+        algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition),
+        algaeRemover.intake()))
+    .onFalse(
+    Commands.sequence(
+        algaeRemover.stop(),
+        algaeRemover.moveToPosition(AlgaeRemoverConstants.stowPosition),
+        elevator.downPosition()));
 
-    // algaeRemover.setDefaultCommand(algaeRemover.moveToPosition(AlgaeRemoverConstants.topPosition));
+    // barge score sequence
+    operatorController.leftStick().whileTrue(
+        Commands.sequence(
+            elevator.moveToPosition(ElevatorConstants.bargeHeight),
+            algaeRemover.moveToPosition(AlgaeRemoverConstants.bargePosition),
+            algaeRemover.outtake()))
+        .onFalse(
+        Commands.sequence(
+            algaeRemover.stop(),
+            algaeRemover.moveToPosition(AlgaeRemoverConstants.stowPosition),
+            elevator.downPosition()));
 
-    // algae high sequence
+    // algae floor intake
+    operatorController.rightStick().whileTrue(
+        Commands.sequence(
+            elevator.moveToPosition(ElevatorConstants.processorHeight),
+            algaeRemover.moveToPosition(AlgaeRemoverConstants.processorPosition),
+            algaeRemover.intake()))
+        .onFalse(
+        Commands.sequence(
+            algaeRemover.stop(),
+            algaeRemover.moveToPosition(AlgaeRemoverConstants.stowPosition),
+            elevator.downPosition()));
+
+    // score algae + coral MODE
     // operatorController
-    //     .leftBumper()
+    //     .leftStick()
+    //     .and(operatorController.rightStick())
     //     .whileTrue(
     //         Commands.sequence(
-    //             elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight),
+    //             elevator.moveToPosition(drivetrain.getAlgaeHeight()),
     //             algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition),
     //             algaeRemover.intake()))
     //     .onFalse(
     //         Commands.sequence(
     //             algaeRemover.stop(),
-    //             algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition),
+    //             algaeRemover.moveToPosition(AlgaeRemoverConstants.stowPosition),
+    //             elevator.moveToPosition(ElevatorConstants.L4Height),
+    //             outtake.autoOuttake(),
     //             elevator.downPosition()));
 
-    // // algae low sequence
-    // operatorController
-    //     .leftTrigger()
-    //     .whileTrue(
-    //         Commands.sequence(
-    //             elevator.moveToPosition(ElevatorConstants.AlgaeLowHeight),
-    //             algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition),
-    //             algaeRemover.intake()))
-    //     .onFalse(
-    //         Commands.sequence(
-    //             algaeRemover.stop(),
-    //             algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition),
-    //             elevator.downPosition()));
+//DOUBLE SCORE CODE
+    doubleScoreMode.onFalse(Commands.runOnce(() -> {
+        if (doubleScoreActive && selectedHeight.getAsDouble() > 0) {
+            finishDoubleScoreCommand(selectedHeight).schedule();
+        }
+        doubleScoreActive = false;
+        selectedHeight = () -> 0.0;
+    }));
+    
+    // Height buttons trigger first phase while doubleScoreMode is active
+    operatorController.x().onTrue(Commands.runOnce(() -> {
+        if (doubleScoreActive) {
+            selectedHeight = () -> ElevatorConstants.L2Height; // Example height
+            startDoubleScoreCommand().schedule();
+        }
+    }));
+    
+    operatorController.y().onTrue(Commands.runOnce(() -> {
+        if (doubleScoreActive) {
+            selectedHeight = () -> ElevatorConstants.L3Height;
+            startDoubleScoreCommand().schedule();
+        }
+    }));
+    
+    operatorController.b().onTrue(Commands.runOnce(() -> {
+        if (doubleScoreActive) {
+            selectedHeight = () -> ElevatorConstants.L4Height;
+            startDoubleScoreCommand().schedule();
+        }
+    }));
 
-    // // barge score sequence
-    // operatorController.leftStick().onTrue(new InstantCommand());
+  }
 
-    // // algae floor intake
-    // operatorController.rightStick().whileTrue(new InstantCommand());
+  private void temporaryAlgaeRemoverBindings(){
+    operatorController
+        .leftBumper()
+        .whileTrue(algaeRemover.run(algaeRemover::algaeRemoverUp))
+        .onFalse(algaeRemover.runOnce(algaeRemover::stopAlgaeRemover));
+    operatorController
+        .leftTrigger()
+        .whileTrue(algaeRemover.run(algaeRemover::algaeRemoverDown))
+        .onFalse(algaeRemover.runOnce(algaeRemover::stopAlgaeRemover));
+// algae high sequence
+operatorController
+.leftBumper()
+.whileTrue(
+    Commands.sequence(
+        elevator.moveToPosition(ElevatorConstants.AlgaeHighHeight),
+        algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition),
+        algaeRemover.intake()))
+.onFalse(
+    Commands.sequence(
+        algaeRemover.stop(),
+        algaeRemover.moveToPosition(AlgaeRemoverConstants.stowPosition),
+        elevator.downPosition()));
+
+// algae low sequence
+operatorController
+.leftTrigger()
+.whileTrue(
+    Commands.sequence(
+        elevator.moveToPosition(ElevatorConstants.AlgaeLowHeight),
+        algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition),
+        algaeRemover.intake()))
+.onFalse(
+    Commands.sequence(
+        algaeRemover.stop(),
+        algaeRemover.moveToPosition(AlgaeRemoverConstants.stowPosition),
+        elevator.downPosition()));
   }
 
   //   private void configureJoystickBindings() {
@@ -616,7 +714,7 @@ public class RobotContainer {
   //   }
 
   private void configureOperatorBindings() {
-    configureAlgaeRemoverBindings();
+    temporaryAlgaeRemoverBindings();
     configureElevatorBindings();
     configureIndexerBindings();
     configureOuttakeBindings();
