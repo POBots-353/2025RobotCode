@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.Microseconds;
 import static edu.wpi.first.units.Units.Percent;
+import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.units.measure.Time;
@@ -19,6 +20,8 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorConstants;
+
+import java.util.Map;
 import java.util.function.DoubleSupplier;
 
 public class LEDs extends SubsystemBase {
@@ -120,6 +123,20 @@ public class LEDs extends SubsystemBase {
         () -> {
           rainbow.applyTo(buffer);
         });
+  }
+
+  public Command scrolling(Color c1, Color c2) {
+    Map<Double, Color> maskSteps = Map.of(0.0, Color.kWhite, 0.8, Color.kBlack);
+    LEDPattern base = LEDPattern.gradient(GradientType.kContinuous, c1, c2);
+    LEDPattern mask =
+       LEDPattern.steps(maskSteps).scrollAtRelativeSpeed(Percent.per(Second).of(0.353));
+    
+    LEDPattern pattern = base.mask(mask);
+    
+   return run(()-> {
+    pattern.applyTo(buffer);
+   });
+
   }
 
   @Override

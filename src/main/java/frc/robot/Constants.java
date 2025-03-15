@@ -204,6 +204,26 @@ public class Constants {
             new Pose2d(12.415, 2.893, Rotation2d.fromDegrees(60)), // -120
             new Pose2d(13.725, 2.907, Rotation2d.fromDegrees(120))); // -60
 
+    public static final Map<Pose2d, Boolean> algaeHeightPositions = new HashMap<>();
+
+    static {
+      // blue
+      algaeHeightPositions.put(new Pose2d(5.803, 4.049, Rotation2d.fromDegrees(180)), false);
+      algaeHeightPositions.put(new Pose2d(5.137, 5.167, Rotation2d.fromDegrees(-120)), true);
+      algaeHeightPositions.put(new Pose2d(3.835, 5.160, Rotation2d.fromDegrees(-60)), false);
+      algaeHeightPositions.put(new Pose2d(3.182, 4.028, Rotation2d.fromDegrees(0)), true);
+      algaeHeightPositions.put(new Pose2d(3.832, 2.890, Rotation2d.fromDegrees(60)), false);
+      algaeHeightPositions.put(new Pose2d(5.150, 2.896, Rotation2d.fromDegrees(120)), true);
+
+      // red
+      algaeHeightPositions.put(new Pose2d(14.377, 4.019, Rotation2d.fromDegrees(180)), true);
+      algaeHeightPositions.put(new Pose2d(13.719, 5.162, Rotation2d.fromDegrees(-120)), false);
+      algaeHeightPositions.put(new Pose2d(12.415, 5.150, Rotation2d.fromDegrees(-60)), true);
+      algaeHeightPositions.put(new Pose2d(11.759, 4.018, Rotation2d.fromDegrees(0)), false);
+      algaeHeightPositions.put(new Pose2d(12.415, 2.893, Rotation2d.fromDegrees(60)), true);
+      algaeHeightPositions.put(new Pose2d(13.725, 2.907, Rotation2d.fromDegrees(120)), false);
+    }
+
     public static final Pose2d reefBlueAlliance =
         new Pose2d(4.483, 4.019, Rotation2d.fromDegrees(0.0));
     public static final Pose2d reefRedAlliance =
@@ -374,12 +394,11 @@ public class Constants {
     public static final int currentLimit = 35;
     public static final int shutOffCurrentLimit = 65;
 
-    public static final Angle topPosition = Degrees.of(0.0); // Degrees
-    public static final Angle intakePosition = Degrees.of(275.0);
-    public static final Angle holdPosition = Degrees.of(0); // 275
-    public static final Angle outPosition = Degrees.of(0.0);
-    public static final Angle HighestPosition = Degrees.of(0);
-    public static final Angle LowestPosition = Degrees.of(0);
+    public static final Angle intakePosition = Degrees.of(0.0);
+    public static final Angle stowPosition = Degrees.of(0.0);
+    public static final Angle bargePosition = Degrees.of(0.0);
+    public static final Angle processorPosition = Degrees.of(0.0);
+    public static final Angle floorAlgaePosition = Degrees.of(0.0);
 
     public static final double maxVelocity = Units.degreesToRadians(30.0); // Degrees per second
     public static final double maxAcceleration =
@@ -401,6 +420,11 @@ public class Constants {
     public static final double L3Height = Units.inchesToMeters(15.5 + .7);
     public static final double L2Height = Units.inchesToMeters(7.3 + .55);
     public static final double downHeight = Units.inchesToMeters(0);
+    public static final double bargeHeight = Units.inchesToMeters(20);
+    public static final double processorHeight = Units.inchesToMeters(2);
+    public static final double floorAlgaeHeight = Units.inchesToMeters(5);
+
+
     public static final double coralInTheWayAdd = 2.74;
 
     public static final double AlgaeHighHeight = Units.inchesToMeters(8.6 + .3);
@@ -422,13 +446,13 @@ public class Constants {
 
     public static final Slot0Configs slot0Configs =
         new Slot0Configs()
-            .withKS(0.01) // .01
-            .withKV(4.75) // 4.14
-            .withKA(0.03) // .03
-            .withKG(0.37) // .31
-            .withKP(27.5)
+            .withKS(0.02) // .01
+            .withKV(4.8) // 4.14
+            .withKA(0.04) // .03
+            .withKG(0.38) // .31
+            .withKP(28) // 28
             .withKI(0.0)
-            .withKD(0.13) // 1
+            .withKD(0.11) // 1
             .withGravityType(GravityTypeValue.Elevator_Static)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseVelocitySign);
 
