@@ -425,7 +425,7 @@ private Command finishDoubleScoreCommand(DoubleSupplier targetHeight) {
     //     .onTrue(outtake.reverseOuttake())
     //     .onFalse(outtake.stopOuttakeMotor());
 
-    operatorController.start().onTrue(outtake.fastOuttake()).onFalse(outtake.stopOuttakeMotor());
+    operatorController.start().and(operatorController.back().negate()).onTrue(outtake.fastOuttake()).onFalse(outtake.stopOuttakeMotor());
   }
 
   private void configureIndexerBindings() {
@@ -470,12 +470,24 @@ algaeRemover.setDefaultCommand(algaeRemover.moveToPosition(AlgaeRemoverConstants
     // algae floor intake
     operatorController.rightStick().whileTrue(
         Commands.sequence(
-            elevator.moveToPosition(ElevatorConstants.processorHeight),
-            algaeRemover.moveToPosition(AlgaeRemoverConstants.processorPosition),
+            elevator.moveToPosition(ElevatorConstants.floorAlgaeHeight),
+            algaeRemover.moveToPosition(AlgaeRemoverConstants.floorAlgaePosition),
             algaeRemover.intake()))
         .onFalse(
         Commands.sequence(
             algaeRemover.stop(),
+            algaeRemover.moveToPosition(AlgaeRemoverConstants.stowPosition),
+            elevator.downPosition()));
+
+    // score Processor
+    operatorController.rightStick().whileTrue(
+        Commands.sequence(
+            elevator.moveToPosition(ElevatorConstants.processorHeight),
+            algaeRemover.moveToPosition(AlgaeRemoverConstants.processorPosition)))
+        .onFalse(
+        Commands.sequence(
+            algaeRemover.outtake(),
+            Commands.waitSeconds(1.5),
             algaeRemover.moveToPosition(AlgaeRemoverConstants.stowPosition),
             elevator.downPosition()));
 
