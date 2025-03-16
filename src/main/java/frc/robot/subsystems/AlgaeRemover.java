@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -35,7 +34,6 @@ import frc.robot.util.ExpandedSubsystem;
 @Logged(strategy = Strategy.OPT_IN)
 public class AlgaeRemover extends ExpandedSubsystem {
   private SparkMax algaeRemoverMotor;
-  private TalonFX algaeIntakeMotor;
 
   private SparkClosedLoopController algaeRemoverPIDController;
   private SparkAbsoluteEncoder algaeRemoverAbsoluteEncoder;
@@ -50,8 +48,6 @@ public class AlgaeRemover extends ExpandedSubsystem {
     algaeRemoverEncoder = algaeRemoverMotor.getEncoder();
     algaeRemoverPIDController = algaeRemoverMotor.getClosedLoopController();
     SparkMaxConfig algaeRemoverConfig = new SparkMaxConfig();
-
-    algaeIntakeMotor = new TalonFX(AlgaeRemoverConstants.algaeIntakeMotorID);
 
     algaeRemoverConfig
         .absoluteEncoder
@@ -91,8 +87,6 @@ public class AlgaeRemover extends ExpandedSubsystem {
     algaeRemoverMotor.configure(
         algaeRemoverConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    algaeIntakeMotor.getConfigurator().apply(AlgaeRemoverConstants.algaeIntakeConfigs);
-
     algaeRemoverEncoder.setPosition(getAbsolutePosition().in(Radians));
   }
 
@@ -129,25 +123,6 @@ public class AlgaeRemover extends ExpandedSubsystem {
   @Logged(name = "Position")
   public Angle getPosition() {
     return Radians.of(algaeRemoverEncoder.getPosition());
-  }
-
-  public Command intake() {
-    return run(() -> algaeIntakeMotor.set(AlgaeRemoverConstants.algaeIntakeSpeed))
-        .withName("Run Algae Intake");
-  }
-
-  public Command slowIntake() {
-    return run(() -> algaeIntakeMotor.set(AlgaeRemoverConstants.slowAlgaeIntakeSpeed))
-        .withName("Run Algae Intake");
-  }
-
-  public Command outtake() {
-    return run(() -> algaeIntakeMotor.set(-AlgaeRemoverConstants.algaeIntakeSpeed))
-        .withName("Reverse Algae Intake");
-  }
-
-  public Command stop() {
-    return runOnce(() -> algaeIntakeMotor.set(0)).withName("Stop Algae Intake");
   }
 
   @Override

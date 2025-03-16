@@ -58,7 +58,7 @@ public class Elevator extends ExpandedSubsystem {
   // private Debouncer elevatorDebouncer = new Debouncer(0.353);
   private Debouncer zeroedDebouncer = new Debouncer(2.5);
 
-  private double positionTolerance = Units.inchesToMeters(0.353);
+  private double positionTolerance = Units.inchesToMeters(0.28);
 
   private StatusSignal<Angle> elevatorMainPosition;
   private StatusSignal<Angle> elevatorFollowerPosition;
