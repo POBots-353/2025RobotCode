@@ -406,7 +406,6 @@ public class Constants {
 
     public static final Time reefIntakeTimingOffset = Seconds.of(2);
 
-
     public static final double maxVelocity = Units.degreesToRadians(30.0); // Degrees per second
     public static final double maxAcceleration =
         Units.degreesToRadians(50.0); // Degrees per second squared
