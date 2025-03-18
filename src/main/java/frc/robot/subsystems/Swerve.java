@@ -375,10 +375,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     // visionSim.addCamera(arducamSimRight, VisionConstants.arducamRightTransform);
     visionSim.addCamera(arducamFrontSim, VisionConstants.arducamFrontTransform);
 
-    arducamSimLeft.enableRawStream(true);
-    arducamSimLeft.enableProcessedStream(true);
-    arducamSimRight.enableRawStream(true);
-    arducamSimRight.enableProcessedStream(true);
+    // arducamSimLeft.enableRawStream(true);
+    // arducamSimLeft.enableProcessedStream(true);
+    // arducamSimRight.enableRawStream(true);
+    // arducamSimRight.enableProcessedStream(true);
     arducamFrontSim.enableRawStream(true);
     arducamFrontSim.enableProcessedStream(true);
   }

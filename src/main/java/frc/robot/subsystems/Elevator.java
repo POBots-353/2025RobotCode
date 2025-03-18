@@ -199,7 +199,7 @@ public class Elevator extends ExpandedSubsystem {
           elevatorFollowerMotor.setControl(
               motionMagicRequest.withPosition(ElevatorConstants.downHeight));
         })
-        .until(() -> atSetpoint(ElevatorConstants.downHeight))
+        .until(()-> elevatorMainPosition.getValueAsDouble() < Units.inchesToMeters(1))
         .andThen(downSpeed(.02).until(() -> buttonDebouncer.calculate(buttonPressed())))
         .withName("Down Position");
   }
