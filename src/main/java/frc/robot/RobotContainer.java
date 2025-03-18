@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -134,6 +133,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("Turn to reef", new TurnToReef(drivetrain).withTimeout(2));
     NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(3));
     NamedCommands.registerCommand("AutoAlignRight", drivetrain.reefAlign(false).withTimeout(3));
+
     NamedCommands.registerCommand(
         "Grab Algae",
         Commands.sequence(
@@ -142,13 +142,11 @@ public class RobotContainer {
                     .alongWith(
                         Commands.waitTime(AlgaeRemoverConstants.reefIntakeTimingOffset)
                             .andThen(
-                                algaeRemover.moveToPosition(AlgaeRemoverConstants.intakePosition)))
-                    .alongWith(algaeIntake.intake())
+                                algaeRemover
+                                    .moveToPosition(AlgaeRemoverConstants.intakePosition)
+                                    .alongWith(algaeIntake.intake())))
                     .withTimeout(3.53),
-                algaeIntake
-                    .stop()
-                    .alongWith(algaeRemover.moveToPosition(AlgaeRemoverConstants.bargePosition))
-                    .withTimeout(2))
+                algaeRemover.moveToPosition(AlgaeRemoverConstants.bargePosition))
             .asProxy());
 
     NamedCommands.registerCommand("Release Algae", algaeIntake.outtake().withTimeout(2).asProxy());
@@ -271,8 +269,7 @@ public class RobotContainer {
     return Commands.sequence(
             algaeRemover.moveToPosition(AlgaeRemoverConstants.bargePosition),
             elevator.moveToSuppliedPosition(targetHeight),
-            outtake.autoOuttake(),
-            elevator.downPosition())
+            outtake.autoOuttake())
         .withName("Finishdoublescorecommand");
   }
 
@@ -378,14 +375,15 @@ public class RobotContainer {
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
-                // new TurnToReef(drivetrain),
-                drivetrain.reefAlign(true)));
-    // ,Commands.waitUntil(
-    //     atValidReefPose
-    //         // .and(atElevatorHeight)
-    //         .and(elevatorIsDown.negate())
-    //         .and(outtakeLaserBroken)),
-    // outtake.autoOuttake()));
+                new TurnToReef(drivetrain),
+                drivetrain.reefAlign(true),
+                Commands.waitUntil(
+                    atValidReefPose
+                        .and(doubleScoreMode.negate())
+                        .and(atElevatorHeight)
+                        .and(elevatorIsDown.negate())
+                        .and(outtakeLaserBroken)),
+                outtake.autoOuttake()));
 
     driverController
         .rightBumper()
@@ -393,17 +391,21 @@ public class RobotContainer {
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
-                // new TurnToReef(drivetrain),
-                drivetrain.reefAlign(false)));
-    // ,Commands.waitUntil(
-    //     atValidReefPose
-    //         .and(atElevatorHeight)
-    //         .and(elevatorIsDown.negate())
-    //         .and(outtakeLaserBroken)),
-    // outtake.autoOuttake()));
+                new TurnToReef(drivetrain),
+                drivetrain.reefAlign(false),
+                Commands.waitUntil(
+                    atValidReefPose
+                        .and(doubleScoreMode.negate())
+                        .and(atElevatorHeight)
+                        .and(elevatorIsDown.negate())
+                        .and(outtakeLaserBroken)),
+                outtake.autoOuttake()));
 
     driverController.leftBumper().and(isPositionMode).whileTrue(drivetrain.reefAlignNoVision(true));
-    driverController.rightBumper().and(isPositionMode).whileTrue(drivetrain.reefAlignNoVision(false));
+    driverController
+        .rightBumper()
+        .and(isPositionMode)
+        .whileTrue(drivetrain.reefAlignNoVision(false));
 
     driverController.x().whileTrue(drivetrain.pathFindForAlgaeRemover());
 
@@ -422,31 +424,15 @@ public class RobotContainer {
 
   private void configureElevatorBindings() {
     elevator.setDefaultCommand(
-        Commands.either(
-            Commands.none(),
-            elevator.holdPosition(),
-            buttonTrigger)); 
-    
+        Commands.either(Commands.none(), elevator.holdPosition(), buttonTrigger));
+
     // Elevator L4
     operatorController
         .b()
         .and(outtakeLaserBroken)
         .and(operatorController.leftBumper().negate())
         .or(operatorController.povLeft().and(operatorController.b()))
-        .onTrue(
-            elevator
-                .moveToPosition(ElevatorConstants.L4Height)
-                .andThen(
-                    new ConditionalCommand(
-                        outtake
-                            .autoOuttake()
-                            .andThen(elevator.downPosition()),
-                        Commands.none(),
-                        () ->
-                            (driverController.leftBumper().getAsBoolean()
-                                || driverController.rightBumper().getAsBoolean())
-                          && outtakeLaserBroken.getAsBoolean()
-                        )));
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
 
     // elevator L3
     operatorController
@@ -454,42 +440,15 @@ public class RobotContainer {
         .and(outtakeLaserBroken)
         .and(operatorController.leftBumper().negate())
         .or(operatorController.povLeft().and(operatorController.y()))
-        .onTrue(
-            elevator
-                .moveToPosition(ElevatorConstants.L3Height)
-                .andThen(
-                    new ConditionalCommand(
-                        outtake
-                            .autoOuttake()
-                            .andThen(elevator.downPosition()),
-                        Commands.none(),
-                        () ->
-                            (driverController.leftBumper().getAsBoolean()
-                                || driverController.rightBumper().getAsBoolean())
-                          && outtakeLaserBroken.getAsBoolean()
-                        )));
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L3Height));
 
     // elevator L2
-   operatorController
+    operatorController
         .x()
         .and(outtakeLaserBroken)
         .and(operatorController.leftBumper().negate())
         .or(operatorController.povLeft().and(operatorController.x()))
-        .onTrue(
-            elevator
-                .moveToPosition(ElevatorConstants.L2Height)
-                .andThen(
-                    new ConditionalCommand(
-                        outtake
-                            .autoOuttake()
-                            .andThen(elevator.downPosition()),
-                        Commands.none(),
-                        () ->
-                            (driverController.leftBumper().getAsBoolean()
-                                || driverController.rightBumper().getAsBoolean())
-                          && outtakeLaserBroken.getAsBoolean()
-                        )));
-
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L2Height));
 
     // elevator down height
     operatorController.a().onTrue(elevator.downPosition());
@@ -565,7 +524,9 @@ public class RobotContainer {
   }
 
   private void configureAlgaeRemoverBindings() {
-    algaeIntake.setDefaultCommand(algaeIntake.slowIntake());
+    algaeIntake.setDefaultCommand(
+        Commands.either(
+            Commands.none(), algaeIntake.slowIntake(), () -> DriverStation.isAutonomous()));
 
     // algaeintake to stow position
     operatorController
