@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -279,6 +280,7 @@ public class RobotContainer {
     Command elevatorPrematch = elevator.buildPrematch();
     Command indexerPrematch = indexer.buildPrematch();
     Command swervePrematch = drivetrain.buildPrematch();
+    Command algaeIntakePrematch = algaeIntake.buildPrematch();
 
     SmartDashboard.putData(
         "Outtake Prematch", outtakePrematch.asProxy().withName("Outtake Prematch"));
@@ -290,6 +292,8 @@ public class RobotContainer {
     SmartDashboard.putData(
         "Indexer Prematch", indexerPrematch.asProxy().withName("Indexer Prematch"));
     SmartDashboard.putData("Swerve Prematch", swervePrematch.asProxy().withName("Swerve Prematch"));
+    SmartDashboard.putData(
+        "Algae Intake Prematch", algaeIntakePrematch.asProxy().withName("Algae Intake Prematch"));
   }
 
   private void configureDriverBindings() {
@@ -406,6 +410,10 @@ public class RobotContainer {
         .rightBumper()
         .and(isPositionMode)
         .whileTrue(drivetrain.reefAlignNoVision(false));
+    driverController
+        .rightBumper()
+        .and(isPositionMode)
+        .whileTrue(drivetrain.reefAlignNoVision(false));
 
     driverController.x().whileTrue(drivetrain.pathFindForAlgaeRemover());
 
@@ -432,7 +440,17 @@ public class RobotContainer {
         .and(outtakeLaserBroken)
         .and(operatorController.leftBumper().negate())
         .or(operatorController.povLeft().and(operatorController.b()))
-        .onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
+        .onTrue(
+            elevator
+                .moveToPosition(ElevatorConstants.L4Height)
+                .andThen(
+                    new ConditionalCommand(
+                        outtake.autoOuttake().andThen(elevator.downPosition()),
+                        Commands.none(),
+                        () ->
+                            (driverController.leftBumper().getAsBoolean()
+                                    || driverController.rightBumper().getAsBoolean())
+                                && outtakeLaserBroken.getAsBoolean())));
 
     // elevator L3
     operatorController
@@ -440,7 +458,17 @@ public class RobotContainer {
         .and(outtakeLaserBroken)
         .and(operatorController.leftBumper().negate())
         .or(operatorController.povLeft().and(operatorController.y()))
-        .onTrue(elevator.moveToPosition(ElevatorConstants.L3Height));
+        .onTrue(
+            elevator
+                .moveToPosition(ElevatorConstants.L3Height)
+                .andThen(
+                    new ConditionalCommand(
+                        outtake.autoOuttake().andThen(elevator.downPosition()),
+                        Commands.none(),
+                        () ->
+                            (driverController.leftBumper().getAsBoolean()
+                                    || driverController.rightBumper().getAsBoolean())
+                                && outtakeLaserBroken.getAsBoolean())));
 
     // elevator L2
     operatorController
@@ -448,7 +476,17 @@ public class RobotContainer {
         .and(outtakeLaserBroken)
         .and(operatorController.leftBumper().negate())
         .or(operatorController.povLeft().and(operatorController.x()))
-        .onTrue(elevator.moveToPosition(ElevatorConstants.L2Height));
+        .onTrue(
+            elevator
+                .moveToPosition(ElevatorConstants.L2Height)
+                .andThen(
+                    new ConditionalCommand(
+                        outtake.autoOuttake().andThen(elevator.downPosition()),
+                        Commands.none(),
+                        () ->
+                            (driverController.leftBumper().getAsBoolean()
+                                    || driverController.rightBumper().getAsBoolean())
+                                && outtakeLaserBroken.getAsBoolean())));
 
     // elevator down height
     operatorController.a().onTrue(elevator.downPosition());
