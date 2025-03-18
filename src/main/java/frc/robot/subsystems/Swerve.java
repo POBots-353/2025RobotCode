@@ -49,12 +49,13 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.FieldConstants.ReefDefinitePoses;
-import frc.robot.Constants.MiscellaneousConstants;
+import frc.robot.Constants.PreMatchConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.VisionConstants;
-// import frc.robot.commands.ReefAlignmentPID;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.util.AllianceUtil;
+import frc.robot.util.Elastic;
+import frc.robot.util.Elastic.Notification.NotificationLevel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -1138,12 +1139,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   // }
 
   public final void cancelCurrentCommand() {
-    Command currentCommand = getCurrentCommand();
-    Command defaultCommand = getDefaultCommand();
-
-    if (currentCommand != null && !(defaultCommand != null && currentCommand == defaultCommand)) {
-      currentCommand.cancel();
-    }
+    // runOnce(() -> {}).schedule();
   }
 
   public final String getAlertGroup() {
@@ -1174,6 +1170,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   public final void addError(String message) {
     addAlert(new Alert(getAlertGroup(), message, AlertType.kError));
     setSystemStatus("Pre-Match failed with reason: \"" + message + "\"");
+    Elastic.sendNotification(
+        new Elastic.Notification()
+            .withLevel(NotificationLevel.ERROR)
+            .withTitle("Swerve Pre-Match Failed")
+            .withDescription(message)
+            .withDisplaySeconds(5));
   }
 
   public final void setSystemStatus(String status) {
@@ -1212,6 +1214,13 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 addError("Pre-Match Interrpted");
               } else if (!interrupted && !containsErrors()) {
                 setSystemStatus("Pre-Match Successful!");
+                Elastic.sendNotification(
+                    new Elastic.Notification()
+                        .withLevel(NotificationLevel.INFO)
+                        .withTitle("Swerve Pre-Match Successful")
+                        .withDescription(
+                            "Swerve Pre-Match was successful, good luck in the next match!")
+                        .withDisplaySeconds(3.5));
               }
             });
   }
@@ -1345,8 +1354,24 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   public Command getPrematchCheckCommand() {
     return Commands.sequence(
         // Check for hardware errors
+        Commands.runOnce(
+            () -> {
+              seedFieldCentric();
+            }),
+        Commands.runOnce(
+            () -> {
+              if (Math.abs(
+                      stateCache
+                          .Pose
+                          .getRotation()
+                          .minus(getOperatorForwardDirection())
+                          .getDegrees())
+                  > 0.25) {
+                addError("Gyro did not zero");
+              }
+            }),
         Commands.race(
-            Commands.runOnce(
+            Commands.run(
                 () ->
                     setControl(
                         fieldOriented
@@ -1354,12 +1379,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                             .withVelocityY(0)
                             .withRotationalRate(0))),
             Commands.sequence(
-                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.waitTime(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       double forwardSpeed = stateCache.Speeds.vxMetersPerSecond;
-                      if (Math.abs(forwardSpeed - Units.feetToMeters(15))
-                          > preMatchTranslationalTolerance) {
+                      if (forwardSpeed < 0) {
+                        addError(
+                            "Robot is driving in the wrong direction! Should be driving forward");
+                      } else if (forwardSpeed < preMatchTranslationalTolerance) {
                         addError("Forward Speed is too slow");
                       } else if (Math.abs(stateCache.Speeds.vyMetersPerSecond)
                           > preMatchTranslationalTolerance) {
@@ -1371,40 +1398,43 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         Commands.waitSeconds(2),
         Commands.runOnce(
             () -> {
-              if ((Math.abs(stateCache.Speeds.vxMetersPerSecond) > preMatchTranslationalTolerance)
-                  || (Math.abs(stateCache.Speeds.vyMetersPerSecond)
-                      > preMatchTranslationalTolerance)) {
+              double speedMagnitude =
+                  Math.hypot(
+                      stateCache.Speeds.vxMetersPerSecond, stateCache.Speeds.vyMetersPerSecond);
+              if (speedMagnitude > preMatchTranslationalTolerance) {
                 addError("Translational Speeds are too high");
               } else {
                 addInfo("Slow Down was successful");
               }
             }),
         Commands.race(
-            Commands.runOnce(
+            Commands.run(
                 () ->
                     setControl(
                         fieldOriented
-                            .withVelocityX(SwerveConstants.maxTranslationalSpeedNegative)
+                            .withVelocityX(SwerveConstants.maxTranslationalSpeed.unaryMinus())
                             .withVelocityY(0)
                             .withRotationalRate(0))),
             Commands.sequence(
-                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.waitTime(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       double backwardSpeed = stateCache.Speeds.vxMetersPerSecond;
-                      if (Math.abs(backwardSpeed - Units.feetToMeters(15))
-                          > preMatchTranslationalTolerance) {
-                        addError("Forward Speed is too slow");
+                      if (backwardSpeed > 0) {
+                        addError(
+                            "Robot is driving in the wrong direction! Should be driving backwards");
+                      } else if (backwardSpeed > -preMatchTranslationalTolerance) {
+                        addError("Backward Speed is too slow");
                       } else if (Math.abs(stateCache.Speeds.vyMetersPerSecond)
                           > preMatchTranslationalTolerance) {
                         addError("Strafe Speed is too high");
                       } else {
-                        addInfo("Forward Speed is good!");
+                        addInfo("Backward Speed is good!");
                       }
                     }))),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+        Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
         Commands.race(
-            Commands.runOnce(
+            Commands.run(
                 () ->
                     setControl(
                         fieldOriented
@@ -1412,12 +1442,13 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                             .withVelocityY(SwerveConstants.maxTranslationalSpeed)
                             .withRotationalRate(0))),
             Commands.sequence(
-                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.waitTime(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       double strafeSpeed = stateCache.Speeds.vyMetersPerSecond;
-                      if (Math.abs(strafeSpeed - Units.feetToMeters(15))
-                          > preMatchTranslationalTolerance) {
+                      if (strafeSpeed < 0) {
+                        addError("Robot is driving in the wrong direction! Should be driving left");
+                      } else if (strafeSpeed < preMatchTranslationalTolerance) {
                         addError("Left Speed is too slow");
                       } else if (Math.abs(stateCache.Speeds.vxMetersPerSecond)
                           > preMatchTranslationalTolerance) {
@@ -1426,22 +1457,25 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                         addInfo("Left Speed is good!");
                       }
                     }))),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+        Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
         Commands.race(
-            Commands.runOnce(
+            Commands.run(
                 () ->
                     setControl(
                         fieldOriented
                             .withVelocityX(0)
-                            .withVelocityY(SwerveConstants.maxTranslationalSpeedNegative)
+                            .withVelocityY(SwerveConstants.maxTranslationalSpeed.unaryMinus())
                             .withRotationalRate(0))),
             Commands.sequence(
-                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.waitTime(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       double strafeSpeed = stateCache.Speeds.vyMetersPerSecond;
-                      if (Math.abs(strafeSpeed - Units.feetToMeters(15))
-                          > preMatchTranslationalTolerance) {
+                      if (strafeSpeed > 0) {
+                        addError(
+                            "Robot is driving in the wrong direction! Should be driving right");
+                      }
+                      if (strafeSpeed > -preMatchTranslationalTolerance) {
                         addError("Right Speed is too slow");
                       } else if (Math.abs(stateCache.Speeds.vxMetersPerSecond)
                           > preMatchTranslationalTolerance) {
@@ -1450,9 +1484,33 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                         addInfo("Right Speed is good!");
                       }
                     }))),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+        Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
         Commands.race(
-            Commands.runOnce(
+            Commands.run(
+                () ->
+                    setControl(
+                        fieldOriented
+                            .withVelocityX(0)
+                            .withVelocityY(0)
+                            .withRotationalRate(SwerveConstants.maxRotationalSpeed.unaryMinus()))),
+            Commands.sequence(
+                Commands.waitTime(PreMatchConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      double rotationalSpeed = stateCache.Speeds.omegaRadiansPerSecond;
+                      if (rotationalSpeed > 0) {
+                        addError(
+                            "Robot is spinning the wrong direction! Should be spinning clockwise");
+                      } else if (stateCache.Speeds.omegaRadiansPerSecond
+                          > Units.degreesToRadians(-2.5)) {
+                        addError("CW Speed is too slow");
+                      } else {
+                        addInfo("CW Speed is good!");
+                      }
+                    }))),
+        Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
+        Commands.race(
+            Commands.run(
                 () ->
                     setControl(
                         fieldOriented
@@ -1460,29 +1518,15 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                             .withVelocityY(0)
                             .withRotationalRate(SwerveConstants.maxRotationalSpeed))),
             Commands.sequence(
-                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
+                Commands.waitTime(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
-                      if (stateCache.Speeds.omegaRadiansPerSecond > Units.degreesToRadians(-160)) {
-                        addError("CW Speed is too slow");
-                      } else {
-                        addInfo("CW Speed is good!");
+                      double rotationalSpeed = stateCache.Speeds.omegaRadiansPerSecond;
+                      if (rotationalSpeed < 0) {
+                        addError(
+                            "Robot is spinning in the wrong direction. Should be spinning counter clockwise");
                       }
-                    }))),
-        Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-        Commands.race(
-            Commands.runOnce(
-                () ->
-                    setControl(
-                        fieldOriented
-                            .withVelocityX(0)
-                            .withVelocityY(0)
-                            .withRotationalRate(SwerveConstants.maxRotationalSpeedNegative))),
-            Commands.sequence(
-                Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-                Commands.runOnce(
-                    () -> {
-                      if (stateCache.Speeds.omegaRadiansPerSecond < Units.degreesToRadians(160)) {
+                      if (rotationalSpeed < Units.degreesToRadians(2.5)) {
                         addError("CCW Speed is too slow");
                       } else {
                         addInfo("CCW Speed is good!");

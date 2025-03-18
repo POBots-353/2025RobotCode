@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
+import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
@@ -21,7 +22,9 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.AlgaeRemoverConstants;
+import frc.robot.Constants.PreMatchConstants;
 import frc.robot.util.ExpandedSubsystem;
 
 // TODO:
@@ -129,49 +132,44 @@ public class AlgaeRemover extends ExpandedSubsystem {
 
   @Override
   public Command getPrematchCheckCommand() {
-    return runOnce(() -> {});
-    //   return Commands.sequence(
-    //       // Check for hardware errors
-    //       Commands.runOnce(
-    //           () -> {
-    //             REVLibError error = algaeRemoverMotor.getLastError();
-    //             if (error != REVLibError.kOk) {
-    //               addError("Intake motor error: " + error.name());
-    //             } else {
-    //               addInfo("Intake motor contains no errors");
-    //             }
-    //           }),
-
-    //       // Checks Ground Intake Motor
-    //       Commands.parallel(
-    //           moveToPosition(AlgaeRemoverConstants.intakePosition),
-    //           Commands.sequence(
-    //               Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-    //               Commands.runOnce(
-    //                   () -> {
-    //                     if (Math.abs(getPosition()) <= 1e-4) {
-    //                       addError("Algae Remover Motor isn't moving");
-    //                     } else {
-    //                       addInfo("Algae Remover Motor is moving");
-    //                       if (Math.abs(AlgaeRemoverConstants.intakePosition.minus(getPosition()))
-    // > 0.1) {
-    //                         addError("Algae Remover Motor is not at desired position");
-    //                         // We just put a fake range for now; we'll update this later on
-    //                       } else {
-    //                         addInfo("Algae Remover Motor is at the desired position");
-    //                       }
-    //                     }
-    //                   }))),
-    //       moveToPosition(AlgaeRemoverConstants.outPosition),
-    //       Commands.waitSeconds(MiscellaneousConstants.prematchDelay),
-    //       Commands.runOnce(
-    //           () -> {
-    //             if (Math.abs(getPosition()) > 5) {
-    //               addError("Algae Remover Motor isn't fully down");
-    //             } else {
-    //               addInfo("Algae Rmeover motor is fully down");
-    //             }
-    //           }));
-    // }
+    return Commands.sequence(
+        // Check for hardware errors
+        Commands.runOnce(
+            () -> {
+              REVLibError error = algaeRemoverMotor.getLastError();
+              if (error != REVLibError.kOk) {
+                addError("Intake motor error: " + error.name());
+              } else {
+                addInfo("Intake motor contains no errors");
+              }
+            }),
+        // Checks Ground Intake Motor
+        Commands.parallel(
+            moveToPosition(AlgaeRemoverConstants.intakePosition),
+            Commands.sequence(
+                Commands.waitTime(PreMatchConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      addInfo("Algae Remover Motor is moving");
+                      if (Math.abs(
+                              AlgaeRemoverConstants.intakePosition.minus(getPosition()).in(Degrees))
+                          > 0.1) {
+                        addError("Algae Remover Motor is not at desired position");
+                        // We just put a fake range for now; we'll update this later on
+                      } else {
+                        addInfo("Algae Remover Motor is at the desired position");
+                      }
+                    }))),
+        moveToPosition(AlgaeRemoverConstants.bargePosition),
+        Commands.waitTime(PreMatchConstants.prematchDelay),
+        Commands.runOnce(
+            () -> {
+              if (Math.abs(AlgaeRemoverConstants.bargePosition.minus(getPosition()).in(Degrees))
+                  > 5) {
+                addError("Algae Remover Motor isn't fully down");
+              } else {
+                addInfo("Algae Rmeover motor is fully down");
+              }
+            }));
   }
 }
