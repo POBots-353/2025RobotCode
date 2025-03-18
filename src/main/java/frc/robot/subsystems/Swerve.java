@@ -130,23 +130,23 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
   }
 
-  private PhotonCamera arducamLeft = new PhotonCamera(VisionConstants.arducamLeftName);
-  private PhotonPoseEstimator arducamLeftPoseEstimator =
-      new PhotonPoseEstimator(
-          FieldConstants.aprilTagLayout,
-          PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-          VisionConstants.arducamLeftTransform);
-  private Optional<Matrix<N3, N3>> arducamLeftMatrix = Optional.empty();
-  private Optional<Matrix<N8, N1>> arducamLeftDistCoeffs = Optional.empty();
+  // private PhotonCamera arducamLeft = new PhotonCamera(VisionConstants.arducamLeftName);
+  // private PhotonPoseEstimator arducamLeftPoseEstimator =
+  //     new PhotonPoseEstimator(
+  //         FieldConstants.aprilTagLayout,
+  //         PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+  //         VisionConstants.arducamLeftTransform);
+  // private Optional<Matrix<N3, N3>> arducamLeftMatrix = Optional.empty();
+  // private Optional<Matrix<N8, N1>> arducamLeftDistCoeffs = Optional.empty();
 
-  private PhotonCamera arducamRight = new PhotonCamera(VisionConstants.arducamRightName);
-  private PhotonPoseEstimator arducamRightPoseEstimator =
-      new PhotonPoseEstimator(
-          FieldConstants.aprilTagLayout,
-          PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-          VisionConstants.arducamRightTransform);
-  private Optional<Matrix<N3, N3>> arducamRightMatrix = Optional.empty();
-  private Optional<Matrix<N8, N1>> arducamRightDistCoeffs = Optional.empty();
+  // private PhotonCamera arducamRight = new PhotonCamera(VisionConstants.arducamRightName);
+  // private PhotonPoseEstimator arducamRightPoseEstimator =
+  //     new PhotonPoseEstimator(
+  //         FieldConstants.aprilTagLayout,
+  //         PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+  //         VisionConstants.arducamRightTransform);
+  // private Optional<Matrix<N3, N3>> arducamRightMatrix = Optional.empty();
+  // private Optional<Matrix<N8, N1>> arducamRightDistCoeffs = Optional.empty();
 
   private PhotonCamera arducamFront = new PhotonCamera(VisionConstants.arducamFrontName);
   private PhotonPoseEstimator arducamFrontPoseEstimator =
@@ -160,8 +160,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   private static final Optional<ConstrainedSolvepnpParams> constrainedPnpParams =
       Optional.of(new ConstrainedSolvepnpParams(false, 1.5));
 
-  private List<PhotonPipelineResult> latestArducamLeftResult;
-  private List<PhotonPipelineResult> latestArducamRightResult;
+  // private List<PhotonPipelineResult> latestArducamLeftResult;
+  // private List<PhotonPipelineResult> latestArducamRightResult;
   private List<PhotonPipelineResult> latestArducamFrontResult;
 
   private PhotonCameraSim arducamSimLeft;
@@ -323,8 +323,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   private void initVision() {
-    arducamRightPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
-    arducamLeftPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
+    // arducamRightPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
+    // arducamLeftPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
     arducamFrontPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
   }
 
@@ -368,11 +368,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             .setLatencyStdDevMs(15)
             .setExposureTimeMs(45);
 
-    arducamSimLeft = new PhotonCameraSim(arducamLeft, arducamProperties);
-    arducamSimRight = new PhotonCameraSim(arducamRight, arducamProperties);
+    // arducamSimLeft = new PhotonCameraSim(arducamLeft, arducamProperties);
+    // arducamSimRight = new PhotonCameraSim(arducamRight, arducamProperties);
     arducamFrontSim = new PhotonCameraSim(arducamFront, arducamProperties);
-    visionSim.addCamera(arducamSimLeft, VisionConstants.arducamLeftTransform);
-    visionSim.addCamera(arducamSimRight, VisionConstants.arducamRightTransform);
+    // visionSim.addCamera(arducamSimLeft, VisionConstants.arducamLeftTransform);
+    // visionSim.addCamera(arducamSimRight, VisionConstants.arducamRightTransform);
     visionSim.addCamera(arducamFrontSim, VisionConstants.arducamFrontTransform);
 
     arducamSimLeft.enableRawStream(true);
@@ -866,13 +866,13 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return run(() -> this.setControl(requestSupplier.get()));
   }
 
-  public Pose3d getArducamLeftPose() {
-    return new Pose3d(stateCache.Pose).plus(VisionConstants.arducamLeftTransform);
-  }
+  // public Pose3d getArducamLeftPose() {
+  //   return new Pose3d(stateCache.Pose).plus(VisionConstants.arducamLeftTransform);
+  // }
 
-  public Pose3d getArducamRightPose() {
-    return new Pose3d(stateCache.Pose).plus(VisionConstants.arducamRightTransform);
-  }
+  // public Pose3d getArducamRightPose() {
+  //   return new Pose3d(stateCache.Pose).plus(VisionConstants.arducamRightTransform);
+  // }
 
   public Pose3d getArducamFrontPose() {
     return new Pose3d(stateCache.Pose).plus(VisionConstants.arducamFrontTransform);
@@ -1087,24 +1087,24 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     detectedTargets.clear();
     rejectedPoses.clear();
 
-    updateVisionPoses(
-        latestArducamLeftResult,
-        arducamLeftPoseEstimator,
-        arducamLeftMatrix,
-        arducamLeftDistCoeffs,
-        VisionConstants.arducamLeftTransform,
-        Units.inchesToMeters(3.0),
-        Units.inchesToMeters(2.5),
-        0.25);
-    updateVisionPoses(
-        latestArducamRightResult,
-        arducamRightPoseEstimator,
-        arducamRightMatrix,
-        arducamRightDistCoeffs,
-        VisionConstants.arducamRightTransform,
-        Units.inchesToMeters(3.0),
-        Units.inchesToMeters(2.5),
-        0.25);
+    // updateVisionPoses(
+    //     latestArducamLeftResult,
+    //     arducamLeftPoseEstimator,
+    //     arducamLeftMatrix,
+    //     arducamLeftDistCoeffs,
+    //     VisionConstants.arducamLeftTransform,
+    //     Units.inchesToMeters(3.0),
+    //     Units.inchesToMeters(2.5),
+    //     0.25);
+    // updateVisionPoses(
+    //     latestArducamRightResult,
+    //     arducamRightPoseEstimator,
+    //     arducamRightMatrix,
+    //     arducamRightDistCoeffs,
+    //     VisionConstants.arducamRightTransform,
+    //     Units.inchesToMeters(3.0),
+    //     Units.inchesToMeters(2.5),
+    //     0.25);
     updateVisionPoses(
         latestArducamFrontResult,
         arducamFrontPoseEstimator,
@@ -1129,13 +1129,13 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     return latestArducamFrontResult;
   }
 
-  public List<PhotonPipelineResult> getArducamLeftResults() {
-    return latestArducamLeftResult;
-  }
+  // public List<PhotonPipelineResult> getArducamLeftResults() {
+  //   return latestArducamLeftResult;
+  // }
 
-  public List<PhotonPipelineResult> getArducamRightResults() {
-    return latestArducamRightResult;
-  }
+  // public List<PhotonPipelineResult> getArducamRightResults() {
+  //   return latestArducamRightResult;
+  // }
 
   public final void cancelCurrentCommand() {
     Command currentCommand = getCurrentCommand();
@@ -1259,8 +1259,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
     double stateTimestamp = ctreToFpgaTime(stateCache.Timestamp);
 
-    arducamLeftPoseEstimator.addHeadingData(stateTimestamp, stateCache.Pose.getRotation());
-    arducamRightPoseEstimator.addHeadingData(stateTimestamp, stateCache.Pose.getRotation());
+    // arducamLeftPoseEstimator.addHeadingData(stateTimestamp, stateCache.Pose.getRotation());
+    // arducamRightPoseEstimator.addHeadingData(stateTimestamp, stateCache.Pose.getRotation());
     arducamFrontPoseEstimator.addHeadingData(stateTimestamp, stateCache.Pose.getRotation());
 
     if (arducamFrontMatrix.isEmpty()) {
@@ -1270,22 +1270,22 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       arducamFrontDistCoeffs = arducamFront.getDistCoeffs();
     }
 
-    if (arducamLeftMatrix.isEmpty()) {
-      arducamLeftMatrix = arducamLeft.getCameraMatrix();
-    }
-    if (arducamLeftDistCoeffs.isEmpty()) {
-      arducamLeftDistCoeffs = arducamLeft.getDistCoeffs();
-    }
+    // if (arducamLeftMatrix.isEmpty()) {
+    //   arducamLeftMatrix = arducamLeft.getCameraMatrix();
+    // }
+    // if (arducamLeftDistCoeffs.isEmpty()) {
+    //   arducamLeftDistCoeffs = arducamLeft.getDistCoeffs();
+    // }
 
-    if (arducamRightMatrix.isEmpty()) {
-      arducamRightMatrix = arducamRight.getCameraMatrix();
-    }
-    if (arducamRightDistCoeffs.isEmpty()) {
-      arducamRightDistCoeffs = arducamRight.getDistCoeffs();
-    }
+    // if (arducamRightMatrix.isEmpty()) {
+    //   arducamRightMatrix = arducamRight.getCameraMatrix();
+    // }
+    // if (arducamRightDistCoeffs.isEmpty()) {
+    //   arducamRightDistCoeffs = arducamRight.getDistCoeffs();
+    // }
 
-    latestArducamLeftResult = arducamLeft.getAllUnreadResults();
-    latestArducamRightResult = arducamRight.getAllUnreadResults();
+    // latestArducamLeftResult = arducamLeft.getAllUnreadResults();
+    // latestArducamRightResult = arducamRight.getAllUnreadResults();
     latestArducamFrontResult = arducamFront.getAllUnreadResults();
 
     updateVisionPoseEstimates();

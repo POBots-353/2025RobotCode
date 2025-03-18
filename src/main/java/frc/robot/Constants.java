@@ -371,7 +371,7 @@ public class Constants {
     public static final int outtakeCurrentLimit = 60;
     public static final int outtakeShutOffLimit = 75;
 
-    public static final double fastOuttakeSpeed = 0.353;
+    public static final double fastOuttakeSpeed = 0.4;
     public static final double slowOuttakeSpeed = 0.24; // .353 0.2
 
     public static final int outtakeLaserCanID = 19;
@@ -396,15 +396,15 @@ public class Constants {
     public static final int shutOffCurrentLimit = 80;
 
     public static final Angle intakePosition = Degrees.of(-82.0);
-    public static final Angle stowPosition = Degrees.of(3.0);
+    public static final Angle stowPosition = Degrees.of(15.0);
     public static final Angle bargePosition = Degrees.of(-31.0);
-    public static final Angle processorPosition = Degrees.of(-172.0);
+    public static final Angle processorPosition = Degrees.of(-100.0);
     public static final Angle floorAlgaePosition = Degrees.of(-172.0);
 
     public static final Angle maxPosition = Degrees.of(0);
     public static final Angle minPosition = Degrees.of(-184);
 
-    public static final Time reefIntakeTimingOffset = Seconds.of(2);
+    public static final Time reefIntakeTimingOffset = Seconds.of(.6);
 
     public static final double maxVelocity = Units.degreesToRadians(30.0); // Degrees per second
     public static final double maxAcceleration =
@@ -439,7 +439,7 @@ public class Constants {
     public static final double L3Height = Units.inchesToMeters(15.5 + .7);
     public static final double L2Height = Units.inchesToMeters(7.3 + .55);
     public static final double downHeight = Units.inchesToMeters(0);
-    public static final double bargeHeight = Units.inchesToMeters(20);
+    public static final double bargeHeight = Units.inchesToMeters(28);
     public static final double processorHeight = Units.inchesToMeters(2);
     public static final double floorAlgaeHeight = Units.inchesToMeters(5);
 
@@ -465,12 +465,12 @@ public class Constants {
     public static final Slot0Configs slot0Configs =
         new Slot0Configs()
             .withKS(0.02) // .01
-            .withKV(4.8) // 4.14
-            .withKA(0.04) // .03
-            .withKG(0.38) // .31
-            .withKP(28) // 28
+            .withKV(4.14) // 4.14
+            .withKA(0.1) // .03
+            .withKG(0.33) // .31
+            .withKP(35) // 28
             .withKI(0.0)
-            .withKD(0.11) // 1
+            .withKD(0.005) // .11
             .withGravityType(GravityTypeValue.Elevator_Static)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseVelocitySign);
 

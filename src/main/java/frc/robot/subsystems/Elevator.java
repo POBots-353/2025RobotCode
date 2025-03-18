@@ -52,11 +52,11 @@ public class Elevator extends ExpandedSubsystem {
   private boolean isZeroed = false;
   private Alert elevatorAlert;
   private boolean lastButtonState = false;
-  private Debouncer buttonDebouncer = new Debouncer(0.28);
+  private Debouncer buttonDebouncer = new Debouncer(0.5);
   // private Debouncer elevatorDebouncer = new Debouncer(0.353);
   private Debouncer zeroedDebouncer = new Debouncer(2.5);
 
-  private double positionTolerance = Units.inchesToMeters(0.28);
+  private double positionTolerance = Units.inchesToMeters(0.353);
 
   private StatusSignal<Angle> elevatorMainPosition;
   private StatusSignal<Angle> elevatorFollowerPosition;
@@ -182,7 +182,7 @@ public class Elevator extends ExpandedSubsystem {
 
   public Command moveToSuppliedPosition(DoubleSupplier h) {
     return run(() -> {
-          double height = h.getAsDouble();
+          double height = h.getAsDouble() + Units.inchesToMeters(1.353);
           elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
           elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(height));
         })
@@ -217,6 +217,9 @@ public class Elevator extends ExpandedSubsystem {
     return startRun(
             () -> {
               motionMagicRequest.Position = elevatorMainPosition.getValueAsDouble();
+              SmartDashboard.putNumber(
+                  "ELEVAOTR POSTION",
+                  Units.metersToInches(elevatorMainPosition.getValueAsDouble()));
               elevatorMainMotor.setControl(motionMagicRequest);
               elevatorFollowerMotor.setControl(motionMagicRequest);
             },

@@ -66,7 +66,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
         .smartCurrentLimit(AlgaeRemoverConstants.currentLimit)
         .secondaryCurrentLimit(AlgaeRemoverConstants.shutOffCurrentLimit);
 
-    algaeRemoverConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(2.5).i(0.0).d(0.0);
+    algaeRemoverConfig.closedLoop.outputRange(-1, 1, ClosedLoopSlot.kSlot0).p(2.8).i(0.0).d(0.353);
 
     // algaeRemoverConfig
     //     .closedLoop
@@ -74,12 +74,12 @@ public class AlgaeRemover extends ExpandedSubsystem {
     //     .maxVelocity(AlgaeRemoverConstants.maxVelocity)
     //     .maxAcceleration(AlgaeRemoverConstants.maxAcceleration);
 
-    algaeRemoverConfig
-        .softLimit
-        .forwardSoftLimit(AlgaeRemoverConstants.minPosition.in(Degrees))
-        .forwardSoftLimitEnabled(true)
-        .reverseSoftLimit(AlgaeRemoverConstants.maxPosition.in(Degrees))
-        .reverseSoftLimitEnabled(true);
+    // algaeRemoverConfig
+    //     .softLimit
+    //     .forwardSoftLimit(AlgaeRemoverConstants.minPosition.in(Degrees))
+    //     .forwardSoftLimitEnabled(true)
+    //     .reverseSoftLimit(AlgaeRemoverConstants.maxPosition.in(Degrees))
+    //     .reverseSoftLimitEnabled(true);
 
     algaeRemoverMotor.configure(
         algaeRemoverConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
