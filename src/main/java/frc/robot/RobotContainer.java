@@ -12,6 +12,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Strategy;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -84,6 +85,7 @@ public class RobotContainer {
   private boolean doubleScoreActive = false;
   private DoubleSupplier selectedHeight = () -> 0.0;
   private final PowerDistribution powerDistribution = new PowerDistribution(1, ModuleType.kRev);
+  private Debouncer loopDebouncer = new Debouncer(2);
 
   private Trigger outtakeLaserBroken = new Trigger(outtake::outtakeLaserBroken);
   private Trigger isPositionMode = new Trigger(() -> positionMode);
@@ -373,6 +375,23 @@ public class RobotContainer {
     // outtakeAfterAlign.asProxy
 
     // driverController.R3().onTrue(Commands.runOnce(() -> positionMode = !positionMode));
+    driverController
+        .y()
+        .whileTrue(
+            Commands.repeatingSequence(
+                (indexer.runIndexer().alongWith(outtake.slowOuttake())).until(outtakeLaserBroken),
+                indexer.stop(),
+                elevator.moveToPosition(Units.inchesToMeters(12)),
+                outtake
+                    .reverseOuttake()
+                    .until(() -> loopDebouncer.calculate(!outtakeLaserBroken.getAsBoolean())),
+                elevator.downPosition()))
+        .onFalse(
+            indexer
+                .stop()
+                .alongWith(elevator.downPosition())
+                .alongWith(outtake.stopOuttakeMotor()));
+
     driverController
         .leftBumper()
         .and(isPositionMode.negate())
