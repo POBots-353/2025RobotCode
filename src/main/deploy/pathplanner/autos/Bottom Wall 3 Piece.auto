@@ -50,9 +50,9 @@
                       }
                     },
                     {
-                      "type": "named",
+                      "type": "path",
                       "data": {
-                        "name": "go to HP"
+                        "pathName": "E to HP Right"
                       }
                     }
                   ]
@@ -163,9 +163,9 @@
                       }
                     },
                     {
-                      "type": "named",
+                      "type": "path",
                       "data": {
-                        "name": "go to HP"
+                        "pathName": "D to HP right"
                       }
                     }
                   ]

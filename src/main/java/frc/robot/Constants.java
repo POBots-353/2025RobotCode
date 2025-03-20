@@ -82,6 +82,13 @@ public class Constants {
             autoMaxRotationalSpeed.in(RadiansPerSecond),
             autoMaxAngularAcceleration.in(RadiansPerSecondPerSecond));
 
+    public static final PathConstraints HPPathConstraints =
+        new PathConstraints(
+            3.7,
+            10,
+            autoMaxRotationalSpeed.in(RadiansPerSecond),
+            autoMaxAngularAcceleration.in(RadiansPerSecondPerSecond));
+
     public static final PathConstraints midPathConstraints = new PathConstraints(3.53, 6.5, 7, 13);
 
     public static final PathConstraints slowPathConstraints =
@@ -151,18 +158,18 @@ public class Constants {
     //     new Pose2d(1.58, 0.686, Rotation2d.fromDegrees(53.130));
 
     public static final Pose2d redStationLeft =
-        new Pose2d(16.07905387878418, 0.7033205032348633, Rotation2d.fromDegrees(125.901));
+        new Pose2d(15.974416637420614, 0.7589326500892639, Rotation2d.fromDegrees(125.1));
     public static final Pose2d redStationRight =
-        new Pose2d(16.07905387878418, 7.323948860168457, Rotation2d.fromDegrees(-125.901));
+        new Pose2d(15.974416637420614, 7.300044059753418, Rotation2d.fromDegrees(-125.1));
     public static final Pose2d blueStationLeft =
-        new Pose2d(1.4599770307540894, 7.323948860168457, Rotation2d.fromDegrees(-53.130));
+        new Pose2d(1.6093025207519531, 7.300044059753418, Rotation2d.fromDegrees(-53.4));
     public static final Pose2d blueStationRight =
-        new Pose2d(1.4599770307540894, 0.67606, Rotation2d.fromDegrees(53.130));
+        new Pose2d(1.5744166374206543, 0.7589326500892639, Rotation2d.fromDegrees(53.4));
 
     public static final Pose2d blueBargePose =
-        new Pose2d(7.676696300506592, 5.644258499145508, Rotation2d.kZero);
+        new Pose2d(7.419384479522705, 5.5195770263671875, Rotation2d.kZero);
     public static final Pose2d redBargePose =
-        new Pose2d(9.889225006103516, 2.454042434692383, Rotation2d.k180deg);
+        new Pose2d(10.136296272277832, 2.426062822341919, Rotation2d.k180deg);
 
     public static final Pose2d blueProcessorPose = new Pose2d(6.011, 1.0, Rotation2d.kCW_90deg);
     public static final Pose2d redProcessorPose = new Pose2d(11.524, 7.0, Rotation2d.kCCW_90deg);
@@ -370,7 +377,7 @@ public class Constants {
     public static final int outtakeCurrentLimit = 60;
     public static final int outtakeShutOffLimit = 75;
 
-    public static final double fastOuttakeSpeed = 0.70;
+    public static final double fastOuttakeSpeed = 0.40;
     public static final double slowOuttakeSpeed = 0.24; // .353 0.2
 
     public static final int outtakeLaserCanID = 19;
@@ -388,7 +395,7 @@ public class Constants {
         2 * Math.PI * planetaryGearRatio * outputGearRatio;
 
     public static final double algaeRemoverSpeed = .5;
-    public static final double algaeIntakeSpeed = .8;
+    public static final double algaeIntakeSpeed = 0.95;
     public static final double slowAlgaeIntakeSpeed = .1;
 
     public static final int currentLimit = 50;
@@ -397,8 +404,9 @@ public class Constants {
     public static final Angle intakePosition = Degrees.of(-82.0);
     public static final Angle stowPosition = Degrees.of(15.0);
     public static final Angle bargePosition = Degrees.of(-31.0);
-    public static final Angle processorPosition = Degrees.of(-100.0);
+    public static final Angle processorPosition = Degrees.of(-45);
     public static final Angle floorAlgaePosition = Degrees.of(-172.0);
+    public static final Angle holdPosition = Degrees.of(-4.0);
 
     public static final Angle maxPosition = Degrees.of(0);
     public static final Angle minPosition = Degrees.of(-184);
@@ -431,10 +439,10 @@ public class Constants {
     public static final int elevatorFollowerMotorID = 22;
     public static final int buttonSwitchID = 0;
 
-    public static final double maxHeight = Units.inchesToMeters(28.09);
+    public static final double maxHeight = Units.inchesToMeters(28.353);
     public static final double minHeight = 0.0;
 
-    public static final double L4Height = Units.inchesToMeters(27.8); // 28.09
+    public static final double L4Height = Units.inchesToMeters(28.3); // 28.09
     public static final double L3Height = Units.inchesToMeters(15.5 + .7);
     public static final double L2Height = Units.inchesToMeters(7.3 + .55);
     public static final double downHeight = Units.inchesToMeters(0);
@@ -444,8 +452,8 @@ public class Constants {
 
     public static final double coralInTheWayAdd = 2.74;
 
-    public static final double AlgaeHighHeight = Units.inchesToMeters(8.6 + .3);
-    public static final double AlgaeLowHeight = Units.inchesToMeters(1.5);
+    public static final double AlgaeHighHeight = Units.inchesToMeters(9.2);
+    public static final double AlgaeLowHeight = Units.inchesToMeters(-1.0);
 
     public static final double sensorToMechanismRatio =
         elevatorGearRatio / (sprocketDiameter * Math.PI);

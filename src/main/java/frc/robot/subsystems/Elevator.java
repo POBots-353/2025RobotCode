@@ -264,6 +264,8 @@ public class Elevator extends ExpandedSubsystem {
     elevatorFollowerPosition.refresh();
 
     SmartDashboard.putBoolean("Elevator/AtSetHeight", atSetHeight());
+    SmartDashboard.putBoolean("Elevator/ElvIsDown", elevatorIsDown());
+
     SmartDashboard.putNumber(
         "Elevator/MotorVelocity", elevatorMainMotor.getVelocity().getValueAsDouble());
 

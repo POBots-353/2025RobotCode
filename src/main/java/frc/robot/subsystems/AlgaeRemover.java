@@ -61,7 +61,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
         .velocityConversionFactor(AlgaeRemoverConstants.internalEncoderConversion);
     // .zeroOffset(.113922);
 
-    algaeRemoverConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+    algaeRemoverConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 
     algaeRemoverConfig
         .inverted(true)
@@ -122,7 +122,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
 
   @Logged(name = "Position")
   public Angle getPosition() {
-    return Radians.of(algaeRemoverEncoder.getPosition());
+    return Radians.of(algaeRemoverAbsoluteEncoder.getPosition());
   }
 
   @Override

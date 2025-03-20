@@ -727,7 +727,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 closestPose = stateCache.Pose.nearest(blueStationPoses);
               }
 
-              return AutoBuilder.pathfindToPose(closestPose, AutoConstants.fastPathConstraints);
+              return AutoBuilder.pathfindToPose(closestPose, AutoConstants.HPPathConstraints);
             },
             Set.of(this))
         .withName("Human Player Align");
