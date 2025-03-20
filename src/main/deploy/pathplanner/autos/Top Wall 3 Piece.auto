@@ -19,12 +19,6 @@
                 "data": {
                   "name": "AutoAlignRight"
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: L2"
-                }
               }
             ]
           }
@@ -77,7 +71,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 1.0
+                        "waitTime": 1.5
                       }
                     },
                     {
@@ -111,7 +105,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Stop Indexer"
+                  "name": "IntakeUntilBeamBreak"
                 }
               }
             ]
@@ -130,7 +124,13 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Elevator: L2"
+                  "name": "Stop Outtake"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop Indexer"
                 }
               }
             ]
@@ -218,7 +218,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Stop Indexer"
+                  "name": "IntakeUntilBeamBreak"
                 }
               }
             ]
@@ -237,7 +237,13 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Elevator: L2"
+                  "name": "Stop Outtake"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop Indexer"
                 }
               }
             ]

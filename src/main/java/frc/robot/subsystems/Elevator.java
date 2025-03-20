@@ -213,6 +213,7 @@ public class Elevator extends ExpandedSubsystem {
   public boolean atSetHeight() {
     return Math.abs(elevatorMainPosition.getValueAsDouble() - motionMagicRequest.Position)
         < positionTolerance;
+    // && Math.abs(elevatorMainMotor.getVelocity().getValueAsDouble()) < 0.353;
   }
 
   public Command holdPosition() {
@@ -261,6 +262,10 @@ public class Elevator extends ExpandedSubsystem {
   public void periodic() {
     elevatorMainPosition.refresh();
     elevatorFollowerPosition.refresh();
+
+    SmartDashboard.putBoolean("Elevator/AtSetHeight", atSetHeight());
+    SmartDashboard.putNumber(
+        "Elevator/MotorVelocity", elevatorMainMotor.getVelocity().getValueAsDouble());
 
     SmartDashboard.putNumber(
         "Elevator/Main Stage 1 Position",
