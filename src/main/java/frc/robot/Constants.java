@@ -151,18 +151,18 @@ public class Constants {
     //     new Pose2d(1.58, 0.686, Rotation2d.fromDegrees(53.130));
 
     public static final Pose2d redStationLeft =
-        new Pose2d(16.110023, 0.67606, Rotation2d.fromDegrees(126.87));
+        new Pose2d(16.07905387878418, 0.7033205032348633, Rotation2d.fromDegrees(125.901));
     public static final Pose2d redStationRight =
-        new Pose2d(16.110023, 7.323948860168457, Rotation2d.fromDegrees(-126.87));
+        new Pose2d(16.07905387878418, 7.323948860168457, Rotation2d.fromDegrees(-125.901));
     public static final Pose2d blueStationLeft =
         new Pose2d(1.4599770307540894, 7.323948860168457, Rotation2d.fromDegrees(-53.130));
     public static final Pose2d blueStationRight =
         new Pose2d(1.4599770307540894, 0.67606, Rotation2d.fromDegrees(53.130));
 
     public static final Pose2d blueBargePose =
-        new Pose2d(7.702337741851807, 6.292977809906006, Rotation2d.kZero);
+        new Pose2d(7.676696300506592, 5.644258499145508, Rotation2d.kZero);
     public static final Pose2d redBargePose =
-        new Pose2d(9.866271018981934, 2.00632905960083, Rotation2d.k180deg);
+        new Pose2d(9.889225006103516, 2.454042434692383, Rotation2d.k180deg);
 
     public static final Pose2d blueProcessorPose = new Pose2d(6.011, 1.0, Rotation2d.kCW_90deg);
     public static final Pose2d redProcessorPose = new Pose2d(11.524, 7.0, Rotation2d.kCCW_90deg);
@@ -258,7 +258,7 @@ public class Constants {
       left_aprilTagOffsets.put(18, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(19, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(20, Units.inchesToMeters(6.488));
-      left_aprilTagOffsets.put(21, Units.inchesToMeters(7.988));
+      left_aprilTagOffsets.put(21, Units.inchesToMeters(6.488));
       left_aprilTagOffsets.put(22, Units.inchesToMeters(6.488));
     }
 
@@ -370,7 +370,7 @@ public class Constants {
     public static final int outtakeCurrentLimit = 60;
     public static final int outtakeShutOffLimit = 75;
 
-    public static final double fastOuttakeSpeed = 0.8;
+    public static final double fastOuttakeSpeed = 0.70;
     public static final double slowOuttakeSpeed = 0.24; // .353 0.2
 
     public static final int outtakeLaserCanID = 19;

@@ -60,7 +60,7 @@ public class Outtake extends ExpandedSubsystem {
   }
 
   public Command reverseOuttake() {
-    return run(() -> outtakeMotor.set(-.5)).withName("Reverse Outtake");
+    return run(() -> outtakeMotor.set(-.353)).withName("Reverse Outtake");
   }
 
   public Command outtakeUntilBeamBreak() {
