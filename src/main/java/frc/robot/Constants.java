@@ -158,13 +158,13 @@ public class Constants {
     //     new Pose2d(1.58, 0.686, Rotation2d.fromDegrees(53.130));
 
     public static final Pose2d redStationLeft =
-        new Pose2d(15.974416637420614, 0.7589326500892639, Rotation2d.fromDegrees(125.1));
+        new Pose2d(15.826813936233481, 1.0288156509399498, Rotation2d.fromDegrees(125.1));
     public static final Pose2d redStationRight =
-        new Pose2d(15.974416637420614, 7.300044059753418, Rotation2d.fromDegrees(-125.1));
+        new Pose2d(15.726813936233482, 7.128815650939941, Rotation2d.fromDegrees(-125.1));
     public static final Pose2d blueStationLeft =
-        new Pose2d(1.6093025207519531, 7.300044059753418, Rotation2d.fromDegrees(-53.4));
+        new Pose2d(1.8268139362335205, 7.128815650939941, Rotation2d.fromDegrees(-53.4));
     public static final Pose2d blueStationRight =
-        new Pose2d(1.5744166374206543, 0.7589326500892639, Rotation2d.fromDegrees(53.4));
+        new Pose2d(1.667565608024597, 1.0683921813964927, Rotation2d.fromDegrees(53.4));
 
     public static final Pose2d blueBargePose =
         new Pose2d(7.419384479522705, 5.5195770263671875, Rotation2d.kZero);

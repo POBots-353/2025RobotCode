@@ -110,7 +110,7 @@ public class RobotContainer {
         elevator
             .moveToPosition(ElevatorConstants.L4Height)
             // .onlyIf(outtakeLaserBroken)
-            .withTimeout(2.15)
+            .withTimeout(1.80)
             .asProxy());
     NamedCommands.registerCommand(
         "Elevator: L3",
