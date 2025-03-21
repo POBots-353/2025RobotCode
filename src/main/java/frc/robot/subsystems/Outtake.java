@@ -101,6 +101,7 @@ public class Outtake extends ExpandedSubsystem {
   @Override
   public void periodic() {
     SmartDashboard.putBoolean("Outtake Laser Broken", outtakeLaserBroken());
+    SmartDashboard.putNumber("Outtake/Speed", outtakeMotor.get());
   }
 
   @Override
