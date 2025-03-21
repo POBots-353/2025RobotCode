@@ -1379,7 +1379,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                             .withVelocityY(0)
                             .withRotationalRate(0))),
             Commands.sequence(
-                Commands.waitTime(PreMatchConstants.prematchDelay),
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       double forwardSpeed = stateCache.Speeds.vxMetersPerSecond;
@@ -1416,7 +1416,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                             .withVelocityY(0)
                             .withRotationalRate(0))),
             Commands.sequence(
-                Commands.waitTime(PreMatchConstants.prematchDelay),
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       double backwardSpeed = stateCache.Speeds.vxMetersPerSecond;
@@ -1432,7 +1432,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                         addInfo("Backward Speed is good!");
                       }
                     }))),
-        Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
+        Commands.waitSeconds(PreMatchConstants.prematchDelayBetweenSteps),
         Commands.race(
             Commands.run(
                 () ->
@@ -1442,7 +1442,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                             .withVelocityY(SwerveConstants.maxTranslationalSpeed)
                             .withRotationalRate(0))),
             Commands.sequence(
-                Commands.waitTime(PreMatchConstants.prematchDelay),
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       double strafeSpeed = stateCache.Speeds.vyMetersPerSecond;
@@ -1457,7 +1457,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                         addInfo("Left Speed is good!");
                       }
                     }))),
-        Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
+        Commands.waitSeconds(PreMatchConstants.prematchDelayBetweenSteps),
         Commands.race(
             Commands.run(
                 () ->
@@ -1467,7 +1467,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                             .withVelocityY(SwerveConstants.maxTranslationalSpeed.unaryMinus())
                             .withRotationalRate(0))),
             Commands.sequence(
-                Commands.waitTime(PreMatchConstants.prematchDelay),
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       double strafeSpeed = stateCache.Speeds.vyMetersPerSecond;
@@ -1484,7 +1484,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                         addInfo("Right Speed is good!");
                       }
                     }))),
-        Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
+        Commands.waitSeconds(PreMatchConstants.prematchDelayBetweenSteps),
         Commands.race(
             Commands.run(
                 () ->
@@ -1494,7 +1494,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                             .withVelocityY(0)
                             .withRotationalRate(SwerveConstants.maxRotationalSpeed.unaryMinus()))),
             Commands.sequence(
-                Commands.waitTime(PreMatchConstants.prematchDelay),
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       double rotationalSpeed = stateCache.Speeds.omegaRadiansPerSecond;
@@ -1508,7 +1508,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                         addInfo("CW Speed is good!");
                       }
                     }))),
-        Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
+        Commands.waitSeconds(PreMatchConstants.prematchDelayBetweenSteps),
         Commands.race(
             Commands.run(
                 () ->
@@ -1518,7 +1518,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                             .withVelocityY(0)
                             .withRotationalRate(SwerveConstants.maxRotationalSpeed))),
             Commands.sequence(
-                Commands.waitTime(PreMatchConstants.prematchDelay),
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       double rotationalSpeed = stateCache.Speeds.omegaRadiansPerSecond;

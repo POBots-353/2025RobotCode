@@ -60,7 +60,7 @@ public class Outtake extends ExpandedSubsystem {
   }
 
   public Command reverseOuttake() {
-    return run(() -> outtakeMotor.set(-.353)).withName("Reverse Outtake");
+    return run(() -> outtakeMotor.set(-.225)).withName("Reverse Outtake");
   }
 
   public Command outtakeUntilBeamBreak() {
@@ -122,7 +122,7 @@ public class Outtake extends ExpandedSubsystem {
         Commands.parallel(
             fastOuttake(),
             Commands.sequence(
-                Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       if (Math.abs(outtakeEncoder.getVelocity()) <= 1e-4) {
@@ -140,7 +140,7 @@ public class Outtake extends ExpandedSubsystem {
         Commands.parallel(
             slowOuttake(),
             Commands.sequence(
-                Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       if (Math.abs(outtakeEncoder.getVelocity()) <= 1e-4) {
@@ -155,8 +155,8 @@ public class Outtake extends ExpandedSubsystem {
                         }
                       }
                     }))),
-        Commands.runOnce(() -> stop()),
-        Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
+        Commands.run(() -> stop()),
+        Commands.waitSeconds(PreMatchConstants.prematchDelay),
         Commands.runOnce(
             () -> {
               if (Math.abs(outtakeEncoder.getVelocity()) > 0.1) {

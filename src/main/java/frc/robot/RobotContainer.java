@@ -132,7 +132,7 @@ public class RobotContainer {
         "Elevator: Bottom",
         elevator.downPosition().until(buttonTrigger).withTimeout(3.0).asProxy());
     NamedCommands.registerCommand(
-        "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(1.5).asProxy());
+        "OuttakeUntilBeamBreak", outtake.outtakeUntilBeamBreak().withTimeout(0.9).asProxy());
 
     NamedCommands.registerCommand(
         "IntakeUntilBeamBreak",
@@ -140,8 +140,8 @@ public class RobotContainer {
     NamedCommands.registerCommand("Stop Outtake", outtake.stopOuttakeMotor().asProxy());
 
     NamedCommands.registerCommand("Turn to reef", new TurnToReef(drivetrain).withTimeout(2));
-    NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(3));
-    NamedCommands.registerCommand("AutoAlignRight", drivetrain.reefAlign(false).withTimeout(3));
+    NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(2.8));
+    NamedCommands.registerCommand("AutoAlignRight", drivetrain.reefAlign(false).withTimeout(2.8));
 
     NamedCommands.registerCommand(
         "Grab Algae",
@@ -283,25 +283,36 @@ public class RobotContainer {
   }
 
   private void configurePrematch() {
-    Command outtakePrematch = outtake.buildPrematch();
-    Command algaeRemoverPrematch = algaeRemover.buildPrematch();
     Command elevatorPrematch = elevator.buildPrematch();
     Command indexerPrematch = indexer.buildPrematch();
     Command swervePrematch = drivetrain.buildPrematch();
-    Command algaeIntakePrematch = algaeIntake.buildPrematch();
 
-    SmartDashboard.putData(
-        "Outtake Prematch", outtakePrematch.asProxy().withName("Outtake Prematch"));
-    SmartDashboard.putData(
-        "Algae Remover Prematch",
-        algaeRemoverPrematch.asProxy().withName("Algae Remover Prematch"));
+    Command coralIntakePrematch =
+        Commands.sequence(
+            indexer
+                .runIndexer()
+                .alongWith(outtake.outtakeUntilBeamBreak())
+                .until(outtakeLaserBroken),
+            indexer.stop().alongWith(outtake.stopOuttakeMotor()),
+            elevator
+                .moveToPosition(ElevatorConstants.L2Height)
+                .andThen(outtake.autoOuttake().andThen(elevator.downPosition())),
+            indexer
+                .runIndexer()
+                .alongWith(outtake.outtakeUntilBeamBreak())
+                .until(outtakeLaserBroken),
+            indexer.stop().alongWith(outtake.stopOuttakeMotor()),
+            elevator
+                .moveToPosition(ElevatorConstants.L3Height)
+                .andThen(outtake.autoOuttake().andThen(elevator.downPosition())));
+
     SmartDashboard.putData(
         "Elevator Prematch", elevatorPrematch.asProxy().withName("Elevator Prematch"));
     SmartDashboard.putData(
         "Indexer Prematch", indexerPrematch.asProxy().withName("Indexer Prematch"));
     SmartDashboard.putData("Swerve Prematch", swervePrematch.asProxy().withName("Swerve Prematch"));
     SmartDashboard.putData(
-        "Algae Intake Prematch", algaeIntakePrematch.asProxy().withName("Algae Intake Prematch"));
+        "Coral Intake Prematch", coralIntakePrematch.asProxy().withName("Coral Intake Prematch"));
   }
 
   private void configureDriverBindings() {
@@ -381,22 +392,26 @@ public class RobotContainer {
     // outtakeAfterAlign.asProxy
 
     // driverController.R3().onTrue(Commands.runOnce(() -> positionMode = !positionMode));
-    driverController
-        .y()
-        .whileTrue(
-            Commands.repeatingSequence(
-                indexer.runIndexer().alongWith(outtake.outtakeUntilBeamBreak()),
-                indexer.stop(),
-                elevator.moveToPosition(Units.inchesToMeters(12)),
-                outtake
-                    .reverseOuttake()
-                    .until(() -> loopDebouncer.calculate(!outtakeLaserBroken.getAsBoolean())),
-                elevator.downPosition()))
-        .onFalse(
-            indexer
-                .stop()
-                .alongWith(elevator.downPosition())
-                .alongWith(outtake.stopOuttakeMotor()));
+
+    // driverController
+    //     .y()
+    //     .whileTrue(
+    //         Commands.repeatingSequence(
+    //             indexer
+    //                 .runIndexer()
+    //                 .until(outtakeLaserBroken)
+    //                 .alongWith(outtake.outtakeUntilBeamBreak()),
+    //             indexer.stop(),
+    //             elevator.moveToPosition(Units.inchesToMeters(12)),
+    //             outtake
+    //                 .reverseOuttake()
+    //                 .until(() -> loopDebouncer.calculate(!outtakeLaserBroken.getAsBoolean())),
+    //             elevator.downPosition()))
+    //     .onFalse(
+    //         indexer
+    //             .stop()
+    //             .alongWith(elevator.downPosition())
+    //             .alongWith(outtake.stopOuttakeMotor()));
 
     driverController
         .leftBumper()

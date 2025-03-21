@@ -415,7 +415,6 @@ public class Elevator extends ExpandedSubsystem {
         preMatchDown.asProxy().withName("Pre-Match Lower"),
         preMatchL2.asProxy().withName("Pre-Match Move to L2"),
         preMatchL3.asProxy().withName("Pre-Match Move to L3"),
-        preMatchL4.asProxy().withName("Pre-Match Move to L4"),
         preMatchDown.asProxy().withName("Pre-Match Lower"));
   }
 }

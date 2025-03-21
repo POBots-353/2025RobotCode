@@ -395,7 +395,7 @@ public class Constants {
         2 * Math.PI * planetaryGearRatio * outputGearRatio;
 
     public static final double algaeRemoverSpeed = .5;
-    public static final double algaeIntakeSpeed = 0.95;
+    public static final double algaeIntakeSpeed = 1.0;
     public static final double slowAlgaeIntakeSpeed = .1;
 
     public static final int currentLimit = 50;
@@ -453,7 +453,7 @@ public class Constants {
     public static final double coralInTheWayAdd = 2.74;
 
     public static final double AlgaeHighHeight = Units.inchesToMeters(9.2);
-    public static final double AlgaeLowHeight = Units.inchesToMeters(-1.0);
+    public static final double AlgaeLowHeight = Units.inchesToMeters(1.5);
 
     public static final double sensorToMechanismRatio =
         elevatorGearRatio / (sprocketDiameter * Math.PI);
@@ -572,7 +572,8 @@ public class Constants {
   }
 
   public static class PreMatchConstants {
-    public static final Time prematchDelay = Seconds.of(2.5);
-    public static final Time prematchDelayBetweenSteps = Seconds.of(0.5);
+    public static final double prematchDelay = 2.5;
+    public static final double prematchDelayBetweenSteps = 0.5;
+    public static final Time algaePrematchDelay = Seconds.of(3);
   }
 }

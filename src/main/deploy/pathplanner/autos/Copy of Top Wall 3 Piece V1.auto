@@ -7,45 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Bottom Start Alignment for E"
+            "pathName": "Top Start Alignment"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "AutoAlignLeft"
+            "name": "AutoAlignRight"
           }
         },
         {
-          "type": "deadline",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.5
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Auto Outtake"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: L4"
-                }
-              }
-            ]
+            "name": "Elevator: L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Auto Outtake"
           }
         },
         {
@@ -65,7 +45,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "E to HP Right"
+                        "pathName": "J to HP Left"
                       }
                     }
                   ]
@@ -112,7 +92,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP Right to D Setup"
+                  "pathName": "HP Left to K Setup"
                 }
               },
               {
@@ -131,7 +111,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "AutoAlignRight"
+                  "name": "AutoAlignLeft"
                 }
               },
               {
@@ -150,35 +130,15 @@
           }
         },
         {
-          "type": "deadline",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.5
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Auto Outtake"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: L4"
-                }
-              }
-            ]
+            "name": "Elevator: L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Auto Outtake"
           }
         },
         {
@@ -198,7 +158,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "D to HP right"
+                        "pathName": "K to HP Left"
                       }
                     }
                   ]
@@ -245,7 +205,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP Right to C Setup"
+                  "pathName": "HP Left to L Setup"
                 }
               },
               {
@@ -264,7 +224,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "AutoAlignLeft"
+                  "name": "AutoAlignRight"
                 }
               },
               {
@@ -283,35 +243,15 @@
           }
         },
         {
-          "type": "deadline",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.5
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Auto Outtake"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Elevator: L4"
-                }
-              }
-            ]
+            "name": "Elevator: L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Auto Outtake"
           }
         },
         {

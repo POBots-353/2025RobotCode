@@ -61,7 +61,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
         .velocityConversionFactor(AlgaeRemoverConstants.internalEncoderConversion);
     // .zeroOffset(.113922);
 
-    algaeRemoverConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+    algaeRemoverConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
 
     algaeRemoverConfig
         .inverted(true)
@@ -147,13 +147,13 @@ public class AlgaeRemover extends ExpandedSubsystem {
         Commands.parallel(
             moveToPosition(AlgaeRemoverConstants.intakePosition),
             Commands.sequence(
-                Commands.waitTime(PreMatchConstants.prematchDelay),
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       addInfo("Algae Remover Motor is moving");
                       if (Math.abs(
                               AlgaeRemoverConstants.intakePosition.minus(getPosition()).in(Degrees))
-                          > 0.1) {
+                          > 10) {
                         addError("Algae Remover Motor is not at desired position");
                         // We just put a fake range for now; we'll update this later on
                       } else {
@@ -161,11 +161,11 @@ public class AlgaeRemover extends ExpandedSubsystem {
                       }
                     }))),
         moveToPosition(AlgaeRemoverConstants.bargePosition),
-        Commands.waitTime(PreMatchConstants.prematchDelay),
+        Commands.waitSeconds(PreMatchConstants.prematchDelay),
         Commands.runOnce(
             () -> {
               if (Math.abs(AlgaeRemoverConstants.bargePosition.minus(getPosition()).in(Degrees))
-                  > 5) {
+                  > 10) {
                 addError("Algae Remover Motor isn't fully down");
               } else {
                 addInfo("Algae Rmeover motor is fully down");

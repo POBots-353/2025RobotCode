@@ -51,7 +51,7 @@ public class AlgaeIntake extends ExpandedSubsystem {
         Commands.parallel(
             intake(),
             Commands.sequence(
-                Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       if (Math.abs(algaeIntakeMotor.get()) <= 1e-4) {
@@ -69,7 +69,7 @@ public class AlgaeIntake extends ExpandedSubsystem {
         Commands.parallel(
             slowIntake(),
             Commands.sequence(
-                Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       if (Math.abs(algaeIntakeMotor.get()) <= 1e-4) {
@@ -87,7 +87,7 @@ public class AlgaeIntake extends ExpandedSubsystem {
         Commands.parallel(
             outtake(),
             Commands.sequence(
-                Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       if (Math.abs(algaeIntakeMotor.get()) <= 1e-4) {
@@ -105,7 +105,7 @@ public class AlgaeIntake extends ExpandedSubsystem {
         Commands.parallel(
             stop(),
             Commands.sequence(
-                Commands.waitTime(PreMatchConstants.prematchDelayBetweenSteps),
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       if (Math.abs(algaeIntakeMotor.get()) > 0.1) {

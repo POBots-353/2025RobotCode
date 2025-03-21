@@ -123,7 +123,7 @@ public class Indexer extends ExpandedSubsystem {
         Commands.race(
             Commands.run(() -> index()),
             Commands.sequence(
-                Commands.waitTime(PreMatchConstants.prematchDelay),
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
                 Commands.runOnce(
                     () -> {
                       if (Math.abs(indexerEncoder.getVelocity()) <= 1e-4) {
@@ -138,8 +138,26 @@ public class Indexer extends ExpandedSubsystem {
                         }
                       }
                     }))),
+        Commands.race(
+            Commands.run(() -> reverse()),
+            Commands.sequence(
+                Commands.waitSeconds(PreMatchConstants.prematchDelay),
+                Commands.runOnce(
+                    () -> {
+                      if (Math.abs(indexerEncoder.getVelocity()) <= 1e-4) {
+                        addError("Indexer Motor is not moving");
+                      } else {
+                        addInfo("Indexer Motor is moving");
+                        if (indexerEncoder.getVelocity() > 0) {
+                          addError("Indexer Motor is moving in the wrong direction");
+                          // We just put a fake range for now; we'll update this later on
+                        } else {
+                          addInfo("Indexer Motor is at the desired velocity");
+                        }
+                      }
+                    }))),
         Commands.runOnce(() -> stopIndexer()),
-        Commands.waitTime(PreMatchConstants.prematchDelay),
+        Commands.waitSeconds(PreMatchConstants.prematchDelay),
         Commands.runOnce(
             () -> {
               if (Math.abs(indexerEncoder.getVelocity()) > 0.1) {
