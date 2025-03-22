@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Top Start Alignment"
+            "pathName": "Top Start Alignment x"
           }
         },
         {
@@ -65,7 +65,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "J to HP Left"
+                        "pathName": "J to HP Left x"
                       }
                     }
                   ]
@@ -112,7 +112,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP Left to K Setup"
+                  "pathName": "HP Left to K Setup x"
                 }
               },
               {
@@ -198,7 +198,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "K to HP Left"
+                        "pathName": "K to HP left x"
                       }
                     }
                   ]
@@ -245,7 +245,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP Left to L Setup"
+                  "pathName": "HP Left to L Setup x"
                 }
               },
               {
