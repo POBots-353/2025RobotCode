@@ -5,9 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "Middle Start H"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Middle Start H"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "EnableAlgaeIntakeDefaultCommand"
+                }
+              }
+            ]
           }
         },
         {
@@ -19,7 +32,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Double Score"
+            "name": "Double Score: 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Double Score: 2"
           }
         },
         {
@@ -37,7 +56,19 @@
         {
           "type": "named",
           "data": {
-            "name": "Barge Score"
+            "name": "Barge Score: 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Barge Score: 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Barge Score: 3"
           }
         },
         {
@@ -73,7 +104,19 @@
         {
           "type": "named",
           "data": {
-            "name": "Barge Score"
+            "name": "Barge Score: 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Barge Score: 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Barge Score: 3"
           }
         },
         {

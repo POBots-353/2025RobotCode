@@ -33,6 +33,7 @@ import frc.robot.Constants.AlgaeRemoverConstants;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.TeleopSwerve;
+import frc.robot.commands.TurnToAlgae;
 import frc.robot.commands.TurnToReef;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeIntake;
@@ -78,6 +79,8 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(1);
   //   private final CommandJoystick operatorStick = new CommandJoystick(1);
   private final CommandXboxController operatorController = new CommandXboxController(0);
+
+  private boolean isAlgaeAuto = true;
 
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -142,12 +145,10 @@ public class RobotContainer {
     NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(2.8));
     NamedCommands.registerCommand("AutoAlignRight", drivetrain.reefAlign(false).withTimeout(2.8));
     NamedCommands.registerCommand(
-        "Double Score",
-        startDoubleScoreCommand()
-            .withTimeout(3)
-            .andThen(finishDoubleScoreCommand(() -> ElevatorConstants.L4Height))
-            .withTimeout(3)
-            .asProxy());
+        "Double Score: 1", startDoubleScoreCommand().withTimeout(1.1).asProxy());
+    NamedCommands.registerCommand(
+        "Double Score: 2",
+        finishDoubleScoreCommand(() -> ElevatorConstants.L4Height).withTimeout(3).asProxy());
     // private Command startDoubleScoreCommand() {
     //     return algaeRemover
     //         .moveToPosition(AlgaeRemoverConstants.holdPosition)
@@ -179,31 +180,40 @@ public class RobotContainer {
                                 algaeRemover
                                     .moveToPosition(AlgaeRemoverConstants.intakePosition)
                                     .alongWith(algaeIntake.intake())))
-                    .withTimeout(3.53),
+                    .withTimeout(1.3),
                 algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition))
             .asProxy());
 
     NamedCommands.registerCommand("Release Algae", algaeIntake.outtake().withTimeout(2).asProxy());
 
     NamedCommands.registerCommand(
-        "Barge Score",
-        Commands.sequence(
-                elevator.moveToPosition(ElevatorConstants.bargeHeight),
-                algaeRemover
-                    .moveToPosition(AlgaeRemoverConstants.bargePosition)
-                    .alongWith(algaeIntake.outtake().withTimeout(1)),
-                algaeRemover
-                    .moveToPosition(AlgaeRemoverConstants.holdPosition)
-                    .alongWith(elevator.downPosition()))
-            .withTimeout(4.5)
+        "Barge Score: 1",
+        elevator.moveToPosition(ElevatorConstants.bargeHeight).withTimeout(1.5).asProxy());
+
+    NamedCommands.registerCommand(
+        "Barge Score: 2",
+        algaeRemover
+            .moveToPosition(AlgaeRemoverConstants.bargeScorePosition)
+            .alongWith(Commands.waitSeconds(.08).andThen(algaeIntake.outtake().withTimeout(0.458)))
+            .withTimeout(2)
             .asProxy());
 
+    NamedCommands.registerCommand(
+        "Barge Score: 3",
+        algaeRemover
+            .moveToPosition(AlgaeRemoverConstants.holdPosition)
+            .alongWith(elevator.downPosition())
+            .withTimeout(1.1)
+            .asProxy());
     NamedCommands.registerCommand(
         "Algae Remover: STOW",
         algaeRemover.moveToPosition(AlgaeRemoverConstants.stowPosition).withTimeout(2).asProxy());
 
-    // NamedCommands.registerCommand(
-    //     "Wait to shoot", Commands.waitSeconds(14.5).andThen(outtake.autoOuttake()).asProxy());
+    NamedCommands.registerCommand(
+        "EnableAlgaeIntakeDefaultCommand", Commands.runOnce(() -> isAlgaeAuto = true).asProxy());
+
+    NamedCommands.registerCommand(
+        "DisableAlgaeIntakeDefaultCommand", Commands.runOnce(() -> isAlgaeAuto = false).asProxy());
 
     SmartDashboard.putData("Power Distribution", powerDistribution);
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
@@ -227,12 +237,12 @@ public class RobotContainer {
                     Commands.runOnce(
                         () -> {
                           operatorController.getHID().setRumble(RumbleType.kBothRumble, 1);
-                          driverController.getHID().setRumble(RumbleType.kBothRumble, 1);
+                          //   driverController.getHID().setRumble(RumbleType.kBothRumble, 1);
                         }),
                     Commands.waitSeconds(2),
                     Commands.runOnce(
                         () -> {
-                          driverController.getHID().setRumble(RumbleType.kBothRumble, 0.0);
+                          //   driverController.getHID().setRumble(RumbleType.kBothRumble, 0.0);
                           operatorController.getHID().setRumble(RumbleType.kBothRumble, 0.0);
                         }))
                 .withName("Outtake Laser Vibration"));
@@ -402,7 +412,20 @@ public class RobotContainer {
     driverController.povDownRight().onTrue(drivetrain.pathFindToDirection(4));
     driverController.povUpRight().onTrue(drivetrain.pathFindToDirection(5));
 
-    driverController.rightTrigger().whileTrue(drivetrain.humanPlayerAlign());
+    // driverController.rightTrigger().whileTrue(drivetrain.humanPlayerAlign());
+    driverController
+        .rightTrigger()
+        .whileTrue(
+            new TurnToAlgae(
+                driverController::getLeftY,
+                driverController::getLeftX,
+                () -> {
+                  if (slowMode.getAsBoolean()) {
+                    return SwerveConstants.slowModeMaxTranslationalSpeed;
+                  }
+                  return SwerveConstants.maxTranslationalSpeed;
+                },
+                drivetrain));
 
     // driverController.leftStick().whileTrue(drivetrain.pathFindToBarge());
 
@@ -628,7 +651,9 @@ public class RobotContainer {
   private void configureAlgaeRemoverBindings() {
     algaeIntake.setDefaultCommand(
         Commands.either(
-            Commands.none(), algaeIntake.slowIntake(), () -> DriverStation.isAutonomous()));
+            Commands.none(),
+            algaeIntake.slowIntake(),
+            () -> DriverStation.isAutonomous() && !isAlgaeAuto));
 
     // algaeintake to stow position
     operatorController
@@ -691,18 +716,20 @@ public class RobotContainer {
     //     .moveToPosition(AlgaeRemoverConstants.holdPosition)
     //     .alongWith(elevator.downPosition())
 
-    // score Processor
-    operatorController
-        .rightStick()
-        .whileTrue(
-            elevator
-                .downPosition()
-                .alongWith(algaeRemover.moveToPosition(AlgaeRemoverConstants.processorPosition)))
-        .onFalse(
-            Commands.sequence(
-                algaeIntake.outtake().withTimeout(1.0),
-                algaeIntake.stop(),
-                algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition)));
+    // // score Processor
+    // operatorController
+    //     .rightStick()
+    //     .whileTrue(
+    //         elevator
+    //             .downPosition()
+    //             .alongWith(algaeRemover.moveToPosition(AlgaeRemoverConstants.processorPosition)))
+    //     .onFalse(
+    //         Commands.sequence(
+    //             algaeIntake.outtake().withTimeout(1.0),
+    //             algaeIntake.stop(),
+    //             algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition)));
+
+    operatorController.rightStick().onTrue(getAutonomousCommand());
 
     // algae floor intake
     operatorController

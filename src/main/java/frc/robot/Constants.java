@@ -59,6 +59,9 @@ public class Constants {
         maxRotationalSpeed.div(rotationZeroToFull);
 
     public static final double centerToBumber = Units.inchesToMeters(18);
+
+    public static final double headingP = .80;
+    public static final double headingD = 0.1;
   }
 
   public static class AutoConstants {
@@ -97,6 +100,8 @@ public class Constants {
 
   public static class VisionConstants {
     public static final String arducamFrontName = "Arducam_Front";
+    public static final String arducamAlgaeName = "Arducam_Algae";
+
     public static final String arducamLeftName = "Arducam_Left";
     public static final String arducamRightName = "Arducam_Right";
 
@@ -119,6 +124,13 @@ public class Constants {
         new Transform3d(
             Units.inchesToMeters(13.778840),
             Units.inchesToMeters(-0.105402),
+            Units.inchesToMeters(7.800704),
+            new Rotation3d(0.0, Units.degreesToRadians(-15), Units.degreesToRadians(0)));
+
+    public static final Transform3d arducamAlgaeTransform =
+        new Transform3d(
+            Units.inchesToMeters(13.778840),
+            Units.inchesToMeters(-0.105402 + 5.50),
             Units.inchesToMeters(7.800704),
             new Rotation3d(0.0, Units.degreesToRadians(-15), Units.degreesToRadians(0)));
 

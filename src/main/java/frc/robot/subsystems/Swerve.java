@@ -111,8 +111,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       new SwerveRequest.ApplyRobotSpeeds().withDriveRequestType(DriveRequestType.Velocity);
 
   private Field2d field = new Field2d();
-
+  private double targetYaw = 0;
   private int bestTargetID;
+  public Rotation2d desiredAlgaeRotation = Rotation2d.k180deg;
+
   private Pose2d leftPose;
   private Pose2d rightPose;
 
@@ -149,6 +151,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   // private Optional<Matrix<N3, N3>> arducamRightMatrix = Optional.empty();
   // private Optional<Matrix<N8, N1>> arducamRightDistCoeffs = Optional.empty();
 
+  private PhotonCamera arducamAlgae = new PhotonCamera(VisionConstants.arducamAlgaeName);
   private PhotonCamera arducamFront = new PhotonCamera(VisionConstants.arducamFrontName);
   private PhotonPoseEstimator arducamFrontPoseEstimator =
       new PhotonPoseEstimator(
@@ -164,10 +167,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   // private List<PhotonPipelineResult> latestArducamLeftResult;
   // private List<PhotonPipelineResult> latestArducamRightResult;
   private List<PhotonPipelineResult> latestArducamFrontResult;
+  private List<PhotonPipelineResult> latestArducamAlgaeResult;
 
   private PhotonCameraSim arducamSimLeft;
   private PhotonCameraSim arducamSimRight;
   private PhotonCameraSim arducamFrontSim;
+  private PhotonCameraSim arducamAlgaeSim;
 
   private VisionSystemSim visionSim;
 
@@ -372,9 +377,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     // arducamSimLeft = new PhotonCameraSim(arducamLeft, arducamProperties);
     // arducamSimRight = new PhotonCameraSim(arducamRight, arducamProperties);
     arducamFrontSim = new PhotonCameraSim(arducamFront, arducamProperties);
+    arducamAlgaeSim = new PhotonCameraSim(arducamFront, arducamProperties);
+
     // visionSim.addCamera(arducamSimLeft, VisionConstants.arducamLeftTransform);
     // visionSim.addCamera(arducamSimRight, VisionConstants.arducamRightTransform);
     visionSim.addCamera(arducamFrontSim, VisionConstants.arducamFrontTransform);
+    visionSim.addCamera(arducamAlgaeSim, VisionConstants.arducamAlgaeTransform);
 
     // arducamSimLeft.enableRawStream(true);
     // arducamSimLeft.enableProcessedStream(true);
@@ -382,6 +390,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     // arducamSimRight.enableProcessedStream(true);
     arducamFrontSim.enableRawStream(true);
     arducamFrontSim.enableProcessedStream(true);
+    arducamAlgaeSim.enableRawStream(true);
+    arducamAlgaeSim.enableProcessedStream(true);
   }
 
   public void configureAutoBuilder() {
@@ -1083,6 +1093,24 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
   }
 
+  public void updateAlgaeRotation() {
+    double currentRotation = stateCache.Pose.getRotation().getDegrees();
+    if (latestArducamAlgaeResult == null || latestArducamAlgaeResult.isEmpty()) {
+      return;
+    }
+    PhotonPipelineResult newestResult =
+        latestArducamAlgaeResult.get(latestArducamAlgaeResult.size() - 1);
+    if (!newestResult.hasTargets()) {
+      return;
+    }
+
+    PhotonTrackedTarget target = newestResult.getBestTarget();
+
+    targetYaw = target.getYaw();
+
+    desiredAlgaeRotation = Rotation2d.fromDegrees(currentRotation - targetYaw);
+  }
+
   private void updateVisionPoseEstimates() {
     poseEstimates.clear();
     detectedTargets.clear();
@@ -1265,8 +1293,13 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     double startTime = Timer.getFPGATimestamp();
     stateCache = getState();
     field.setRobotPose(stateCache.Pose);
+    updateAlgaeRotation();
 
     double stateTimestamp = ctreToFpgaTime(stateCache.Timestamp);
+
+    SmartDashboard.putNumber("Algae/CurrentHeading", stateCache.Pose.getRotation().getDegrees());
+    SmartDashboard.putNumber("Algae/AlgaeHeading", targetYaw);
+    SmartDashboard.putNumber("Algae/DesiredRotation", desiredAlgaeRotation.getDegrees());
 
     // arducamLeftPoseEstimator.addHeadingData(stateTimestamp, stateCache.Pose.getRotation());
     // arducamRightPoseEstimator.addHeadingData(stateTimestamp, stateCache.Pose.getRotation());
@@ -1296,6 +1329,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     // latestArducamLeftResult = arducamLeft.getAllUnreadResults();
     // latestArducamRightResult = arducamRight.getAllUnreadResults();
     latestArducamFrontResult = arducamFront.getAllUnreadResults();
+    latestArducamAlgaeResult = arducamAlgae.getAllUnreadResults();
 
     updateVisionPoseEstimates();
     updateBestAlignmentPose();
