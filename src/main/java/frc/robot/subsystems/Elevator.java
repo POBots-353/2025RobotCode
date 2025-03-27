@@ -176,7 +176,7 @@ public class Elevator extends ExpandedSubsystem {
           elevatorMainMotor.setControl(motionMagicRequest.withPosition(height));
           elevatorFollowerMotor.setControl(motionMagicRequest.withPosition(height));
         })
-        .until(() -> (atSetpoint(height)))
+        .until(() -> atSetpoint(height))
         // .onlyIf(() -> isZeroed)
         .withName("Move to " + height + " meters");
     // .finallyDo(this::holdPosition);

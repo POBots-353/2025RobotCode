@@ -404,8 +404,10 @@ public class Constants {
     public static final Angle intakePosition = Degrees.of(-82.0);
     public static final Angle stowPosition = Degrees.of(15.0);
     public static final Angle bargePosition = Degrees.of(-31.0);
+    public static final Angle bargeScorePosition = Degrees.of(-60.0);
+
     public static final Angle processorPosition = Degrees.of(-45);
-    public static final Angle floorAlgaePosition = Degrees.of(-172.0);
+    public static final Angle floorAlgaePosition = Degrees.of(-165.0);
     public static final Angle holdPosition = Degrees.of(-4.0);
 
     public static final Angle maxPosition = Degrees.of(0);

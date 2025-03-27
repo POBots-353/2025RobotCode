@@ -122,8 +122,7 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "Elevator: L2",
         elevator
-            .moveToPosition(ElevatorConstants.L2Height)
-            // .onlyIf(outtakeLaserBroken)
+            .moveToPosition(ElevatorConstants.L2Height) // .onlyIf(outtakeLaserBroken)
             .withTimeout(4)
             .asProxy());
     NamedCommands.registerCommand("Auto Outtake", outtake.autoOuttake().asProxy());
@@ -142,6 +141,32 @@ public class RobotContainer {
     NamedCommands.registerCommand("Turn to reef", new TurnToReef(drivetrain).withTimeout(2));
     NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(2.8));
     NamedCommands.registerCommand("AutoAlignRight", drivetrain.reefAlign(false).withTimeout(2.8));
+    NamedCommands.registerCommand(
+        "Double Score",
+        startDoubleScoreCommand()
+            .withTimeout(3)
+            .andThen(finishDoubleScoreCommand(() -> ElevatorConstants.L4Height))
+            .withTimeout(3)
+            .asProxy());
+    // private Command startDoubleScoreCommand() {
+    //     return algaeRemover
+    //         .moveToPosition(AlgaeRemoverConstants.holdPosition)
+    //         .alongWith(elevator.moveToSuppliedPosition(() -> drivetrain.getAlgaeHeight()))
+    //         .withTimeout(1.5)
+    //         .andThen(
+    //             algaeRemover
+    //                 .moveToPosition(AlgaeRemoverConstants.intakePosition)
+    //                 .alongWith(algaeIntake.intake()))
+    //         .withName("Startdoublescorecommand");
+    //   }
+
+    //   private Command finishDoubleScoreCommand(DoubleSupplier targetHeight) {
+    //     return Commands.sequence(
+    //             algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition),
+    //             elevator.moveToSuppliedPosition(targetHeight).withTimeout(2),
+    //             outtake.autoOuttake())
+    //         .withName("Finishdoublescorecommand");
+    //   }
 
     NamedCommands.registerCommand(
         "Grab Algae",
@@ -155,7 +180,7 @@ public class RobotContainer {
                                     .moveToPosition(AlgaeRemoverConstants.intakePosition)
                                     .alongWith(algaeIntake.intake())))
                     .withTimeout(3.53),
-                algaeRemover.moveToPosition(AlgaeRemoverConstants.bargePosition))
+                algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition))
             .asProxy());
 
     NamedCommands.registerCommand("Release Algae", algaeIntake.outtake().withTimeout(2).asProxy());
@@ -164,8 +189,12 @@ public class RobotContainer {
         "Barge Score",
         Commands.sequence(
                 elevator.moveToPosition(ElevatorConstants.bargeHeight),
-                algaeRemover.moveToPosition(AlgaeRemoverConstants.bargePosition),
-                algaeIntake.outtake().withTimeout(1.3))
+                algaeRemover
+                    .moveToPosition(AlgaeRemoverConstants.bargePosition)
+                    .alongWith(algaeIntake.outtake().withTimeout(1)),
+                algaeRemover
+                    .moveToPosition(AlgaeRemoverConstants.holdPosition)
+                    .alongWith(elevator.downPosition()))
             .withTimeout(4.5)
             .asProxy());
 
@@ -263,21 +292,21 @@ public class RobotContainer {
   //
   // .alongWith(algaeRemover.moveToPosition(AlgaeRemoverConstants.stowPosition).andThen(elevator.downPosition())));
   private Command startDoubleScoreCommand() {
-    return elevator
-        .moveToSuppliedPosition(() -> drivetrain.getAlgaeHeight())
-        .alongWith(
-            Commands.waitTime(AlgaeRemoverConstants.reefIntakeTimingOffset)
-                .andThen(
-                    algaeRemover
-                        .moveToPosition(AlgaeRemoverConstants.intakePosition)
-                        .alongWith(algaeIntake.intake())))
+    return algaeRemover
+        .moveToPosition(AlgaeRemoverConstants.holdPosition)
+        .alongWith(elevator.moveToSuppliedPosition(() -> drivetrain.getAlgaeHeight()))
+        .withTimeout(1.5)
+        .andThen(
+            algaeRemover
+                .moveToPosition(AlgaeRemoverConstants.intakePosition)
+                .alongWith(algaeIntake.intake()))
         .withName("Startdoublescorecommand");
   }
 
   private Command finishDoubleScoreCommand(DoubleSupplier targetHeight) {
     return Commands.sequence(
             algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition),
-            elevator.moveToSuppliedPosition(targetHeight),
+            elevator.moveToSuppliedPosition(targetHeight).withTimeout(2),
             outtake.autoOuttake())
         .withName("Finishdoublescorecommand");
   }
@@ -640,17 +669,27 @@ public class RobotContainer {
     // barge score sequence
     operatorController
         .leftStick()
-        .whileTrue(
-            Commands.sequence(
-                elevator.moveToPosition(ElevatorConstants.bargeHeight),
-                algaeRemover.moveToPosition(AlgaeRemoverConstants.bargePosition)))
+        .whileTrue(elevator.moveToPosition(ElevatorConstants.bargeHeight))
         .onFalse(
             Commands.sequence(
-                algaeIntake.outtake().withTimeout(.9),
-                algaeIntake.stop(),
+                algaeRemover
+                    .moveToPosition(AlgaeRemoverConstants.bargeScorePosition)
+                    .alongWith(
+                        Commands.waitSeconds(.08)
+                            .andThen(algaeIntake.outtake().withTimeout(0.458))),
                 algaeRemover
                     .moveToPosition(AlgaeRemoverConstants.holdPosition)
                     .alongWith(elevator.downPosition())));
+
+    //     algaeRemover
+    //     .moveToPosition(AlgaeRemoverConstants.bargePosition)
+    //     .alongWith(
+    //         Commands.waitSeconds(.67).andThen(algaeIntake.outtake().withTimeout(.9))),
+    // // algaeIntake.outtake().withTimeout(.9),
+    // algaeIntake.stop(),
+    // algaeRemover
+    //     .moveToPosition(AlgaeRemoverConstants.holdPosition)
+    //     .alongWith(elevator.downPosition())
 
     // score Processor
     operatorController
