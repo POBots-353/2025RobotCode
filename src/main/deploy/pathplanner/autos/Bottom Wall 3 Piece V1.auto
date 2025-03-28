@@ -5,9 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "Bottom Start Alignment for E"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Bottom Start Alignment for E"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "DisableAlgaeIntakeDefaultCommand"
+                }
+              }
+            ]
           }
         },
         {
@@ -133,18 +146,6 @@
                 "data": {
                   "name": "AutoAlignRight"
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Stop Outtake"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Stop Indexer"
-                }
               }
             ]
           }
@@ -176,6 +177,18 @@
                 "type": "named",
                 "data": {
                   "name": "Elevator: L4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop Outtake"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop Indexer"
                 }
               }
             ]
@@ -266,18 +279,6 @@
                 "data": {
                   "name": "AutoAlignLeft"
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Stop Outtake"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Stop Indexer"
-                }
               }
             ]
           }
@@ -309,6 +310,18 @@
                 "type": "named",
                 "data": {
                   "name": "Elevator: L4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop Outtake"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop Indexer"
                 }
               }
             ]

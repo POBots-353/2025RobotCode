@@ -1,0 +1,134 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Middle Start H"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "EnableAlgaeIntakeDefaultCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoAlignRight"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Double Score: 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Double Score: 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Elevator: Bottom"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "H To Barge"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Barge Score: 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Barge Score: 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Barge Score: 3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Barge to J"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoAlignRight"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Grab Algae"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Elevator: Bottom"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "J to Barge"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Barge Score: 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Barge Score: 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Barge Score: 3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Barge to F"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": true
+}
