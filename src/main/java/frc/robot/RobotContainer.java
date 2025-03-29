@@ -188,14 +188,14 @@ public class RobotContainer {
 
     NamedCommands.registerCommand(
         "Barge Score: 1",
-        elevator.moveToPosition(ElevatorConstants.bargeHeight).withTimeout(1.5).asProxy());
+        elevator.moveToPosition(ElevatorConstants.bargeHeight).withTimeout(1.2).asProxy());
 
     NamedCommands.registerCommand(
         "Barge Score: 2",
         algaeRemover
             .moveToPosition(AlgaeRemoverConstants.bargeScorePosition)
-            .alongWith(Commands.waitSeconds(.08).andThen(algaeIntake.outtake().withTimeout(0.458)))
-            .withTimeout(1.6)
+            .alongWith(Commands.waitSeconds(.08).andThen(algaeIntake.outtake()))
+            .withTimeout(1.3)
             .asProxy());
 
     NamedCommands.registerCommand(
@@ -399,8 +399,9 @@ public class RobotContainer {
         .y()
         .onTrue(
             new DeferredCommand(
-                () -> getAutonomousCommand(),
-                Set.of(drivetrain, elevator, indexer, algaeIntake, algaeRemover, outtake)));
+                    () -> autoChooser.getSelected(),
+                    Set.of(drivetrain, elevator, indexer, algaeIntake, algaeRemover, outtake))
+                .asProxy());
 
     driverController
         .rightStick()
@@ -453,7 +454,7 @@ public class RobotContainer {
     // driverController.R3().onTrue(Commands.runOnce(() -> positionMode = !positionMode));
 
     // driverController
-    //     .y()
+    //     .b()
     //     .whileTrue(
     //         Commands.repeatingSequence(
     //             indexer
