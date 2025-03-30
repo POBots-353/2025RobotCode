@@ -145,7 +145,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(2.8));
     NamedCommands.registerCommand("AutoAlignRight", drivetrain.reefAlign(false).withTimeout(2.8));
     NamedCommands.registerCommand(
-        "Double Score: 1", startDoubleScoreCommand().withTimeout(1.1).asProxy());
+        "Double Score: 1", startDoubleScoreCommand().withTimeout(1.0).asProxy());
     NamedCommands.registerCommand(
         "Double Score: 2",
         finishDoubleScoreCommand(() -> ElevatorConstants.L4Height).withTimeout(3).asProxy());
@@ -188,14 +188,14 @@ public class RobotContainer {
 
     NamedCommands.registerCommand(
         "Barge Score: 1",
-        elevator.moveToPosition(ElevatorConstants.bargeHeight).withTimeout(1.5).asProxy());
+        elevator.moveToPosition(ElevatorConstants.bargeHeight).withTimeout(1.2).asProxy());
 
     NamedCommands.registerCommand(
         "Barge Score: 2",
         algaeRemover
             .moveToPosition(AlgaeRemoverConstants.bargeScorePosition)
-            .alongWith(Commands.waitSeconds(.08).andThen(algaeIntake.outtake().withTimeout(0.458)))
-            .withTimeout(2)
+            .alongWith(Commands.waitSeconds(.08).andThen(algaeIntake.outtake()))
+            .withTimeout(1.3)
             .asProxy());
 
     NamedCommands.registerCommand(
@@ -382,19 +382,40 @@ public class RobotContainer {
                         () -> 0.0,
                         () -> SwerveConstants.slowModeMaxTranslationalSpeed,
                         drivetrain)));
+    // driverController
+    //     .rightStick()
+    //     .whileTrue(
+    //         drivetrain
+    //             .pathFindToProcessor()
+    //             .andThen(
+    //                 new TeleopSwerve(
+    //                     () -> 0.0,
+    //                     driverController::getLeftX,
+    //                     () -> 0.0,
+    //                     () -> SwerveConstants.slowModeMaxTranslationalSpeed,
+    //                     drivetrain)));
+
+    driverController
+        .y()
+        .onTrue(
+            new DeferredCommand(
+                    () -> autoChooser.getSelected(),
+                    Set.of(drivetrain, elevator, indexer, algaeIntake, algaeRemover, outtake))
+                .asProxy());
+
     driverController
         .rightStick()
         .whileTrue(
-            drivetrain
-                .pathFindToProcessor()
-                .andThen(
-                    new TeleopSwerve(
-                        () -> 0.0,
-                        driverController::getLeftX,
-                        () -> 0.0,
-                        () -> SwerveConstants.slowModeMaxTranslationalSpeed,
-                        drivetrain)));
-
+            new TurnToAlgae(
+                driverController::getLeftY,
+                driverController::getLeftX,
+                () -> {
+                  if (slowMode.getAsBoolean()) {
+                    return SwerveConstants.slowModeMaxTranslationalSpeed;
+                  }
+                  return SwerveConstants.maxTranslationalSpeed;
+                },
+                drivetrain));
     // driverController.square().whileTrue(drivetrain.applyRequest(() -> brake));
     // driverController
     //     .circle()
@@ -412,20 +433,7 @@ public class RobotContainer {
     driverController.povDownRight().onTrue(drivetrain.pathFindToDirection(4));
     driverController.povUpRight().onTrue(drivetrain.pathFindToDirection(5));
 
-    // driverController.rightTrigger().whileTrue(drivetrain.humanPlayerAlign());
-    driverController
-        .rightTrigger()
-        .whileTrue(
-            new TurnToAlgae(
-                driverController::getLeftY,
-                driverController::getLeftX,
-                () -> {
-                  if (slowMode.getAsBoolean()) {
-                    return SwerveConstants.slowModeMaxTranslationalSpeed;
-                  }
-                  return SwerveConstants.maxTranslationalSpeed;
-                },
-                drivetrain));
+    driverController.rightTrigger().whileTrue(drivetrain.humanPlayerAlign());
 
     // driverController.leftStick().whileTrue(drivetrain.pathFindToBarge());
 
@@ -446,7 +454,7 @@ public class RobotContainer {
     // driverController.R3().onTrue(Commands.runOnce(() -> positionMode = !positionMode));
 
     // driverController
-    //     .y()
+    //     .b()
     //     .whileTrue(
     //         Commands.repeatingSequence(
     //             indexer
@@ -716,20 +724,18 @@ public class RobotContainer {
     //     .moveToPosition(AlgaeRemoverConstants.holdPosition)
     //     .alongWith(elevator.downPosition())
 
-    // // score Processor
-    // operatorController
-    //     .rightStick()
-    //     .whileTrue(
-    //         elevator
-    //             .downPosition()
-    //             .alongWith(algaeRemover.moveToPosition(AlgaeRemoverConstants.processorPosition)))
-    //     .onFalse(
-    //         Commands.sequence(
-    //             algaeIntake.outtake().withTimeout(1.0),
-    //             algaeIntake.stop(),
-    //             algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition)));
-
-    operatorController.rightStick().onTrue(getAutonomousCommand());
+    // score Processor
+    operatorController
+        .rightStick()
+        .whileTrue(
+            elevator
+                .downPosition()
+                .alongWith(algaeRemover.moveToPosition(AlgaeRemoverConstants.processorPosition)))
+        .onFalse(
+            Commands.sequence(
+                algaeIntake.outtake().withTimeout(1.0),
+                algaeIntake.stop(),
+                algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition)));
 
     // algae floor intake
     operatorController
