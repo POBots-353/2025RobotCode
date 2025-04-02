@@ -928,6 +928,20 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         baseStandardDev * stdDevScale, baseStandardDev * stdDevScale, Double.POSITIVE_INFINITY);
   }
 
+  public boolean inAlgaeRange() {
+    double xPose = stateCache.Pose.getX();
+    if (AllianceUtil.isRedAlliance()) {
+      if (xPose < 10.5 && xPose > 10.35) { // 10.69 10.334
+        return true;
+      }
+      return false;
+    }
+    // if (xPose < 10.05 && xPose > 9.7) {
+    //   return true;
+    // }
+    return false;
+  }
+
   private boolean isOutOfBounds(Pose3d visionPose) {
     // Allow the robot to be just slightly off the field
     final double fieldTolerance = Units.inchesToMeters(2.5);

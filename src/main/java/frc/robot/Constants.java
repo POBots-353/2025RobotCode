@@ -413,6 +413,7 @@ public class Constants {
     public static final int currentLimit = 50;
     public static final int shutOffCurrentLimit = 80;
 
+    public static final Angle autoIntakePosition = Degrees.of(-30.0);
     public static final Angle intakePosition = Degrees.of(-82.0);
     public static final Angle stowPosition = Degrees.of(15.0);
     public static final Angle bargePosition = Degrees.of(-31.0);

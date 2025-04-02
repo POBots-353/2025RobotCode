@@ -24,15 +24,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "AutoAlignRight"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Double Score: 1"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "AutoAlignRight"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Double Score: 1"
+                }
+              }
+            ]
           }
         },
         {
@@ -98,15 +105,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "AutoAlignRight"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Grab Algae"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "AutoAlignRight"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Grab Algae"
+                }
+              }
+            ]
           }
         },
         {

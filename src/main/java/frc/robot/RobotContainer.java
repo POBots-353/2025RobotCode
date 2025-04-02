@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -99,6 +100,7 @@ public class RobotContainer {
   private Trigger atElevatorHeight = new Trigger(elevator::atSetHeight);
   private Trigger doubleScoreMode =
       operatorController.leftBumper().and(operatorController.start().negate());
+  private Trigger inBargeRange = new Trigger(drivetrain::inAlgaeRange);
 
   public RobotContainer() {
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
@@ -145,7 +147,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(2.8));
     NamedCommands.registerCommand("AutoAlignRight", drivetrain.reefAlign(false).withTimeout(2.8));
     NamedCommands.registerCommand(
-        "Double Score: 1", startDoubleScoreCommand().withTimeout(1.0).asProxy());
+        "Double Score: 1", startDoubleScoreCommand().withTimeout(2.3).asProxy());
     NamedCommands.registerCommand(
         "Double Score: 2",
         finishDoubleScoreCommand(() -> ElevatorConstants.L4Height).withTimeout(3).asProxy());
@@ -178,7 +180,7 @@ public class RobotContainer {
                         Commands.waitTime(AlgaeRemoverConstants.reefIntakeTimingOffset)
                             .andThen(
                                 algaeRemover
-                                    .moveToPosition(AlgaeRemoverConstants.intakePosition)
+                                    .moveToPosition(AlgaeRemoverConstants.autoIntakePosition)
                                     .alongWith(algaeIntake.intake())))
                     .withTimeout(1.3),
                 algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition))
@@ -230,6 +232,22 @@ public class RobotContainer {
     //     .onFalse(
     //         Commands.race(Commands.waitUntil(outtakeLaserBroken), Commands.waitSeconds(4))
     //             .andThen(indexer::stopIndexer));
+
+    inBargeRange
+        .and(() -> !DriverStation.isAutonomous())
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  operatorController.getHID().setRumble(RumbleType.kBothRumble, 1);
+                  driverController.getHID().setRumble(RumbleType.kBothRumble, 1);
+                }))
+        .onFalse(
+            Commands.runOnce(
+                () -> {
+                  driverController.getHID().setRumble(RumbleType.kBothRumble, 0.0);
+                  operatorController.getHID().setRumble(RumbleType.kBothRumble, 0.0);
+                }));
+
     outtakeLaserBroken
         .and(() -> !DriverStation.isAutonomous())
         .onTrue(
@@ -398,10 +416,17 @@ public class RobotContainer {
     driverController
         .y()
         .onTrue(
-            new DeferredCommand(
-                    () -> autoChooser.getSelected(),
-                    Set.of(drivetrain, elevator, indexer, algaeIntake, algaeRemover, outtake))
-                .asProxy());
+            new InstantCommand(
+                () -> {
+                  Command autoCommand = autoChooser.getSelected();
+                  autoCommand.schedule();
+                },
+                drivetrain,
+                elevator,
+                indexer,
+                algaeIntake,
+                algaeRemover,
+                outtake));
 
     driverController
         .rightStick()
@@ -538,14 +563,16 @@ public class RobotContainer {
         .onTrue(
             elevator
                 .moveToPosition(ElevatorConstants.L4Height)
-                .andThen(
-                    new ConditionalCommand(
-                        outtake.autoOuttake(),
-                        Commands.none(),
-                        () ->
-                            (driverController.leftBumper().getAsBoolean()
-                                    || driverController.rightBumper().getAsBoolean())
-                                && outtakeLaserBroken.getAsBoolean())));
+                .alongWith(
+                    Commands.waitSeconds(1.1)
+                        .andThen(
+                            new ConditionalCommand(
+                                outtake.autoOuttake(),
+                                Commands.none(),
+                                () ->
+                                    (driverController.leftBumper().getAsBoolean()
+                                            || driverController.rightBumper().getAsBoolean())
+                                        && outtakeLaserBroken.getAsBoolean()))));
 
     // elevator L3
     operatorController
@@ -556,14 +583,16 @@ public class RobotContainer {
         .onTrue(
             elevator
                 .moveToPosition(ElevatorConstants.L3Height)
-                .andThen(
-                    new ConditionalCommand(
-                        outtake.autoOuttake(),
-                        Commands.none(),
-                        () ->
-                            (driverController.leftBumper().getAsBoolean()
-                                    || driverController.rightBumper().getAsBoolean())
-                                && outtakeLaserBroken.getAsBoolean())));
+                .alongWith(
+                    Commands.waitSeconds(.8)
+                        .andThen(
+                            new ConditionalCommand(
+                                outtake.autoOuttake(),
+                                Commands.none(),
+                                () ->
+                                    (driverController.leftBumper().getAsBoolean()
+                                            || driverController.rightBumper().getAsBoolean())
+                                        && outtakeLaserBroken.getAsBoolean()))));
 
     // elevator L2
     operatorController
@@ -574,14 +603,16 @@ public class RobotContainer {
         .onTrue(
             elevator
                 .moveToPosition(ElevatorConstants.L2Height)
-                .andThen(
-                    new ConditionalCommand(
-                        outtake.autoOuttake(),
-                        Commands.none(),
-                        () ->
-                            (driverController.leftBumper().getAsBoolean()
-                                    || driverController.rightBumper().getAsBoolean())
-                                && outtakeLaserBroken.getAsBoolean())));
+                .alongWith(
+                    Commands.waitSeconds(.5)
+                        .andThen(
+                            new ConditionalCommand(
+                                outtake.autoOuttake(),
+                                Commands.none(),
+                                () ->
+                                    (driverController.leftBumper().getAsBoolean()
+                                            || driverController.rightBumper().getAsBoolean())
+                                        && outtakeLaserBroken.getAsBoolean()))));
 
     // elevator down height
     operatorController.a().onTrue(elevator.downPosition());

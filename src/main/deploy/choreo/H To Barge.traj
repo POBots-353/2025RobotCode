@@ -16,7 +16,7 @@
   "waypoints":[
     {"x":{"exp":"H.x", "val":5.797419548034668}, "y":{"exp":"H.y", "val":4.190892219543457}, "heading":{"exp":"H.heading", "val":3.141592653589793}, "intervals":24, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"6.733119964599609 m", "val":6.733119964599609}, "y":{"exp":"4.443180084228516 m", "val":4.443180084228516}, "heading":{"exp":"-1.5707963267948966 rad", "val":-1.5707963267948966}, "intervals":24, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"7.588488578796387 m", "val":7.588488578796387}, "y":{"exp":"4.8183417320251465 m", "val":4.8183417320251465}, "heading":{"exp":"0.12608826876867976 rad", "val":0.12608826876867976}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"bargetemp.x", "val":7.588488578796387}, "y":{"exp":"bargetemp.y", "val":4.8183417320251465}, "heading":{"exp":"bargetemp.heading", "val":0.12608826876867976}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
