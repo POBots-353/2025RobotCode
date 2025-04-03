@@ -55,6 +55,10 @@ public class Outtake extends ExpandedSubsystem {
     return run(() -> outtakeMotor.set(OuttakeConstants.fastOuttakeSpeed)).withName("Fast Outtake");
   }
 
+  public Command L1Outtake() {
+    return run(() -> outtakeMotor.set(OuttakeConstants.L1OuttakeSpeed)).withName("L1 Outtake");
+  }
+
   public Command slowOuttake() {
     return run(() -> outtakeMotor.set(OuttakeConstants.slowOuttakeSpeed)).withName("Slow Outtake");
   }

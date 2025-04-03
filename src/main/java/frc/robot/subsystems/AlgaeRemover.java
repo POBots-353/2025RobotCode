@@ -107,6 +107,10 @@ public class AlgaeRemover extends ExpandedSubsystem {
     algaeRemoverMotor.set(0);
   }
 
+  public void resetPosition() {
+    algaeRemoverEncoder.setPosition(0);
+  }
+
   public void algaeRemoverUp() {
     algaeRemoverMotor.set(AlgaeRemoverConstants.algaeRemoverSpeed);
   }
@@ -122,7 +126,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
 
   @Logged(name = "Position")
   public Angle getPosition() {
-    return Radians.of(algaeRemoverAbsoluteEncoder.getPosition());
+    return Radians.of(algaeRemoverEncoder.getPosition());
   }
 
   @Override

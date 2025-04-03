@@ -13,7 +13,6 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -25,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -46,7 +44,6 @@ import frc.robot.subsystems.Outtake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.util.LogUtil;
 import frc.robot.util.PersistentSendableChooser;
-import java.util.Set;
 import java.util.function.DoubleSupplier;
 
 @Logged(strategy = Strategy.OPT_IN)
@@ -142,15 +139,35 @@ public class RobotContainer {
         "IntakeUntilBeamBreak",
         outtake.outtakeUntilBeamBreak().alongWith(indexer.runIndexer()).asProxy());
     NamedCommands.registerCommand("Stop Outtake", outtake.stopOuttakeMotor().asProxy());
+    NamedCommands.registerCommand(
+        "ZeroAlgaeRemover",
+        Commands.runOnce(() -> algaeRemover.resetPosition()).withTimeout(.15).asProxy());
 
     NamedCommands.registerCommand("Turn to reef", new TurnToReef(drivetrain).withTimeout(2));
     NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(2.8));
     NamedCommands.registerCommand("AutoAlignRight", drivetrain.reefAlign(false).withTimeout(2.8));
     NamedCommands.registerCommand(
-        "Double Score: 1", startDoubleScoreCommand().withTimeout(2.3).asProxy());
+        "AutoAutoAlignRight", drivetrain.autoReefAlign(false).withTimeout(2.8));
+
+    NamedCommands.registerCommand(
+        "Double Score: 1",
+        algaeRemover
+            .moveToPosition(AlgaeRemoverConstants.holdPosition)
+            .alongWith(elevator.moveToSuppliedPosition(() -> drivetrain.getAlgaeHeight()))
+            .withTimeout(1.5)
+            .andThen(
+                algaeRemover
+                    .moveToPosition(AlgaeRemoverConstants.autoIntakePosition)
+                    .alongWith(algaeIntake.intake()))
+            .withTimeout(2)
+            .asProxy());
     NamedCommands.registerCommand(
         "Double Score: 2",
-        finishDoubleScoreCommand(() -> ElevatorConstants.L4Height).withTimeout(3).asProxy());
+        Commands.sequence(
+                algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition),
+                elevator.moveToSuppliedPosition(() -> ElevatorConstants.L4Height).withTimeout(2),
+                outtake.autoOuttake().withTimeout(1))
+            .asProxy());
     // private Command startDoubleScoreCommand() {
     //     return algaeRemover
     //         .moveToPosition(AlgaeRemoverConstants.holdPosition)
@@ -197,7 +214,7 @@ public class RobotContainer {
         algaeRemover
             .moveToPosition(AlgaeRemoverConstants.bargeScorePosition)
             .alongWith(Commands.waitSeconds(.08).andThen(algaeIntake.outtake()))
-            .withTimeout(1.3)
+            .withTimeout(1.0)
             .asProxy());
 
     NamedCommands.registerCommand(
@@ -208,8 +225,8 @@ public class RobotContainer {
             .withTimeout(1.1)
             .asProxy());
     NamedCommands.registerCommand(
-        "Algae Remover: STOW",
-        algaeRemover.moveToPosition(AlgaeRemoverConstants.stowPosition).withTimeout(2).asProxy());
+        "Algae Remover: HOLD",
+        algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition).withTimeout(1.5).asProxy());
 
     NamedCommands.registerCommand(
         "EnableAlgaeIntakeDefaultCommand", Commands.runOnce(() -> isAlgaeAuto = true).asProxy());
@@ -289,7 +306,16 @@ public class RobotContainer {
     // led.setDefaultCommand(led.solidColor(Color.kBlack).ignoringDisable(true));
 
     // Hacky way to get the default LED command to switch
-    new Trigger(DriverStation::isDSAttached).onChange(led.runOnce(() -> {}).ignoringDisable(true));
+    // new Trigger(DriverStation::isDSAttached).onChange(led.runOnce(() ->
+    // {}).ignoringDisable(true));
+    new Trigger(DriverStation::isEnabled)
+        .onChange(
+            Commands.runOnce(
+                    () -> {
+                      driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
+                      operatorController.getHID().setRumble(RumbleType.kBothRumble, 0);
+                    })
+                .ignoringDisable(true));
 
     led.setDefaultCommand(
         Commands.either(
@@ -617,21 +643,33 @@ public class RobotContainer {
     // elevator down height
     operatorController.a().onTrue(elevator.downPosition());
 
-    // home elevator
-    operatorController.back().and(operatorController.start()).onTrue(elevator.homeElevator());
-
-    // coral in the way add
     operatorController
         .povRight()
         .onTrue(
-            new DeferredCommand(
-                () -> {
-                  double newTarget =
-                      Units.inchesToMeters(
-                          elevator.getPositionInches() + ElevatorConstants.coralInTheWayAdd);
-                  return elevator.moveToPosition(newTarget);
-                },
-                Set.of(elevator)));
+            Commands.sequence(
+                elevator.moveToPosition(ElevatorConstants.L1Height).withTimeout(1),
+                outtake.fastOuttake().alongWith(elevator.upSpeed(1)).withTimeout(.353),
+                outtake.stopOuttakeMotor()));
+
+    // home elevator
+    operatorController
+        .back()
+        .and(operatorController.start())
+        .and(operatorController.leftBumper().negate())
+        .onTrue(elevator.homeElevator());
+
+    // // coral in the way add
+    // operatorController
+    //     .povRight()
+    //     .onTrue(
+    //         new DeferredCommand(
+    //             () -> {
+    //               double newTarget =
+    //                   Units.inchesToMeters(
+    //                       elevator.getPositionInches() + ElevatorConstants.coralInTheWayAdd);
+    //               return elevator.moveToPosition(newTarget);
+    //             },
+    //             Set.of(elevator)));
     // elevator manual down
     operatorController
         .povDown()
@@ -693,12 +731,12 @@ public class RobotContainer {
             Commands.none(),
             algaeIntake.slowIntake(),
             () -> DriverStation.isAutonomous() && !isAlgaeAuto));
-
-    // algaeintake to stow position
+    // zero algaeintake
     operatorController
         .back()
         .and(operatorController.start())
-        .onTrue(algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition));
+        .and(operatorController.leftBumper())
+        .onTrue(Commands.runOnce(() -> algaeRemover.resetPosition()));
 
     // algaeRemover manual down
     operatorController

@@ -390,6 +390,8 @@ public class Constants {
     public static final int outtakeShutOffLimit = 75;
 
     public static final double fastOuttakeSpeed = 0.40;
+    public static final double L1OuttakeSpeed = 0.45;
+
     public static final double slowOuttakeSpeed = 0.24; // .353 0.2
 
     public static final int outtakeLaserCanID = 19;
@@ -413,7 +415,7 @@ public class Constants {
     public static final int currentLimit = 50;
     public static final int shutOffCurrentLimit = 80;
 
-    public static final Angle autoIntakePosition = Degrees.of(-30.0);
+    public static final Angle autoIntakePosition = Degrees.of(-40.0);
     public static final Angle intakePosition = Degrees.of(-82.0);
     public static final Angle stowPosition = Degrees.of(15.0);
     public static final Angle bargePosition = Degrees.of(-31.0);
@@ -460,6 +462,7 @@ public class Constants {
     public static final double L4Height = Units.inchesToMeters(28.3); // 28.09
     public static final double L3Height = Units.inchesToMeters(15.5 + .7);
     public static final double L2Height = Units.inchesToMeters(7.3 + .55);
+    public static final double L1Height = Units.inchesToMeters(3.5);
     public static final double downHeight = Units.inchesToMeters(0);
     public static final double bargeHeight = Units.inchesToMeters(28);
     public static final double processorHeight = Units.inchesToMeters(2);

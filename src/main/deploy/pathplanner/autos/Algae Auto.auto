@@ -19,6 +19,12 @@
                 "data": {
                   "name": "EnableAlgaeIntakeDefaultCommand"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ZeroAlgaeRemover"
+                }
               }
             ]
           }
@@ -61,9 +67,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "Barge Score: 1"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Barge Score: 1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Algae Remover: HOLD"
+                }
+              }
+            ]
           }
         },
         {
@@ -83,7 +102,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.75
+                        "waitTime": 0.25
                       }
                     },
                     {
@@ -111,7 +130,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "AutoAlignRight"
+                  "name": "AutoAutoAlignRight"
                 }
               },
               {
@@ -136,9 +155,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "Barge Score: 1"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Barge Score: 1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Algae Remover: HOLD"
+                }
+              }
+            ]
           }
         },
         {
@@ -148,9 +180,35 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "Barge Score: 3"
+            "commands": [
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.25
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "Barge to out"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Barge Score: 3"
+                }
+              }
+            ]
           }
         }
       ]
