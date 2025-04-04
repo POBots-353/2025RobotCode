@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -587,18 +586,18 @@ public class RobotContainer {
         .and(operatorController.leftBumper().negate())
         .or(operatorController.povLeft().and(operatorController.b()))
         .onTrue(
-            elevator
-                .moveToPosition(ElevatorConstants.L4Height)
-                .alongWith(
-                    Commands.waitSeconds(1.1)
-                        .andThen(
-                            new ConditionalCommand(
-                                outtake.autoOuttake(),
-                                Commands.none(),
-                                () ->
-                                    (driverController.leftBumper().getAsBoolean()
-                                            || driverController.rightBumper().getAsBoolean())
-                                        && outtakeLaserBroken.getAsBoolean()))));
+            elevator.moveToPosition(ElevatorConstants.L4Height)
+            // .alongWith(
+            //     Commands.waitSeconds(1.1)
+            //         .andThen(
+            //             new ConditionalCommand(
+            //                 outtake.autoOuttake(),
+            //                 Commands.none(),
+            //                 () ->
+            //                     (driverController.leftBumper().getAsBoolean()
+            //                             || driverController.rightBumper().getAsBoolean())
+            //                         && outtakeLaserBroken.getAsBoolean())))
+            );
 
     // elevator L3
     operatorController
@@ -607,18 +606,18 @@ public class RobotContainer {
         .and(operatorController.leftBumper().negate())
         .or(operatorController.povLeft().and(operatorController.y()))
         .onTrue(
-            elevator
-                .moveToPosition(ElevatorConstants.L3Height)
-                .alongWith(
-                    Commands.waitSeconds(.8)
-                        .andThen(
-                            new ConditionalCommand(
-                                outtake.autoOuttake(),
-                                Commands.none(),
-                                () ->
-                                    (driverController.leftBumper().getAsBoolean()
-                                            || driverController.rightBumper().getAsBoolean())
-                                        && outtakeLaserBroken.getAsBoolean()))));
+            elevator.moveToPosition(ElevatorConstants.L3Height)
+            // .alongWith(
+            //     Commands.waitSeconds(.8)
+            //         .andThen(
+            //             new ConditionalCommand(
+            //                 outtake.autoOuttake(),
+            //                 Commands.none(),
+            //                 () ->
+            //                     (driverController.leftBumper().getAsBoolean()
+            //                             || driverController.rightBumper().getAsBoolean())
+            //                         && outtakeLaserBroken.getAsBoolean())))
+            );
 
     // elevator L2
     operatorController
@@ -627,18 +626,18 @@ public class RobotContainer {
         .and(operatorController.leftBumper().negate())
         .or(operatorController.povLeft().and(operatorController.x()))
         .onTrue(
-            elevator
-                .moveToPosition(ElevatorConstants.L2Height)
-                .alongWith(
-                    Commands.waitSeconds(.5)
-                        .andThen(
-                            new ConditionalCommand(
-                                outtake.autoOuttake(),
-                                Commands.none(),
-                                () ->
-                                    (driverController.leftBumper().getAsBoolean()
-                                            || driverController.rightBumper().getAsBoolean())
-                                        && outtakeLaserBroken.getAsBoolean()))));
+            elevator.moveToPosition(ElevatorConstants.L2Height)
+            // .alongWith(
+            //     Commands.waitSeconds(.5)
+            //         .andThen(
+            //             new ConditionalCommand(
+            //                 outtake.autoOuttake(),
+            //                 Commands.none(),
+            //                 () ->
+            //                     (driverController.leftBumper().getAsBoolean()
+            //                             || driverController.rightBumper().getAsBoolean())
+            //                         && outtakeLaserBroken.getAsBoolean())))
+            );
 
     // elevator down height
     operatorController.a().onTrue(elevator.downPosition());
