@@ -581,6 +581,26 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         || isPoseWithinTolerance(stateCache.Pose, leftPoses);
   }
 
+  public void zeroYawOnReef() {
+
+    List<Pose2d> reefPoses =
+        AllianceUtil.isRedAlliance()
+            ? FieldConstants.redAlgaeRemoverPoses
+            : FieldConstants.blueAlgaeRemoverPoses;
+    Pose2d closestPose = stateCache.Pose.nearest(reefPoses);
+
+    resetPose(
+        new Pose2d(stateCache.Pose.getX(), stateCache.Pose.getY(), closestPose.getRotation()));
+
+    // if (RobotBase.isSimulation()) {
+    //   simOdometry.resetPosition(
+    //       getRawHeading(),
+    //       getModulePositions(),
+    //       new Pose2d(
+    //           originalOdometryPosition.getTranslation(),
+    //           AllianceUtil.getZeroRotation().plus(orientationOffset)));
+  }
+
   public Command reefAlign(boolean leftAlign) {
     return new DeferredCommand(
             () -> {
@@ -930,15 +950,14 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   public boolean inAlgaeRange() {
     double xPose = stateCache.Pose.getX();
-    if (AllianceUtil.isRedAlliance()) {
-      if (xPose < 10.5 && xPose > 10.35) { // 10.69 10.334
-        return true;
-      }
-      return false;
+    if (xPose < 10.5 && xPose > 10.35) {
+      return true;
     }
-    // if (xPose < 10.05 && xPose > 9.7) {
-    //   return true;
-    // }
+
+    if (xPose > 7.1 && xPose < 7.25) {
+      return true;
+    }
+
     return false;
   }
 
