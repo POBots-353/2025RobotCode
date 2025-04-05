@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -466,6 +467,7 @@ public class RobotContainer {
                   return SwerveConstants.maxTranslationalSpeed;
                 },
                 drivetrain));
+
     // driverController.square().whileTrue(drivetrain.applyRequest(() -> brake));
     // driverController
     //     .circle()
@@ -562,11 +564,15 @@ public class RobotContainer {
 
     driverController.x().whileTrue(drivetrain.pathFindForAlgaeRemover());
 
-    // reset the field-centric heading on left bumper press
+    // reset the field-centric heading
     driverController
-        .back()
-        .and(driverController.start())
+        .start()
+        .and(driverController.back())
         .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
+
+    driverController
+        .a()
+        .onTrue(drivetrain.runOnce(drivetrain::zeroYawOnReef).ignoringDisable(true));
 
     drivetrain.registerTelemetry(logger::telemeterize);
     // driverController.y().onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
