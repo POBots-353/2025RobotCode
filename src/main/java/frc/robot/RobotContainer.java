@@ -82,12 +82,15 @@ public class RobotContainer {
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   private boolean positionMode = false;
+  private boolean prepareElevator = false;
+
   private boolean doubleScoreActive = false;
   private DoubleSupplier selectedHeight = () -> 0.0;
   private final PowerDistribution powerDistribution = new PowerDistribution(1, ModuleType.kRev);
   private Debouncer loopDebouncer = new Debouncer(2);
 
   private Trigger outtakeLaserBroken = new Trigger(outtake::outtakeLaserBroken);
+  private Trigger prepareElevatorUp = new Trigger(() -> prepareElevator);
   private Trigger isPositionMode = new Trigger(() -> positionMode);
   private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
   private Trigger elevatorIsDown = new Trigger(elevator::elevatorIsDown);
@@ -279,6 +282,10 @@ public class RobotContainer {
                           operatorController.getHID().setRumble(RumbleType.kBothRumble, 0.0);
                         }))
                 .withName("Outtake Laser Vibration"));
+
+    prepareElevatorUp
+        .onTrue(elevator.moveToPosition(ElevatorConstants.L2Height))
+        .onFalse(elevator.downPosition());
     // new Trigger(
     //         () ->
     //             DriverStation.isAutonomous()
@@ -529,8 +536,11 @@ public class RobotContainer {
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
-                new TurnToReef(drivetrain),
-                drivetrain.reefAlign(true)));
+                Commands.parallel(
+                    new TurnToReef(drivetrain),
+                    Commands.runOnce(() -> prepareElevator = true).onlyIf(outtakeLaserBroken)),
+                drivetrain.reefAlign(true)))
+        .onFalse(Commands.runOnce(() -> prepareElevator = false));
     // drivetrain.reefAlign(true),
     // Commands.waitUntil(
     //     outtakeLaserBroken
@@ -546,8 +556,11 @@ public class RobotContainer {
         .whileTrue(
             Commands.sequence(
                 drivetrain.pathFindToSetup(),
-                new TurnToReef(drivetrain),
-                drivetrain.reefAlign(false)));
+                Commands.parallel(
+                    new TurnToReef(drivetrain),
+                    Commands.runOnce(() -> prepareElevator = true).onlyIf(outtakeLaserBroken)),
+                drivetrain.reefAlign(false)))
+        .onFalse(Commands.runOnce(() -> prepareElevator = false));
     // drivetrain.reefAlign(true),
     // Commands.waitUntil(
     //     outtakeLaserBroken
