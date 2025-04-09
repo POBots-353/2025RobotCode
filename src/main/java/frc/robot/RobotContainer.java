@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -151,10 +150,9 @@ public class RobotContainer {
 
     NamedCommands.registerCommand(
         "Double Score: 1",
-        algaeRemover
-            .moveToPosition(AlgaeRemoverConstants.holdPosition)
-            .alongWith(elevator.moveToSuppliedPosition(() -> drivetrain.getAlgaeHeight()))
-            .withTimeout(1.5)
+        elevator
+            .moveToSuppliedPosition(() -> drivetrain.getAlgaeHeight())
+            .withTimeout(.7)
             .andThen(
                 algaeRemover
                     .moveToPosition(AlgaeRemoverConstants.autoIntakePosition)
@@ -214,7 +212,7 @@ public class RobotContainer {
         algaeRemover
             .moveToPosition(AlgaeRemoverConstants.bargeScorePosition)
             .alongWith(Commands.waitSeconds(.08).andThen(algaeIntake.outtake()))
-            .withTimeout(1.0)
+            .withTimeout(.67)
             .asProxy());
 
     NamedCommands.registerCommand(
@@ -570,9 +568,7 @@ public class RobotContainer {
         .and(driverController.back())
         .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).ignoringDisable(true));
 
-    driverController
-        .a()
-        .onTrue(drivetrain.runOnce(drivetrain::zeroYawOnReef).ignoringDisable(true));
+    driverController.b().onTrue(drivetrain.runOnce(drivetrain::zeroYawOnReef));
 
     drivetrain.registerTelemetry(logger::telemeterize);
     // driverController.y().onTrue(elevator.moveToPosition(ElevatorConstants.L4Height));
@@ -708,7 +704,7 @@ public class RobotContainer {
   private void configureOuttakeBindings() {
 
     operatorController
-        .start()
+        .leftTrigger()
         .and(operatorController.back().negate())
         .and(operatorController.leftBumper().negate())
         .whileTrue(outtake.fastOuttake())
@@ -758,7 +754,9 @@ public class RobotContainer {
 
     // algae intake sequence
     operatorController
-        .leftTrigger()
+        .start()
+        .and(operatorController.back().negate())
+        .and(operatorController.leftBumper().negate())
         .whileTrue(
             elevator
                 .moveToSuppliedPosition(() -> drivetrain.getAlgaeHeight())

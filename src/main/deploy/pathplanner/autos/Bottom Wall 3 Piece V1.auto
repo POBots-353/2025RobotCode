@@ -146,6 +146,12 @@
                 "data": {
                   "name": "AutoAlignRight"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: L2"
+                }
               }
             ]
           }
@@ -278,6 +284,12 @@
                 "type": "named",
                 "data": {
                   "name": "AutoAlignLeft"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: L2"
                 }
               }
             ]

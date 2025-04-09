@@ -67,28 +67,48 @@
           }
         },
         {
-          "type": "deadline",
+          "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "deadline",
                 "data": {
-                  "name": "Barge Score: 1"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Barge Score: 1"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Algae Remover: HOLD"
+                      }
+                    }
+                  ]
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "Algae Remover: HOLD"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.8
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Barge Score: 2"
+                      }
+                    }
+                  ]
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Barge Score: 2"
           }
         },
         {
@@ -130,7 +150,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "AutoAutoAlignRight"
+                  "name": "AutoAlignRight"
                 }
               },
               {
@@ -155,28 +175,48 @@
           }
         },
         {
-          "type": "deadline",
+          "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "deadline",
                 "data": {
-                  "name": "Barge Score: 1"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Barge Score: 1"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Algae Remover: HOLD"
+                      }
+                    }
+                  ]
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "Algae Remover: HOLD"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.8
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Barge Score: 2"
+                      }
+                    }
+                  ]
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Barge Score: 2"
           }
         },
         {
