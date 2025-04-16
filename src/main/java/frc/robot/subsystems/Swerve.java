@@ -525,15 +525,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
                 .getTranslation(),
             Rotation2d.fromDegrees(desiredRotation));
 
-    List<Pose2d> leftPoses =
-        AllianceUtil.isRedAlliance()
-            ? ReefDefinitePoses.redReefDefiniteLeftPoses
-            : ReefDefinitePoses.blueReefDefiniteLeftPoses;
+    List<Pose2d> leftPoses = new ArrayList<>(ReefDefinitePoses.redReefDefiniteLeftPoses);
+    leftPoses.addAll(ReefDefinitePoses.blueReefDefiniteLeftPoses);
 
-    List<Pose2d> rightPoses =
-        AllianceUtil.isRedAlliance()
-            ? ReefDefinitePoses.redReefDefiniteRightPoses
-            : ReefDefinitePoses.blueReefDefiniteRightPoses;
+    List<Pose2d> rightPoses = new ArrayList<>(ReefDefinitePoses.redReefDefiniteRightPoses);
+    rightPoses.addAll(ReefDefinitePoses.blueReefDefiniteRightPoses);
 
     if (isPoseWithinTolerance(estimatedLEFTPOSE, leftPoses)) {
       leftPose = estimatedLEFTPOSE;
@@ -815,12 +811,17 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
               List<Pose2d> redSetupPoses = FieldConstants.redSetupPoses;
               List<Pose2d> blueSetupPoses = FieldConstants.blueSetupPoses;
 
-              if (AllianceUtil.isRedAlliance()) {
-                closestPose = stateCache.Pose.nearest(redSetupPoses);
+              List<Pose2d> allSetupPoses = new ArrayList<>(redSetupPoses);
+              allSetupPoses.addAll(blueSetupPoses);
 
-              } else {
-                closestPose = stateCache.Pose.nearest(blueSetupPoses);
-              }
+              // if (AllianceUtil.isRedAlliance()) {
+              //   closestPose = stateCache.Pose.nearest(redSetupPoses);
+
+              // } else {
+              //   closestPose = stateCache.Pose.nearest(blueSetupPoses);
+              // }
+
+              closestPose = stateCache.Pose.nearest(allSetupPoses);
 
               return AutoBuilder.pathfindToPose(closestPose, AutoConstants.midPathConstraints, 0);
             },
@@ -828,7 +829,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         .withName("Pathfind to Setup");
   }
 
-  public Command pathFindForAlgaeRemover() {
+  public Command pathFindForL1Score() {
     return new DeferredCommand(
             () -> {
               Pose2d closestPose;
@@ -872,11 +873,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   public boolean isAlgaeHighAtCurrentPosition() {
+    List<Pose2d> combinedList = new ArrayList<>(FieldConstants.redAlgaeRemoverPoses);
+    combinedList.addAll(FieldConstants.blueAlgaeRemoverPoses);
 
-    Pose2d closestPose =
-        AllianceUtil.isRedAlliance()
-            ? stateCache.Pose.nearest(FieldConstants.redAlgaeRemoverPoses)
-            : stateCache.Pose.nearest(FieldConstants.blueAlgaeRemoverPoses);
+    Pose2d closestPose = stateCache.Pose.nearest(combinedList);
 
     return FieldConstants.algaeHeightPositions.getOrDefault(closestPose, false);
   }
