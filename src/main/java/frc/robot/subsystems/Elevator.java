@@ -149,7 +149,7 @@ public class Elevator extends ExpandedSubsystem {
   }
 
   public boolean elevatorIsDown() {
-    return Units.metersToInches(elevatorMainPosition.getValueAsDouble()) < 3.53;
+    return Units.metersToInches(elevatorMainPosition.getValueAsDouble()) < 2.353;
   }
 
   public Command upSpeed(double speed) {

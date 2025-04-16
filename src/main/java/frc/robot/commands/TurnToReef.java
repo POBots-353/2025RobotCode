@@ -13,9 +13,10 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.subsystems.Swerve;
-import frc.robot.util.AllianceUtil;
+import java.util.List;
 
 public class TurnToReef extends Command {
   private final Swerve swerve;
@@ -37,7 +38,11 @@ public class TurnToReef extends Command {
 
   @Override
   public void initialize() {
-    target = AllianceUtil.getReefPose();
+    target =
+        swerve
+            .getState()
+            .Pose
+            .nearest(List.of(FieldConstants.reefRedAlliance, FieldConstants.reefBlueAlliance));
     targetX = target.getX();
     targetY = target.getY();
   }

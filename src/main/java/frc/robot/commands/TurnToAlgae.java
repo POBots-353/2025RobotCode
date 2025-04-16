@@ -101,11 +101,7 @@ public class TurnToAlgae extends Command {
         robotOriented
             .withVelocityX(forwardSpeed)
             .withVelocityY(strafeSpeed)
-            .withRotationalRate(
-                Units.rotationsToRadians(
-                    turningSpeed
-                    // * SwerveConstants.maxRotationalSpeed.in(RotationsPerSecond)
-                    ))); // rotaitonspeed
+            .withRotationalRate(Units.rotationsToRadians(turningSpeed)));
   }
 
   // Called once the command ends or is interrupted.
@@ -120,7 +116,6 @@ public class TurnToAlgae extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    // return Math.abs(turnToAlgaeController.getError()) < Math.toRadians(3);
     return false;
   }
 }
