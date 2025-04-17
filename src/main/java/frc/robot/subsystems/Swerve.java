@@ -446,7 +446,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       if (!result.hasTargets()) continue;
 
       for (PhotonTrackedTarget target : result.getTargets()) {
-        if (AllianceUtil.getReefIds().contains(target.getFiducialId())) {
+        if (AllianceUtil.ALL_REEF_IDS.contains(target.getFiducialId())) {
           validTargets.add(target);
         }
       }
@@ -950,11 +950,11 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   public boolean inAlgaeRange() {
     double xPose = stateCache.Pose.getX();
-    if (xPose < 10.5 && xPose > 10.35) {
+    if (xPose < 10.4 && xPose > 10.0) {
       return true;
     }
 
-    if (xPose > 7.1 && xPose < 7.25) {
+    if (xPose > 7.1 && xPose < 7.5) {
       return true;
     }
 

@@ -25,6 +25,12 @@
                 "data": {
                   "name": "ZeroAlgaeRemover"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ZeroClimber"
+                }
               }
             ]
           }

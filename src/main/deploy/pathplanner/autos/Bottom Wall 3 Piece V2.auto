@@ -11,13 +11,13 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Middle Start H"
+                  "pathName": "Bottom Start Alignment for E"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "EnableAlgaeIntakeDefaultCommand"
+                  "name": "DisableAlgaeIntakeDefaultCommand"
                 }
               },
               {
@@ -36,65 +36,15 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "AutoAlignLeft"
+          }
+        },
+        {
           "type": "deadline",
           "data": {
             "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "AutoAlignRight"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Double Score: 1"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Double Score: 2"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Elevator: Bottom"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "H To Barge"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "deadline",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Barge Score: 1"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Algae Remover: HOLD"
-                      }
-                    }
-                  ]
-                }
-              },
               {
                 "type": "sequential",
                 "data": {
@@ -102,16 +52,22 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.9
+                        "waitTime": 1.0
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "Barge Score: 2"
+                        "name": "Auto Outtake"
                       }
                     }
                   ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: L4"
                 }
               }
             ]
@@ -134,7 +90,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "Barge to F Straight"
+                        "pathName": "E to HP Right"
                       }
                     }
                   ]
@@ -143,55 +99,23 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Barge Score: 3"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "deadline",
-          "data": {
-            "commands": [
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 0.7
+                  "name": "Elevator: Bottom"
                 }
               },
               {
-                "type": "named",
-                "data": {
-                  "name": "Turn to reef"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "AutoAlignRight"
-                }
-              },
-              {
-                "type": "deadline",
+                "type": "sequential",
                 "data": {
                   "commands": [
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 1.6
+                        "waitTime": 1.5
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "Grab Algae"
+                        "name": "Start Indexer"
                       }
                     }
                   ]
@@ -203,58 +127,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Elevator: Bottom"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "F to Barge"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "deadline",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Barge Score: 1"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Algae Remover: HOLD"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.9
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Barge Score: 2"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
+            "name": "OuttakeUntilBeamBreak"
           }
         },
         {
@@ -262,35 +135,22 @@
           "data": {
             "commands": [
               {
-                "type": "sequential",
+                "type": "path",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.0
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "Barge to J Straight.0"
-                      }
-                    }
-                  ]
+                  "pathName": "HP Right to D Setup"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "Barge Score: 3"
+                  "name": "IntakeUntilBeamBreak"
                 }
               }
             ]
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
@@ -300,22 +160,9 @@
                 }
               },
               {
-                "type": "deadline",
+                "type": "named",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.6
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Grab Algae"
-                      }
-                    }
-                  ]
+                  "name": "Elevator: L2"
                 }
               }
             ]
@@ -325,6 +172,208 @@
           "type": "deadline",
           "data": {
             "commands": [
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.0
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Auto Outtake"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: L4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop Outtake"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop Indexer"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.25
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "D to HP right"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: Bottom"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.0
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Start Indexer"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "OuttakeUntilBeamBreak"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "HP Right to C Setup"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeUntilBeamBreak"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "AutoAlignLeft"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: L2"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.0
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Auto Outtake"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: L4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop Outtake"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop Indexer"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.25
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "go to HP"
+                      }
+                    }
+                  ]
+                }
+              },
               {
                 "type": "named",
                 "data": {

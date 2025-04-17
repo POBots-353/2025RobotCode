@@ -11,13 +11,25 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Bottom Start Alignment for E"
+                  "pathName": "Top Start Alignment x"
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "DisableAlgaeIntakeDefaultCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ZeroAlgaeRemover"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ZeroClimber"
                 }
               }
             ]
@@ -26,7 +38,7 @@
         {
           "type": "named",
           "data": {
-            "name": "AutoAlignLeft"
+            "name": "AutoAlignRight"
           }
         },
         {
@@ -78,7 +90,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "E to HP Right"
+                        "pathName": "J to HP Left x"
                       }
                     }
                   ]
@@ -125,7 +137,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP Right to D Setup"
+                  "pathName": "HP Left to K Setup x"
                 }
               },
               {
@@ -144,7 +156,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "AutoAlignRight"
+                  "name": "AutoAlignLeft"
                 }
               },
               {
@@ -217,7 +229,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "D to HP right"
+                        "pathName": "K to HP left x"
                       }
                     }
                   ]
@@ -264,7 +276,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "HP Right to C Setup"
+                  "pathName": "HP Left to L Setup x"
                 }
               },
               {
@@ -283,7 +295,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "AutoAlignLeft"
+                  "name": "AutoAlignRight"
                 }
               },
               {

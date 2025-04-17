@@ -397,9 +397,45 @@ public class Constants {
     public static final int outtakeLaserCanID = 19;
   }
 
+  public static class ClimberConstants {
+    public static final double winchSpeed = 0.6;
+    public static final int climberMotorID = 38;
+    public static final double setupPosition = 30; //rotations
+    public static final double maxHeight = 50.0; //rotations
+    public static final double minHeight = 0.0; //rotations
+
+    public static final double positionTolerance = 3;
+
+
+
+    public static final MotorOutputConfigs motorOutputConfigs =
+    new MotorOutputConfigs()
+        .withInverted(InvertedValue.CounterClockwise_Positive)
+        .withNeutralMode(NeutralModeValue.Brake);
+
+public static final CurrentLimitsConfigs currentLimitConfigs =
+    new CurrentLimitsConfigs().withStatorCurrentLimit(50).withStatorCurrentLimitEnable(true);
+
+    public static final SoftwareLimitSwitchConfigs softwareLimitSwitchConfigs =
+        new SoftwareLimitSwitchConfigs()
+            .withForwardSoftLimitThreshold(maxHeight)
+            .withForwardSoftLimitEnable(true)
+            .withReverseSoftLimitThreshold(minHeight)
+            .withReverseSoftLimitEnable(true);
+
+public static final TalonFXConfiguration climberConfigs =
+    new TalonFXConfiguration()
+        .withCurrentLimits(currentLimitConfigs)
+        .withMotorOutput(motorOutputConfigs)
+        .withSoftwareLimitSwitch(softwareLimitSwitchConfigs);
+
+  }
+
+
   public static class AlgaeRemoverConstants {
     public static final int algaeRemoverMotorID = 17;
     public static final int algaeIntakeMotorID = 20;
+    public static final int algaeLaserCanID = 39;
 
     public static final double planetaryGearRatio = 1.0 / 125.0;
     public static final double outputGearRatio = 18.0 / 32.0;
@@ -409,6 +445,10 @@ public class Constants {
         2 * Math.PI * planetaryGearRatio * outputGearRatio;
 
     public static final double algaeRemoverSpeed = .5;
+    public static final double bringBackSpeed = .8;
+
+    public static final double stabalizingSpeed = .1;
+
     public static final double algaeIntakeSpeed = 1.0;
     public static final double slowAlgaeIntakeSpeed = .1;
 
@@ -417,6 +457,8 @@ public class Constants {
 
     public static final Angle autoIntakePosition = Degrees.of(-55.0);
     public static final Angle intakePosition = Degrees.of(-82.0);
+    public static final Angle lollipopPosition = Degrees.of(-70.0);
+
     public static final Angle stowPosition = Degrees.of(15.0);
     public static final Angle bargePosition = Degrees.of(-31.0);
     public static final Angle bargeScorePosition = Degrees.of(-60.0);

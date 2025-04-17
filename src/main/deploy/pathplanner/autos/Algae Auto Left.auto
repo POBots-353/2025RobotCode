@@ -25,6 +25,12 @@
                 "data": {
                   "name": "ZeroAlgaeRemover"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ZeroClimber"
+                }
               }
             ]
           }
@@ -124,7 +130,7 @@
           }
         },
         {
-          "type": "deadline",
+          "type": "parallel",
           "data": {
             "commands": [
               {
@@ -134,9 +140,22 @@
                 }
               },
               {
-                "type": "named",
+                "type": "deadline",
                 "data": {
-                  "name": "Grab Algae"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.6
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Grab Algae"
+                      }
+                    }
+                  ]
                 }
               }
             ]

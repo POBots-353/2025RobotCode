@@ -11,6 +11,8 @@ import java.util.Set;
 public class AllianceUtil {
   public static final Set<Integer> RED_REEF_IDS = Set.of(6, 7, 8, 9, 10, 11);
   public static final Set<Integer> BLUE_REEF_IDS = Set.of(17, 18, 19, 20, 21, 22);
+  public static final Set<Integer> ALL_REEF_IDS =
+      Set.of(6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22);
 
   public static boolean isRedAlliance() {
     Optional<Alliance> alliance = DriverStation.getAlliance();
@@ -28,6 +30,10 @@ public class AllianceUtil {
 
   public static Set<Integer> getReefIds() {
     return isRedAlliance() ? RED_REEF_IDS : BLUE_REEF_IDS;
+  }
+
+  public static Set<Integer> getAllReefIds() {
+    return ALL_REEF_IDS;
   }
 
   public static Pose2d getReefPose() {

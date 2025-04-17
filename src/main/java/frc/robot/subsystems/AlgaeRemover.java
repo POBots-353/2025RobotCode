@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
+import au.grapplerobotics.LaserCan;
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -34,6 +35,8 @@ import frc.robot.util.ExpandedSubsystem;
 @Logged(strategy = Strategy.OPT_IN)
 public class AlgaeRemover extends ExpandedSubsystem {
   private SparkMax algaeRemoverMotor;
+  private LaserCan algaeLaser;
+
 
   private SparkClosedLoopController algaeRemoverPIDController;
   private SparkAbsoluteEncoder algaeRemoverAbsoluteEncoder;
@@ -44,6 +47,8 @@ public class AlgaeRemover extends ExpandedSubsystem {
   public AlgaeRemover() {
     algaeRemoverMotor =
         new SparkMax(AlgaeRemoverConstants.algaeRemoverMotorID, MotorType.kBrushless);
+    algaeLaser = new LaserCan(AlgaeRemoverConstants.algaeLaserCanID);
+
     algaeRemoverAbsoluteEncoder = algaeRemoverMotor.getAbsoluteEncoder();
     algaeRemoverEncoder = algaeRemoverMotor.getEncoder();
     algaeRemoverPIDController = algaeRemoverMotor.getClosedLoopController();
@@ -111,12 +116,35 @@ public class AlgaeRemover extends ExpandedSubsystem {
     algaeRemoverEncoder.setPosition(0);
   }
 
+  public void fullReset() {
+    algaeRemoverMotor.set(0);
+    algaeRemoverEncoder.setPosition(0);
+  }
+
   public void algaeRemoverUp() {
     algaeRemoverMotor.set(AlgaeRemoverConstants.algaeRemoverSpeed);
   }
 
   public void algaeRemoverDown() {
     algaeRemoverMotor.set(-AlgaeRemoverConstants.algaeRemoverSpeed);
+  }
+
+  public boolean algaeLaserBroken() {
+    LaserCan.Measurement measurement = algaeLaser.getMeasurement();
+    if (measurement != null
+        && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT
+        && measurement.distance_mm < 20) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public Command bringBackAlgaeRemover() {
+    return run(() -> algaeRemoverMotor.set(-AlgaeRemoverConstants.algaeRemoverSpeed))
+        .until(this::algaeLaserBroken)
+        .unless(this::algaeLaserBroken)
+        .finallyDo(this::fullReset);
   }
 
   @Logged(name = "Absolute Position")
