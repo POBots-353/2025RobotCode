@@ -952,9 +952,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     double xPose = stateCache.Pose.getX();
     if (xPose < 10.4 && xPose > 10.0) {
       return true;
-    }
-
-    if (xPose > 7.1 && xPose < 7.5) {
+    } else if (xPose > 7.1 && xPose < 7.5) {
       return true;
     }
 

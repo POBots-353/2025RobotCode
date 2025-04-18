@@ -60,8 +60,8 @@ public class Constants {
 
     public static final double centerToBumber = Units.inchesToMeters(18);
 
-    public static final double headingP = .80;
-    public static final double headingD = 0.1;
+    public static final double headingP = 3.0;
+    public static final double headingD = 0.04;
   }
 
   public static class AutoConstants {
@@ -400,21 +400,19 @@ public class Constants {
   public static class ClimberConstants {
     public static final double winchSpeed = 0.6;
     public static final int climberMotorID = 38;
-    public static final double setupPosition = 30; //rotations
-    public static final double maxHeight = 50.0; //rotations
-    public static final double minHeight = 0.0; //rotations
+    public static final double setupPosition = 30; // rotations
+    public static final double maxHeight = 50.0; // rotations
+    public static final double minHeight = 0.0; // rotations
 
     public static final double positionTolerance = 3;
 
-
-
     public static final MotorOutputConfigs motorOutputConfigs =
-    new MotorOutputConfigs()
-        .withInverted(InvertedValue.CounterClockwise_Positive)
-        .withNeutralMode(NeutralModeValue.Brake);
+        new MotorOutputConfigs()
+            .withInverted(InvertedValue.CounterClockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Brake);
 
-public static final CurrentLimitsConfigs currentLimitConfigs =
-    new CurrentLimitsConfigs().withStatorCurrentLimit(50).withStatorCurrentLimitEnable(true);
+    public static final CurrentLimitsConfigs currentLimitConfigs =
+        new CurrentLimitsConfigs().withStatorCurrentLimit(50).withStatorCurrentLimitEnable(true);
 
     public static final SoftwareLimitSwitchConfigs softwareLimitSwitchConfigs =
         new SoftwareLimitSwitchConfigs()
@@ -423,18 +421,16 @@ public static final CurrentLimitsConfigs currentLimitConfigs =
             .withReverseSoftLimitThreshold(minHeight)
             .withReverseSoftLimitEnable(true);
 
-public static final TalonFXConfiguration climberConfigs =
-    new TalonFXConfiguration()
-        .withCurrentLimits(currentLimitConfigs)
-        .withMotorOutput(motorOutputConfigs)
-        .withSoftwareLimitSwitch(softwareLimitSwitchConfigs);
-
+    public static final TalonFXConfiguration climberConfigs =
+        new TalonFXConfiguration()
+            .withCurrentLimits(currentLimitConfigs)
+            .withMotorOutput(motorOutputConfigs)
+            .withSoftwareLimitSwitch(softwareLimitSwitchConfigs);
   }
-
 
   public static class AlgaeRemoverConstants {
     public static final int algaeRemoverMotorID = 17;
-    public static final int algaeIntakeMotorID = 20;
+    public static final int algaeIntakeMotorID = 20; // 20
     public static final int algaeLaserCanID = 39;
 
     public static final double planetaryGearRatio = 1.0 / 125.0;
@@ -464,7 +460,7 @@ public static final TalonFXConfiguration climberConfigs =
     public static final Angle bargeScorePosition = Degrees.of(-60.0);
 
     public static final Angle processorPosition = Degrees.of(-45);
-    public static final Angle floorAlgaePosition = Degrees.of(-165.0);
+    public static final Angle floorAlgaePosition = Degrees.of(-182.0);
     public static final Angle holdPosition = Degrees.of(-4.0);
 
     public static final Angle maxPosition = Degrees.of(0);

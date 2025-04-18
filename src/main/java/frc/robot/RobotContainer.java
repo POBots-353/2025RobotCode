@@ -22,7 +22,6 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -35,7 +34,7 @@ import frc.robot.commands.TurnToReef;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeIntake;
 import frc.robot.subsystems.AlgaeRemover;
-import frc.robot.subsystems.Climber;
+// import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.LEDs;
@@ -65,8 +64,7 @@ public class RobotContainer {
   @Logged(name = "Algae Intake")
   private final AlgaeIntake algaeIntake = new AlgaeIntake();
 
-  private final Climber climber = new Climber();
-
+  //   private final Climber climber = new Climber();
 
   private final LEDs led = new LEDs();
 
@@ -87,11 +85,17 @@ public class RobotContainer {
   //   private boolean positionMode = false;
   private boolean prepareElevator = false;
 
+  private boolean removerLocked = false;
+
   private boolean doubleScoreActive = false;
   private DoubleSupplier selectedHeight = () -> 0.0;
   private final PowerDistribution powerDistribution = new PowerDistribution(1, ModuleType.kRev);
 
   private Trigger outtakeLaserBroken = new Trigger(outtake::outtakeLaserBroken);
+  private Trigger algaeLaserBroken = new Trigger(algaeRemover::algaeLaserBroken);
+
+  private Trigger removerIsLocked = new Trigger(() -> removerLocked);
+
   private Trigger prepareElevatorUp = new Trigger(() -> prepareElevator);
   //   private Trigger isPositionMode = new Trigger(() -> positionMode);
   private Trigger buttonTrigger = new Trigger(elevator::buttonPressed);
@@ -107,8 +111,7 @@ public class RobotContainer {
 
   private Trigger doubleScoreMode = algaeModeButton.and(operatorController.start().negate());
   private Trigger inBargeRange = new Trigger(drivetrain::inAlgaeRange);
-  private Trigger timeToPark = new Trigger(()-> DriverStation.getMatchTime() <= 5);
-
+  private Trigger timeToPark = new Trigger(() -> DriverStation.getMatchTime() <= 5);
 
   public RobotContainer() {
     NamedCommands.registerCommand("Start Indexer", indexer.runIndexer().asProxy());
@@ -154,9 +157,11 @@ public class RobotContainer {
         "ZeroAlgaeRemover",
         Commands.runOnce(() -> algaeRemover.resetPosition()).withTimeout(.15).asProxy());
 
-    NamedCommands.registerCommand(
-        "ZeroClimber",
-        Commands.runOnce(() -> climber.zeroPosition()).withTimeout(.15).asProxy());
+    // NamedCommands.registerCommand(
+    //     "ZeroClimber",
+    //     Commands.runOnce(() -> climber.zeroPosition()).withTimeout(.15).asProxy());
+
+    NamedCommands.registerCommand("ZeroClimber", Commands.none().withTimeout(.15).asProxy());
 
     NamedCommands.registerCommand("Turn to reef", new TurnToReef(drivetrain).withTimeout(2));
     NamedCommands.registerCommand("AutoAlignLeft", drivetrain.reefAlign(true).withTimeout(2.8));
@@ -264,10 +269,13 @@ public class RobotContainer {
     //         Commands.race(Commands.waitUntil(outtakeLaserBroken), Commands.waitSeconds(4))
     //             .andThen(indexer::stopIndexer));
 
-    timeToPark.onTrue( Commands.runOnce(
-        () -> {
-          driverController.getHID().setRumble(RumbleType.kBothRumble, 1);
-        }));
+    timeToPark
+        .and(() -> !DriverStation.isAutonomous())
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  driverController.getHID().setRumble(RumbleType.kBothRumble, 1);
+                }));
 
     inBargeRange
         .and(() -> !DriverStation.isAutonomous())
@@ -300,6 +308,8 @@ public class RobotContainer {
                           operatorController.getHID().setRumble(RumbleType.kBothRumble, 0.0);
                         }))
                 .withName("Outtake Laser Vibration"));
+
+    algaeLaserBroken.onTrue(Commands.runOnce(() -> removerLocked = true));
 
     prepareElevatorUp
         .onTrue(elevator.moveToPosition(ElevatorConstants.L2Height))
@@ -432,8 +442,8 @@ public class RobotContainer {
     Trigger zeroOnReefButton = driverController.b();
     Trigger pathFindToL1Button = driverController.x();
     Trigger resetHeadingButton = driverController.start().and(driverController.back());
-    Trigger startClimbButton = driverController.y();
-    Trigger finishClimbButton = driverController.a();
+    // Trigger startClimbButton = driverController.y();
+    // Trigger finishClimbButton = driverController.a();
 
     drivetrain.setDefaultCommand(
         new TeleopSwerve(
@@ -484,8 +494,10 @@ public class RobotContainer {
     //         algaeRemover,
     //         outtake));
 
-    startClimbButton.whileTrue(climber.moveToSetup()).onFalse(climber.stopWinch());
-    finishClimbButton.whileTrue(climber.startWinch()).onFalse(climber.stopWinch());
+    // startClimbButton.whileTrue(climber.moveToSetup()).onFalse(climber.stopWinch());
+    // finishClimbButton
+    //     .whileTrue(climber.startWinch().onlyIf(() -> climber.atSetpoint()))
+    //     .onFalse(climber.stopWinch());
 
     turnToAlgaeButton.whileTrue(
         new TurnToAlgae(
@@ -751,6 +763,15 @@ public class RobotContainer {
             algaeIntake.slowIntake(),
             () -> DriverStation.isAutonomous() && !isAlgaeAuto));
 
+    algaeRemover.setDefaultCommand(
+        Commands.either(
+            algaeRemover.bringBackAlgaeRemover(),
+            Commands.none(),
+            () ->
+                !DriverStation.isAutonomous()
+                    && buttonTrigger.getAsBoolean()
+                    && !removerIsLocked.getAsBoolean()));
+
     Trigger rezeroAlgaeButton = operatorController.back().and(operatorController.start());
     Trigger algaeUpButton = operatorController.povDown();
     Trigger algaeDownButton = operatorController.povUp();
@@ -765,6 +786,15 @@ public class RobotContainer {
     Trigger algaeManualOuttakeButton =
         operatorController.start().and(operatorController.back().negate()).and(algaeModeButton);
     Trigger algaeManualIntakeButton = operatorController.rightTrigger().and(algaeModeButton);
+
+    rezeroAlgaeButton
+        .or(algaeUpButton)
+        .or(algaeDownButton)
+        .or(algaeIntakeSequenceButton)
+        .or(bargeScoreSequenceButton)
+        .or(processorScoreSequenceButton)
+        .or(algaeFloorButton)
+        .onTrue(Commands.runOnce(() -> removerLocked = false));
 
     // zero algaeintake
     rezeroAlgaeButton
@@ -795,8 +825,8 @@ public class RobotContainer {
                                 .alongWith(algaeIntake.intake()))))
         .onFalse(
             algaeRemover
-                // .moveToPosition(AlgaeRemoverConstants.holdPosition)
-                .bringBackAlgaeRemover()
+                .moveToPosition(AlgaeRemoverConstants.holdPosition)
+                // .bringBackAlgaeRemover()
                 .andThen(elevator.downPosition()));
 
     // barge score throw sequence
@@ -812,7 +842,7 @@ public class RobotContainer {
                             .andThen(algaeIntake.outtake().withTimeout(0.458))),
                 algaeRemover
                     .moveToPosition(AlgaeRemoverConstants.holdPosition)
-                     // algaeRemover.bringBackAlgaeRemover()
+                    // algaeRemover.bringBackAlgaeRemover()
                     .alongWith(elevator.downPosition())));
 
     // slow barge score

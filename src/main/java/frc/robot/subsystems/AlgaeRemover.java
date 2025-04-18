@@ -37,7 +37,6 @@ public class AlgaeRemover extends ExpandedSubsystem {
   private SparkMax algaeRemoverMotor;
   private LaserCan algaeLaser;
 
-
   private SparkClosedLoopController algaeRemoverPIDController;
   private SparkAbsoluteEncoder algaeRemoverAbsoluteEncoder;
   private RelativeEncoder algaeRemoverEncoder;
@@ -108,12 +107,18 @@ public class AlgaeRemover extends ExpandedSubsystem {
         < positionTolerance;
   }
 
+  public double currentDraw() {
+    return algaeRemoverMotor.getOutputCurrent();
+  }
+
   public void stopAlgaeRemover() {
     algaeRemoverMotor.set(0);
   }
 
   public void resetPosition() {
-    algaeRemoverEncoder.setPosition(0);
+    if (Math.abs(getPosition().in(Degrees)) > 1) {
+      algaeRemoverEncoder.setPosition(0);
+    }
   }
 
   public void fullReset() {
@@ -133,7 +138,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
     LaserCan.Measurement measurement = algaeLaser.getMeasurement();
     if (measurement != null
         && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT
-        && measurement.distance_mm < 20) {
+        && measurement.distance_mm < 70) {
       return true;
     } else {
       return false;
@@ -141,10 +146,11 @@ public class AlgaeRemover extends ExpandedSubsystem {
   }
 
   public Command bringBackAlgaeRemover() {
-    return run(() -> algaeRemoverMotor.set(-AlgaeRemoverConstants.algaeRemoverSpeed))
+    return run(() -> algaeRemoverMotor.set(AlgaeRemoverConstants.algaeRemoverSpeed))
         .until(this::algaeLaserBroken)
         .unless(this::algaeLaserBroken)
-        .finallyDo(this::fullReset);
+        .finallyDo(() -> stopAlgaeRemover())
+        .finallyDo(() -> resetPosition());
   }
 
   @Logged(name = "Absolute Position")
@@ -160,6 +166,7 @@ public class AlgaeRemover extends ExpandedSubsystem {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Algae Remover/Position", getPosition().in(Degrees));
+    SmartDashboard.putBoolean("Algae Laser Broken", algaeLaserBroken());
   }
 
   @Override

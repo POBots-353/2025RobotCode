@@ -63,6 +63,7 @@ public class TurnToAlgae extends Command {
     this.maxTranslationalSpeedSupplier = maxTranslationalSpeed;
 
     turnToAlgaeController.enableContinuousInput(-Math.PI, Math.PI);
+    turnToAlgaeController.setTolerance(Units.degreesToRadians(2));
 
     addRequirements(swerve);
   }
@@ -101,7 +102,7 @@ public class TurnToAlgae extends Command {
         robotOriented
             .withVelocityX(forwardSpeed)
             .withVelocityY(strafeSpeed)
-            .withRotationalRate(Units.rotationsToRadians(turningSpeed)));
+            .withRotationalRate(turningSpeed));
   }
 
   // Called once the command ends or is interrupted.
