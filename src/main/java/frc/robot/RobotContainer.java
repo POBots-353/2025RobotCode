@@ -332,15 +332,15 @@ public class RobotContainer {
             .ignoringDisable(true)
             .withName("LED Laser CAN Blink"));
 
-    doubleScoreMode.whileTrue(led.blink(Color.kPurple).withName("DoubleScore Mode LEDS"));
+    // doubleScoreMode.whileTrue(led.blink(Color.kPurple).withName("DoubleScore Mode LEDS"));
     doubleScoreMode.onTrue(Commands.runOnce(() -> doubleScoreActive = true));
     // led.setDefaultCommand(led.rainbowScroll().ignoringDisable(true).withName("LED Rainbow
     // Scroll"));
     // led.setDefaultCommand(led.solidColor(Color.kBlack).ignoringDisable(true));
 
     // Hacky way to get the default LED command to switch
-    // new Trigger(DriverStation::isDSAttached).onChange(led.runOnce(() ->
-    // {}).ignoringDisable(true));
+    // new Trigger(buttonTrigger).onChange(algaeRemover.runOnce(() -> {}));
+
     new Trigger(DriverStation::isEnabled)
         .onChange(
             Commands.runOnce(
@@ -765,7 +765,7 @@ public class RobotContainer {
 
     algaeRemover.setDefaultCommand(
         Commands.either(
-            algaeRemover.bringBackAlgaeRemover(),
+            algaeRemover.bringBackAlgaeRemover().until(buttonTrigger.negate()),
             Commands.none(),
             () ->
                 !DriverStation.isAutonomous()
@@ -845,6 +845,10 @@ public class RobotContainer {
                     // algaeRemover.bringBackAlgaeRemover()
                     .alongWith(elevator.downPosition())));
 
+    bargeScoreSequenceButton
+        .and(algaeModeButton.negate())
+        .onTrue(Commands.runOnce(() -> algaeRemover.resetPosition()));
+
     // slow barge score
     bargeScoreSequenceButton
         .and(algaeModeButton)
@@ -872,26 +876,26 @@ public class RobotContainer {
 
     // score Processor
 
-    processorScoreSequenceButton
-        .and(algaeModeButton.negate())
-        .whileTrue(
-            elevator
-                .downPosition()
-                .alongWith(algaeRemover.moveToPosition(AlgaeRemoverConstants.processorPosition)))
-        .onFalse(
-            Commands.sequence(
-                algaeIntake.outtake().withTimeout(1.0),
-                algaeIntake.stop(),
-                algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition)
-                // algaeRemover.bringBackAlgaeRemover()
-                ));
+    // processorScoreSequenceButton
+    //     .and(algaeModeButton.negate())
+    //     .whileTrue(
+    //         elevator
+    //             .downPosition()
+    //             .alongWith(algaeRemover.moveToPosition(AlgaeRemoverConstants.processorPosition)))
+    //     .onFalse(
+    //         Commands.sequence(
+    //             algaeIntake.outtake().withTimeout(1.0),
+    //             algaeIntake.stop(),
+    //             algaeRemover.moveToPosition(AlgaeRemoverConstants.holdPosition)
+    //             // algaeRemover.bringBackAlgaeRemover()
+    //             ));
 
     // lollipop button
     processorScoreSequenceButton
-        .and(algaeModeButton)
+        // .and(algaeModeButton)
         .whileTrue(
             elevator
-                .downPosition()
+                .moveToPosition(ElevatorConstants.lollipopAlgaeHeight)
                 .alongWith(
                     algaeRemover
                         .moveToPosition(AlgaeRemoverConstants.lollipopPosition)

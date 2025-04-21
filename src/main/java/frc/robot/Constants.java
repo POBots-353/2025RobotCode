@@ -453,7 +453,7 @@ public class Constants {
 
     public static final Angle autoIntakePosition = Degrees.of(-55.0);
     public static final Angle intakePosition = Degrees.of(-82.0);
-    public static final Angle lollipopPosition = Degrees.of(-70.0);
+    public static final Angle lollipopPosition = Degrees.of(-143.0);
 
     public static final Angle stowPosition = Degrees.of(15.0);
     public static final Angle bargePosition = Degrees.of(-31.0);
@@ -505,6 +505,7 @@ public class Constants {
     public static final double bargeHeight = Units.inchesToMeters(28);
     public static final double processorHeight = Units.inchesToMeters(2);
     public static final double floorAlgaeHeight = Units.inchesToMeters(5);
+    public static final double lollipopAlgaeHeight = Units.inchesToMeters(.2);
 
     public static final double coralInTheWayAdd = 2.74;
 

@@ -61,15 +61,35 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "Elevator: Bottom"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "H To Barge"
+            "commands": [
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.4
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "H To Barge"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator: Bottom"
+                }
+              }
+            ]
           }
         },
         {
@@ -125,12 +145,6 @@
                 "type": "sequential",
                 "data": {
                   "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.25
-                      }
-                    },
                     {
                       "type": "path",
                       "data": {
@@ -266,12 +280,6 @@
                 "data": {
                   "commands": [
                     {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.0
-                      }
-                    },
-                    {
                       "type": "path",
                       "data": {
                         "pathName": "Barge to J Straight.0"
@@ -284,6 +292,25 @@
                 "type": "named",
                 "data": {
                   "name": "Barge Score: 3"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.5
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Turn to reef"
                 }
               }
             ]
