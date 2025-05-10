@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.AlgaeRemoverConstants;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.SwerveConstants;
+import frc.robot.commands.AutoScoreCommand;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.commands.TurnToAlgae;
 import frc.robot.commands.TurnToReef;
@@ -42,6 +43,7 @@ import frc.robot.subsystems.Outtake;
 import frc.robot.subsystems.Swerve;
 import frc.robot.util.LogUtil;
 import frc.robot.util.PersistentSendableChooser;
+
 import java.util.function.DoubleSupplier;
 
 @Logged(strategy = Strategy.OPT_IN)
@@ -434,7 +436,7 @@ public class RobotContainer {
   private void configureDriverBindings() {
     Trigger slowModeButton = driverController.leftTrigger();
     Trigger pathFindToBargeButton = driverController.leftStick();
-    // Trigger autoButton = driverController.y();
+    Trigger autoButton = driverController.y();
     Trigger turnToAlgaeButton = driverController.rightStick();
     Trigger pathFindToStationButton = driverController.rightTrigger();
     Trigger leftAlignButton = driverController.leftBumper();
@@ -444,6 +446,10 @@ public class RobotContainer {
     Trigger resetHeadingButton = driverController.start().and(driverController.back());
     // Trigger startClimbButton = driverController.y();
     // Trigger finishClimbButton = driverController.a();
+
+autoButton.whileTrue(
+    new AutoScoreCommand(drivetrain,elevator,outtake)
+);
 
     drivetrain.setDefaultCommand(
         new TeleopSwerve(

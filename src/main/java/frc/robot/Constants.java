@@ -37,8 +37,11 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Filesystem;
+import frc.robot.util.ScoringSpot;
+
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -143,7 +146,6 @@ public class Constants {
     public static final int[] reefAprilTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
   }
 
-  // .890 7.415
   public static class FieldConstants {
     public static final List<Integer> rejectedTAGS = List.of(4, 14, 15, 5);
     public static final String aprilTagJson = "2025-official-welded";
