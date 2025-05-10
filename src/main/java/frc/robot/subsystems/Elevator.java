@@ -38,6 +38,8 @@ import frc.robot.Constants.ElevatorConstants;
 import frc.robot.util.Elastic;
 import frc.robot.util.Elastic.Notification.NotificationLevel;
 import frc.robot.util.ExpandedSubsystem;
+
+import java.util.List;
 import java.util.function.DoubleSupplier;
 
 @Logged(strategy = Strategy.OPT_IN)
@@ -170,6 +172,12 @@ public class Elevator extends ExpandedSubsystem {
         .withName("Elevator Manual Down");
   }
 
+  public Command moveToLevel(int level) {
+    List<Double> allLevels = List.of(ElevatorConstants.L1Height, ElevatorConstants.L2Height,ElevatorConstants.L4Height, ElevatorConstants.L4Height);
+
+    return moveToPosition(allLevels.get(level - 1));
+  }
+  
   public Command moveToPosition(double height) {
     // double h = height + Units.inchesToMeters(0.2);
     return run(() -> {

@@ -638,6 +638,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         .withName("Auto Reef Align");
   }
 
+  public Command moveToPosition(Pose2d goalPose) {
+        return AutoBuilder.pathfindToPose(goalPose, AutoConstants.midPathConstraints, 0.0);
+  }
+
   // public Command reefAlignNoPathPlanner(boolean leftAlign) {
   //   return new DeferredCommand(
   //       () -> {
