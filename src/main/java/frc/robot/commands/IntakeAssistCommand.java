@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.subsystems.Swerve;
+import frc.robot.util.AllianceUtil;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -138,8 +139,17 @@ public class IntakeAssistCommand extends Command {
     }
 
     Vector<N2> toTarget = new Vector<>(Nat.N2());
-    toTarget.set(0, 0, robotPose.getX() - targetPose.getX());
-    toTarget.set(1, 0, robotPose.getY() - targetPose.getY());
+
+    if (AllianceUtil.isRedAlliance()) {
+      // idk why but the vector is like reversed when we are in the other alliance and im too lazy
+      // to actually think through the issue and this fix works :D
+      toTarget.set(0, 0, robotPose.getX() - targetPose.getX());
+      toTarget.set(1, 0, robotPose.getY() - targetPose.getY());
+
+    } else {
+      toTarget.set(0, 0, targetPose.getX() - robotPose.getX());
+      toTarget.set(1, 0, targetPose.getY() - robotPose.getY());
+    }
 
     Vector<N2> commandedVelocity = new Vector<>(Nat.N2());
     commandedVelocity.set(0, 0, forwardSpeed);
@@ -181,6 +191,7 @@ public class IntakeAssistCommand extends Command {
               .withVelocityX(projectionX)
               .withVelocityY(projectionY)
               .withRotationalRate(turningToTargetSpeed));
+
     } else {
       swerve.setControl(
           fieldOriented
