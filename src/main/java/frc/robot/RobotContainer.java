@@ -22,12 +22,14 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.AlgaeRemoverConstants;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.SwerveConstants;
+import frc.robot.commands.IntakeAssistCommand;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.commands.TurnToAlgae;
 import frc.robot.commands.TurnToReef;
@@ -434,7 +436,7 @@ public class RobotContainer {
   private void configureDriverBindings() {
     Trigger slowModeButton = driverController.leftTrigger();
     Trigger pathFindToBargeButton = driverController.leftStick();
-    // Trigger autoButton = driverController.y();
+    Trigger autoButton = driverController.y();
     Trigger turnToAlgaeButton = driverController.rightStick();
     Trigger pathFindToStationButton = driverController.rightTrigger();
     Trigger leftAlignButton = driverController.leftBumper();
@@ -442,8 +444,44 @@ public class RobotContainer {
     Trigger zeroOnReefButton = driverController.b();
     Trigger pathFindToL1Button = driverController.x();
     Trigger resetHeadingButton = driverController.start().and(driverController.back());
-    // Trigger startClimbButton = driverController.y();
-    // Trigger finishClimbButton = driverController.a();
+    Trigger startClimbButton = driverController.y();
+    Trigger finishClimbButton = driverController.a();
+
+    // Trigger slowModeButton = driverController.L2();
+    // Trigger pathFindToBargeButton = driverController.L3();
+    // Trigger autoButton = driverController.triangle();
+    // Trigger turnToAlgaeButton = driverController.R3();
+    // Trigger pathFindToStationButton = driverController.R2();
+    // Trigger leftAlignButton = driverController.L1();
+    // Trigger rightAlignButton = driverController.R1();
+    // Trigger zeroOnReefButton = driverController.square();
+    // Trigger pathFindToL1Button = driverController.cross();
+    // Trigger resetHeadingButton = driverController.options().and(driverController.create());
+
+    // autoButton.onTrue(new AutoPickUp(drivetrain, indexer, elevator));
+    // autoButton.onTrue(new DriveToPose(drivetrain, elevator, () -> FieldConstants.blueBargePose));
+    // autoButton.onTrue(
+    //     drivetrain.applyRequest(
+    //         () ->
+    //             new SwerveRequest.FieldCentric()
+    //                 .withVelocityX(1.0)
+    //                 .withVelocityY(0.0)
+    //                 .withRotationalRate(0.0)
+    //                 .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)));
+
+    // autoButton.whileTrue(
+    //     new IntakeAssistCommand(
+    //         driverController::getLeftY,
+    //         driverController::getLeftX,
+    //         driverController::getRightX,
+    //         () -> {
+    //           if (slowModeButton.getAsBoolean()) {
+    //             return SwerveConstants.slowModeMaxTranslationalSpeed;
+    //           }
+    //           return SwerveConstants.maxTranslationalSpeed;
+    //         },
+    //         drivetrain));
+
 
     drivetrain.setDefaultCommand(
         new TeleopSwerve(

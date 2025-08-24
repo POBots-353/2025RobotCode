@@ -62,6 +62,7 @@ public class Constants {
 
     public static final double headingP = 3.0;
     public static final double headingD = 0.04;
+
   }
 
   public static class AutoConstants {
@@ -143,7 +144,6 @@ public class Constants {
     public static final int[] reefAprilTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
   }
 
-  // .890 7.415
   public static class FieldConstants {
     public static final List<Integer> rejectedTAGS = List.of(4, 14, 15, 5);
     public static final String aprilTagJson = "2025-official-welded";
@@ -246,6 +246,15 @@ public class Constants {
         new Pose2d(4.483, 4.019, Rotation2d.fromDegrees(0.0));
     public static final Pose2d reefRedAlliance =
         new Pose2d(13.055, 4.019, Rotation2d.fromDegrees(0));
+
+    public static final Pose2d testAlgaeRedHigh =
+        new Pose2d(16.3349, 5.83897, Rotation2d.fromDegrees(0.0));
+
+    public static final Pose2d testAlgaeRedLow =
+        new Pose2d(16.33746337890625, 2.1918089389801025, Rotation2d.fromDegrees(0.0));
+
+    public static final Pose2d testAlgaeBlueHigh =
+        new Pose2d(1.2105377912521362, 5.860191345214844, Rotation2d.fromDegrees(0.0));
 
     public static final Map<Integer, Double> aprilTagAngles = new HashMap<>();
 

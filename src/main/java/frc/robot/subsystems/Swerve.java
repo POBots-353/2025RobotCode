@@ -38,6 +38,7 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -59,7 +60,9 @@ import frc.robot.util.Elastic.Notification.NotificationLevel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -81,6 +84,21 @@ import org.photonvision.targeting.PhotonTrackedTarget;
  */
 @Logged(strategy = Strategy.OPT_IN)
 public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
+
+  private static class TrackedPiece {
+    Pose2d pose;
+    double lastSeen; // timestamp in seconds
+
+    TrackedPiece(Pose2d pose, double lastSeen) {
+      this.pose = pose;
+      this.lastSeen = lastSeen;
+    }
+  }
+
+  private final Map<String, TrackedPiece> trackedPieces = new HashMap<>();
+  private static final double gamePieceTimeout = 3.0;
+  private int nextPieceId = 0;
+
   private static final double kSimLoopPeriod = 0.005; // 5 ms
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
@@ -117,6 +135,13 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
 
   private Pose2d leftPose;
   private Pose2d rightPose;
+
+  private static final double kAssistRadius = .40;
+  private static final double kMinLead = .50;
+  private static final double kMaxLead = 3.00;
+  private static final double kBlendGain = .35;
+
+  private FieldObject2d pieces = field.getObject("GamePieces");
 
   private double preMatchTranslationalTolerance = 0.1;
 
@@ -638,6 +663,10 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         .withName("Auto Reef Align");
   }
 
+  public Command moveToPosition(Pose2d goalPose) {
+    return AutoBuilder.pathfindToPose(goalPose, AutoConstants.midPathConstraints, 0.0);
+  }
+
   // public Command reefAlignNoPathPlanner(boolean leftAlign) {
   //   return new DeferredCommand(
   //       () -> {
@@ -849,6 +878,18 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
             Set.of(this))
         .withName("Pathfind for Algae Remover");
   }
+
+  // public ChassisSpeeds getFieldVelocity() {
+  //   ChassisSpeeds robotRelative = getKinematics().toChassisSpeeds(stateCache.ModuleStates);
+
+  //   Rotation2d yaw = stateCache.RawHeading;
+
+  //   return ChassisSpeeds.fromFieldRelativeSpeeds(
+  //       robotRelative.vxMetersPerSecond,
+  //       robotRelative.vyMetersPerSecond,
+  //       robotRelative.omegaRadiansPerSecond,
+  //       yaw);
+  // }
 
   public boolean seesTarget() {
     List<PhotonPipelineResult> latestResult = latestArducamFrontResult;
@@ -1131,6 +1172,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     }
     PhotonPipelineResult newestResult =
         latestArducamAlgaeResult.get(latestArducamAlgaeResult.size() - 1);
+
     if (!newestResult.hasTargets()) {
       return;
     }
@@ -1140,6 +1182,70 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     targetYaw = target.getYaw();
 
     desiredAlgaeRotation = Rotation2d.fromDegrees(currentRotation - targetYaw);
+  }
+
+  public void addGamePiecesToFieldV1() {
+    List<Pose2d> piecePosesField = new ArrayList<>();
+
+    if (latestArducamAlgaeResult != null && !latestArducamAlgaeResult.isEmpty()) {
+      PhotonPipelineResult result =
+          latestArducamAlgaeResult.get(latestArducamAlgaeResult.size() - 1);
+
+      for (PhotonTrackedTarget target : result.getTargets()) {
+        Transform3d camToTarget = target.getBestCameraToTarget();
+        Transform3d robotToTarget = VisionConstants.arducamAlgaeTransform.plus(camToTarget);
+
+        Pose3d targetPoseField =
+            new Pose3d(
+                    stateCache.Pose.getX(),
+                    stateCache.Pose.getY(),
+                    0.0,
+                    new Rotation3d(0, 0, stateCache.Pose.getRotation().getRadians()))
+                .transformBy(robotToTarget);
+
+        piecePosesField.add(targetPoseField.toPose2d());
+      }
+    }
+    pieces.setPoses(piecePosesField);
+  }
+
+  public void addGamePiecesToFieldV2() {
+    double now = Timer.getFPGATimestamp();
+
+    if (latestArducamAlgaeResult != null && !latestArducamAlgaeResult.isEmpty()) {
+      PhotonPipelineResult result =
+          latestArducamAlgaeResult.get(latestArducamAlgaeResult.size() - 1);
+
+      for (PhotonTrackedTarget target : result.getTargets()) {
+        Transform3d camToTarget = target.getBestCameraToTarget();
+        Transform3d robotToTarget = VisionConstants.arducamAlgaeTransform.plus(camToTarget);
+
+        Pose3d targetPoseField =
+            new Pose3d(
+                    stateCache.Pose.getX(),
+                    stateCache.Pose.getY(),
+                    0.0,
+                    new Rotation3d(0, 0, stateCache.Pose.getRotation().getRadians()))
+                .transformBy(robotToTarget);
+
+        Pose2d pose2d = targetPoseField.toPose2d();
+
+        String key = "piece_" + nextPieceId++;
+        trackedPieces.put(key, new TrackedPiece(pose2d, now));
+      }
+    }
+
+    trackedPieces.entrySet().removeIf(entry -> now - entry.getValue().lastSeen > gamePieceTimeout);
+
+    List<Pose2d> piecePosesField = new ArrayList<>();
+    for (TrackedPiece tp : trackedPieces.values()) {
+      piecePosesField.add(tp.pose);
+    }
+    pieces.setPoses(piecePosesField);
+  }
+
+  public List<Pose2d> getGamePiecePositions() {
+    return pieces.getPoses();
   }
 
   private void updateVisionPoseEstimates() {
@@ -1324,6 +1430,9 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     double startTime = Timer.getFPGATimestamp();
     stateCache = getState();
     field.setRobotPose(stateCache.Pose);
+
+    addGamePiecesToFieldV2();
+
     updateAlgaeRotation();
 
     double stateTimestamp = ctreToFpgaTime(stateCache.Timestamp);
